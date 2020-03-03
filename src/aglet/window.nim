@@ -170,7 +170,6 @@ proc pollMouse*(win: Window): Vec2[float] =
 proc initGl(win: Window) =
   win.gl = newGl()
   win.gl.load(win.getProcAddrImpl)
-  echo win.gl.repr
 
 proc render*(win: Window): Frame =
   ## Starts rendering a single frame of animation.
