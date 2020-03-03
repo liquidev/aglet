@@ -45,12 +45,14 @@ type
     sClearDepth: GlClampd
     sClearStencil: GlInt
     sFramebuffers: tuple[read, draw: GlUint]
+    sViewport: tuple[x, y: GlInt, w, h: GlSizei]
 
+    glBindFramebuffer: proc (target: GLenum, framebuffer: GLuint) {.cdecl.}
+    glClear: proc (targets: GlBitfield) {.cdecl.}
     glClearColor: proc (r, g, b, a: GlClampf) {.cdecl.}
     glClearDepth: proc (depth: GlClampd) {.cdecl.}
     glClearStencil: proc (stencil: GlInt) {.cdecl.}
-    glClear: proc (targets: GlBitfield) {.cdecl.}
-    glBindFramebuffer: proc (target: GLenum, framebuffer: GLuint) {.cdecl.}
+    glViewport: proc (x, y: GlInt, width, height: GlSizei) {.cdecl.}
   FramebufferTarget* = enum
     ftRead, ftDraw
 
@@ -100,6 +102,10 @@ template updateDiff(a, b, action: untyped) =
   if a != b:
     a = b
     action
+
+proc viewport*(gl: OpenGl, x, y: GlInt, width, height: GlSizei) =
+  updateDiff gl.sViewport, (x, y, width, height):
+    gl.glViewport(x, y, width, height)
 
 proc clearColor*(gl: OpenGl, r, g, b, a: GlClampf) =
   updateDiff gl.sClearColor, (r, g, b, a):

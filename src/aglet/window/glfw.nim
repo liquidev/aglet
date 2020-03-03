@@ -87,6 +87,12 @@ proc implWindow(win: WindowGlfw) =
   win.closeRequestedImpl = proc (win: Window): bool =
     result = glfwWindowShouldClose(wing.handle).bool
 
+  win.getDimensionsImpl = proc (win: Window, w, h: var int) =
+    var cw, ch: cint
+    glfwGetWindowSize(wing.handle, addr cw, addr ch)
+    w = cw.int
+    h = cw.int
+
 proc toModKeySet(bits: cint): set[ModKey] =
   if (bits and GLFW_MOD_SHIFT) != 0: result.incl(mkShift)
   if (bits and GLFW_MOD_CONTROL) != 0: result.incl(mkCtrl)
@@ -150,7 +156,7 @@ proc eventHooks(win: WindowGlfw) =
     wing.processEvent(InputEvent(kind: iekFileDrop,
                                  filePaths: spaths))
 
-proc newWindowGlfw*(agl: Aglet, width, height: float, title: string,
+proc newWindowGlfw*(agl: Aglet, width, height: int, title: string,
                     hints = DefaultWindowHints): WindowGlfw =
   ## Creates a new window using the GLFW backend, with the specified size,
   ## title, passing the given hints to GLFW.

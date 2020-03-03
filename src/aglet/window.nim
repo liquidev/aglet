@@ -50,12 +50,15 @@ type
       ## requested" bit in the window
     closeRequestedImpl*: proc (win: Window): bool ## \
       ## returns the "close requested" bit
+    getDimensionsImpl*: proc (win: Window, w, h: var int) ## \
+      ## stores the window's dimensions in w and h
 
     keyStates: array[low(Key).int..high(Key).int, bool]
     mousePos: Vec2[float]
     gl: OpenGl
   Frame* = ref object of Target
     win: Window
+    width, height: int
 
 proc winHints*(resizable = true, visible = true, decorated = true,
                focused = true, floating = false, maximized = false,
@@ -182,9 +185,11 @@ proc render*(win: Window): Frame =
     win.initGl()
 
   result = Frame(win: win, gl: win.gl)
+  win.getDimensionsImpl(win, result.width, result.height)
 
   result.useImpl = proc (target: Target, gl: OpenGl) =
     gl.bindFramebuffer({ftRead, ftDraw}, 0)
+    gl.viewport(0, 0, target.Frame.width.GlSizei, target.Frame.height.GlSizei)
 
   win.agl.window.AgletWindow.frame = result
 
@@ -195,6 +200,10 @@ proc finish*(frame: Frame) =
   ## Finishes a frame blitting it onto the screen.
   frame.win.swapBuffersImpl(frame.win)
   frame.win.finishFrame()
+
+proc dimensions*(frame: Frame): Vec2i =
+  ## Returns a frame's dimensions.
+  result = vec2(frame.width.int32, frame.height.int32)
 
 proc initWindow*(agl: var Aglet) =
   ## Initializes the windowing submodule. You should call this before doing
