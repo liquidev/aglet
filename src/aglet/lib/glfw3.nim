@@ -643,17 +643,7 @@ const
 
 
 type
-  GLFWglproc* = proc ()
-
-
-type
-  GLFWvkproc* = proc ()
-
-
-
-
-
-
+  GLFWglproc* = proc () {.cdecl.}
 
 type
   GLFWwindow* {.incompletestruct.} = object
@@ -1122,20 +1112,3 @@ proc glfwExtensionSupported*(extension: cstring): cint {.
 
 proc glfwGetProcAddress*(procname: cstring): GLFWglproc {.
     importc: "glfwGetProcAddress", header: Glfw3Header.}
-
-proc glfwVulkanSupported*(): cint {.importc: "glfwVulkanSupported", header: Glfw3Header.}
-
-proc glfwGetRequiredInstanceExtensions*(count: ptr uint32): cstringArray {.
-    importc: "glfwGetRequiredInstanceExtensions", header: Glfw3Header.}
-when defined(VK_VERSION_1_0):
-  proc glfwGetInstanceProcAddress*(instance: VkInstance; procname: cstring): GLFWvkproc {.
-      importc: "glfwGetInstanceProcAddress", header: Glfw3Header.}
-  proc glfwGetPhysicalDevicePresentationSupport*(instance: VkInstance;
-      device: VkPhysicalDevice; queuefamily: uint32): cint {.
-      importc: "glfwGetPhysicalDevicePresentationSupport", header: Glfw3Header.}
-  proc glfwCreateWindowSurface*(instance: VkInstance; window: ptr GLFWwindow;
-                               allocator: ptr VkAllocationCallbacks;
-                               surface: ptr VkSurfaceKHR): VkResult {.
-      importc: "glfwCreateWindowSurface", header: Glfw3Header.}
-
-

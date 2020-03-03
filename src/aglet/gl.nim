@@ -41,31 +41,34 @@ type
   GlVoid* = pointer
 
   OpenGl* = ref object  ## the opengl API and state
-    sClearColor: tuple[r, g, b, a: GLClampf]
+    sClearColor: tuple[r, g, b, a: GlClampf]
     sClearDepth: GlClampd
     sClearStencil: GlInt
+    sFramebuffers: tuple[read, draw: GlUint]
 
-    when not defined(js):
-      glClearColor: proc (r, g, b, a: GlClampf) {.cdecl.}
-      glClearDepth: proc (depth: GlClampd) {.cdecl.}
-      glClearStencil: proc (stencil: GlInt) {.cdecl.}
-      glClear: proc (targets: GlBitfield) {.cdecl.}
-    else:
-      discard # TODO: webgl
+    glClearColor: proc (r, g, b, a: GlClampf) {.cdecl.}
+    glClearDepth: proc (depth: GlClampd) {.cdecl.}
+    glClearStencil: proc (stencil: GlInt) {.cdecl.}
+    glClear: proc (targets: GlBitfield) {.cdecl.}
+    glBindFramebuffer: proc (target: GLenum, framebuffer: GLuint) {.cdecl.}
+  FramebufferTarget* = enum
+    ftRead, ftDraw
 
 const
-  GL_DEPTH_BUFFER_BIT* = 0x00000100
-  GL_STENCIL_BUFFER_BIT* = 0x00000400
-  GL_COLOR_BUFFER_BIT* = 0x00004000
+  GL_DEPTH_BUFFER_BIT* = 0x100
+  GL_STENCIL_BUFFER_BIT* = 0x400
+  GL_COLOR_BUFFER_BIT* = 0x4000
+  GL_READ_FRAMEBUFFER* = 0x8CA8
+  GL_DRAW_FRAMEBUFFER* = 0x8CA9
 
 when not defined(js):
   # desktop platforms
 
-  proc loadGl*(gl: OpenGl, getProcAddr: proc (name: cstring): pointer) =
+  proc load*(gl: OpenGl, getProcAddr: proc (name: string): pointer) =
     ## Loads OpenGL procs to the given GL instance.
     ## aglet uses a custom loader because as far as I could tell, glad doesn't
     ## support loading procs to an object.
-    ## This unfortunately means that the code will need to refer to each and
+    ## This unfortunately means that the code will need to list each and
     ## every one of the GL procs it uses, but it's a good opportunity to use
     ## some macro magic so it's not that bad.
 
@@ -90,20 +93,34 @@ when not defined(js):
 else:
   discard # TODO: webgl
 
+proc newGl*(): OpenGl =
+  new(result)
+
+template updateDiff(a, b, action: untyped) =
+  if a != b:
+    a = b
+    action
+
 proc clearColor*(gl: OpenGl, r, g, b, a: GlClampf) =
-  if gl.sClearColor != (r, g, b, a):
-    gl.sClearColor = (r, g, b, a)
+  updateDiff gl.sClearColor, (r, g, b, a):
     gl.glClearColor(r, g, b, a)
   gl.glClear(GL_COLOR_BUFFER_BIT)
 
 proc clearDepth*(gl: OpenGl, depth: GlClampd) =
-  if gl.sClearDepth != depth:
-    gl.sClearDepth = depth
+  updateDiff gl.sClearDepth, depth:
     gl.glClearDepth(depth)
   gl.glClear(GL_DEPTH_BUFFER_BIT)
 
 proc clearStencil*(gl: OpenGl, stencil: GlInt) =
-  if gl.sClearStencil != stencil:
-    gl.sClearStencil = stencil
+  updateDiff gl.sClearStencil, stencil:
     gl.glClearStencil(stencil)
   gl.glClear(GL_DEPTH_BUFFER_BIT)
+
+proc bindFramebuffer*(gl: OpenGl, targets: set[FramebufferTarget],
+                      buffer: GlUint) =
+  if ftRead in targets:
+    updateDiff gl.sFramebuffers.read, buffer:
+      gl.glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer)
+  if ftDraw in targets:
+    updateDiff gl.sFramebuffers.draw, buffer:
+      gl.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer)

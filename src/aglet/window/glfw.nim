@@ -70,6 +70,10 @@ proc implWindow(win: WindowGlfw) =
   win.makeCurrentImpl = proc (win: Window) =
     glfwMakeContextCurrent(wing.handle)
 
+  win.getProcAddrImpl = proc (name: string): pointer =
+    win.makeCurrent()
+    result = cast[pointer](glfwGetProcAddress(name))
+
   win.setSwapIntervalImpl = proc (win: Window, interval: int) =
     wing.makeCurrent()
     glfwSwapInterval(interval.cint)

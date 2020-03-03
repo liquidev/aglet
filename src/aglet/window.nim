@@ -1,14 +1,17 @@
 import glm/vec
 
+import gl
 import input
 import state
+import target
 
 type
   AgletWindow = ref object of AgletSubmodule ## the window submodule's state
     current: Window
+    frame: Frame
   WindowHints* = object ## \
-    ## Window hints. For most hints, if a backend does not support them, they
-    ## should be ignored.
+    ## window hints. For most hints, if a backend does not support them, they
+    ## should be ignored
     resizable*, visible*, decorated*, focused*, floating*, maximized*,
       transparent*, scaleToDpi*: bool
     colorBits*: tuple[red, green, blue, alpha: int]
@@ -22,32 +25,37 @@ type
 
     # events
     pollEventsImpl*: proc (win: Window, processEvent: InputProc) ## \
-      ## Polls for incoming events and passes each one to ``processEvent``
+      ## polls for incoming events and passes each one to ``processEvent``
     waitEventsImpl*: proc (win: Window, processEvent: InputProc,
                            timeout: float) ## \
-      ## Waits for incoming events and passes each one to ``processEvent`` \
-      ## Stops waiting after the given timeout if it's not -1
+      ## waits for incoming events and passes each one to ``processEvent`` \
+      ## stops waiting after the given timeout if it's not -1
     pollMouseImpl*: proc (win: Window): Vec2[float] ## \
-      ## Polls the OS for the mouse cursor's position
+      ## polls the OS for the mouse cursor's position
 
     # context
     makeCurrentImpl*: proc (win: Window) ## \
-      ## Makes the window's GL context current
+      ## makes the window's GL context current
+    getProcAddrImpl*: proc (name: string): pointer ## \
+      ## returns an OpenGL procedure's address
     setSwapIntervalImpl*: proc (win: Window, interval: int) ## \
-      ## Sets the buffer swap interval (VSync). 0 means no VSync, 1 is the \
+      ## sets the buffer swap interval (vsync). 0 means no vsync, 1 is the \
       ## monitor's refresh rate, 2 is half the monitor's refresh rate, etc.
     swapBuffersImpl*: proc (win: Window) ## \
-      ## Swaps the window's front and back buffers
+      ## swaps the window's front and back buffers
 
     # window
     requestCloseImpl*: proc (win: Window) ## \
-      ## Requests that the window gets closed. This should set a "close \
+      ## requests that the window gets closed. This should set a "close \
       ## requested" bit in the window
     closeRequestedImpl*: proc (win: Window): bool ## \
-      ## Returns the "close requested" bit
+      ## returns the "close requested" bit
 
     keyStates: array[low(Key).int..high(Key).int, bool]
     mousePos: Vec2[float]
+    gl: OpenGl
+  Frame* = ref object of Target
+    win: Window
 
 proc winHints*(resizable = true, visible = true, decorated = true,
                focused = true, floating = false, maximized = false,
@@ -158,6 +166,36 @@ proc pollMouse*(win: Window): Vec2[float] =
   ## Polls the OS for the mouse cursor's position. Unlike ``mouse``, this works
   ## returns the current position regardless of the window's focus.
   result = win.pollMouseImpl(win)
+
+proc initGl(win: Window) =
+  win.gl = newGl()
+  win.gl.load(win.getProcAddrImpl)
+  echo win.gl.repr
+
+proc render*(win: Window): Frame =
+  ## Starts rendering a single frame of animation.
+  ## Only one frame may be rendered at a time. After rendering the frame, use
+  ## ``finish`` to stop rendering to the frame.
+  assert win.agl.window.AgletWindow.frame == nil,
+    "cannot render two frames at once; finish() the old frame first"
+
+  if win.gl == nil:
+    win.initGl()
+
+  result = Frame(win: win, gl: win.gl)
+
+  result.useImpl = proc (target: Target, gl: OpenGl) =
+    gl.bindFramebuffer({ftRead, ftDraw}, 0)
+
+  win.agl.window.AgletWindow.frame = result
+
+proc finishFrame(win: Window) =
+  win.agl.window.AgletWindow.frame = nil
+
+proc finish*(frame: Frame) =
+  ## Finishes a frame blitting it onto the screen.
+  frame.win.swapBuffersImpl(frame.win)
+  frame.win.finishFrame()
 
 proc initWindow*(agl: var Aglet) =
   ## Initializes the windowing submodule. You should call this before doing

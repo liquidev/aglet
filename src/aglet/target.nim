@@ -6,11 +6,11 @@ import gl
 
 type
   Target* = ref object of RootObj
-    useImpl*: proc (gl: OpenGl)
-    gl: OpenGl
+    useImpl*: proc (target: Target, gl: OpenGl)
+    gl*: OpenGl ## do not use directly
 
 proc use(target: Target) =
-  target.useImpl(target.gl)
+  target.useImpl(target, target.gl)
 
 proc clearColor*(target: Target, col: Vec4f) =
   target.use()
