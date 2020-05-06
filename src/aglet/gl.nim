@@ -41,8 +41,14 @@ type
   GlVdpauSurfaceNv* = int32
   GlVoid* = pointer
 
+  FramebufferTarget* = enum
+    ftRead, ftDraw
+  BufferTarget* = enum
+    btArray, btElementArray
+
   OpenGl* = ref object  ## the opengl API and state
     # state
+    sBuffers: array[BufferTarget, GlUint]
     sClearColor: tuple[r, g, b, a: GlClampf]
     sClearDepth: GlClampd
     sClearStencil: GlInt
@@ -50,7 +56,8 @@ type
     sViewport: tuple[x, y: GlInt, w, h: GlSizei]
 
     # state functions
-    glBindFramebuffer: proc (target: GLenum, framebuffer: GLuint) {.cdecl.}
+    glBindBuffer: proc (target: GLenum, buffer: GlUint) {.cdecl.}
+    glBindFramebuffer: proc (target: GlEnum, framebuffer: GlUint) {.cdecl.}
     glClear: proc (targets: GlBitfield) {.cdecl.}
     glClearColor: proc (r, g, b, a: GlClampf) {.cdecl.}
     glClearDepth: proc (depth: GlClampd) {.cdecl.}
@@ -59,6 +66,10 @@ type
 
     # commands
     glAttachShader: proc (program, shader: GlUint) {.cdecl.}
+    glBufferData: proc (target: GlEnum, size: GlSizeiptr, data: pointer,
+                        usage: GlEnum) {.cdecl.}
+    glBufferSubData: proc (target: GlEnum, offset: GlIntptr, size: GlSizeiptr,
+                           data: pointer) {.cdecl.}
     glCompileShader: proc (shader: GlUint) {.cdecl.}
     glCreateProgram: proc (): GlUint {.cdecl.}
     glCreateShader: proc (shaderType: GlEnum): GlUint {.cdecl.}
@@ -66,8 +77,12 @@ type
                            buffers: ptr UncheckedArray[GlUint]) {.cdecl.}
     glDeleteProgram: proc (program: GlUint) {.cdecl.}
     glDeleteShader: proc (shader: GlUint) {.cdecl.}
+    glDeleteVertexArrays: proc (n: GlSizei,
+                                arrays: ptr UncheckedArray[GlUint]) {.cdecl.}
     glGenBuffers: proc (n: GlSizei,
                         buffers: ptr UncheckedArray[GlUint]) {.cdecl.}
+    glGenVertexArrays: proc (n: GlSizei,
+                             arrays: ptr UncheckedArray[GlUint]) {.cdecl.}
     glGetProgramInfoLog: proc (program: GlUint, maxLen: GlSizei,
                                length: ptr GlSizei, infoLog: cstring) {.cdecl.}
     glGetProgramiv: proc (program: GlUint, pname: GlEnum,
@@ -80,8 +95,6 @@ type
     glShaderSource: proc (shader: GlUint, count: GlSizei,
                           str: cstringArray,
                           length: ptr UncheckedArray[GlInt]) {.cdecl.}
-  FramebufferTarget* = enum
-    ftRead, ftDraw
 
 const
   GL_DEPTH_BUFFER_BIT* = 0x100
@@ -95,6 +108,11 @@ const
   GL_COMPILE_STATUS* = 0x8B81
   GL_LINK_STATUS* = 0x8B82
   GL_INFO_LOG_LENGTH* = 0x8B84
+  GL_ARRAY_BUFFER* = 0x8892
+  GL_ELEMENT_ARRAY_BUFFER* = 0x8893
+  GL_STREAM_DRAW* = 0x88E0
+  GL_STATIC_DRAW* = 0x88E4
+  GL_DYNAMIC_DRAW* = 0x88E8
 
 when not defined(js):
   # desktop platforms
@@ -128,6 +146,11 @@ when not defined(js):
 else:
   discard # TODO: webgl
 
+proc toGlEnum(target: BufferTarget): GlEnum =
+  case target
+  of btArray: GL_ARRAY_BUFFER
+  of btElementArray: GL_ELEMENT_ARRAY_BUFFER
+
 proc newGl*(): OpenGl =
   new(result)
 
@@ -154,6 +177,10 @@ proc clearStencil*(gl: OpenGl, stencil: GlInt) =
   updateDiff gl.sClearStencil, stencil:
     gl.glClearStencil(stencil)
   gl.glClear(GL_DEPTH_BUFFER_BIT)
+
+proc bindBuffer*(gl: OpenGl, target: BufferTarget, buffer: GlUint) =
+  updateDiff gl.sBuffers[target], buffer:
+    gl.glBindBuffer(target.toGlEnum, buffer)
 
 proc bindFramebuffer*(gl: OpenGl, targets: set[FramebufferTarget],
                       buffer: GlUint) =
@@ -221,3 +248,26 @@ proc deleteShader*(gl: OpenGl, shader: GlUint) =
 
 proc deleteProgram*(gl: OpenGl, program: GlUint) =
   gl.glDeleteProgram(program)
+
+proc createBuffer*(gl: OpenGl): GlUint =
+  gl.glGenBuffers(1, cast[ptr UncheckedArray[GlUint]](addr result))
+
+proc bufferData*(gl: OpenGl, target: BufferTarget,
+                 size: int, data: pointer, usage: GlEnum) =
+  gl.glBufferData(target.toGlEnum, size.GlSizeiptr, data, usage)
+
+proc bufferSubData*(gl: OpenGl, target: BufferTarget,
+                    where: Slice[int], data: pointer) =
+  gl.glBufferSubData(target.toGlEnum, where.a.GlIntptr,
+                     GlSizeiptr(where.b - where.a), data)
+
+proc deleteBuffer*(gl: OpenGl, buffer: GlUint) =
+  var buffer = buffer
+  gl.glDeleteBuffers(1, cast[ptr UncheckedArray[GlUint]](addr buffer))
+
+proc createVertexArray*(gl: OpenGl): GlUint =
+  gl.glGenVertexArrays(1, cast[ptr UncheckedArray[GlUint]](addr result))
+
+proc deleteVertexArray*(gl: OpenGl, array: GlUint) =
+  var array = array
+  gl.glDeleteVertexArrays(1, cast[ptr UncheckedArray[GlUint]](addr array))

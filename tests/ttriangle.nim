@@ -1,7 +1,7 @@
 import aglet/[
-  arraybuffers,
+  arraybuffer,
   input,
-  shaders,
+  program,
   state,
   target,
   window,
@@ -35,7 +35,7 @@ const
     }
   """
 
-var program = win.newProgram(VertexShaderSrc, FragmentShaderSrc)
+var prog = win.newProgram(VertexShaderSrc, FragmentShaderSrc)
 
 while not win.closeRequested:
   var frame = win.render()
