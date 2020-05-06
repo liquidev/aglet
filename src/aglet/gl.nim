@@ -79,6 +79,8 @@ type
     glDeleteShader: proc (shader: GlUint) {.cdecl.}
     glDeleteVertexArrays: proc (n: GlSizei,
                                 arrays: ptr UncheckedArray[GlUint]) {.cdecl.}
+    glDisableVertexAttribArray: proc (index: GlUint) {.cdecl.}
+    glEnableVertexAttribArray: proc (index: GlUint) {.cdecl.}
     glGenBuffers: proc (n: GlSizei,
                         buffers: ptr UncheckedArray[GlUint]) {.cdecl.}
     glGenVertexArrays: proc (n: GlSizei,
@@ -95,6 +97,11 @@ type
     glShaderSource: proc (shader: GlUint, count: GlSizei,
                           str: cstringArray,
                           length: ptr UncheckedArray[GlInt]) {.cdecl.}
+    glVertexAttribPointer: proc (index: GlUint, size: GlInt, typ: GlEnum,
+                                 normalized: bool, stride: GlSizei,
+                                 point: pointer) {.cdecl.}
+    glVertexAttribIPointer: proc (index: GlUint, size: GlInt, typ: GlEnum,
+                                  stride: GlSizei, point: pointer) {.cdecl.}
 
 const
   GL_DEPTH_BUFFER_BIT* = 0x100
@@ -113,6 +120,13 @@ const
   GL_STREAM_DRAW* = 0x88E0
   GL_STATIC_DRAW* = 0x88E4
   GL_DYNAMIC_DRAW* = 0x88E8
+  GL_TBYTE* = 0x1400
+  GL_TUNSIGNED_BYTE* = 0x1401
+  GL_TSHORT* = 0x1402
+  GL_TUNSIGNED_SHORT* = 0x1403
+  GL_TINT* = 0x1404
+  GL_TUNSIGNED_INT* = 0x1405
+  GL_TFLOAT* = 0x1406
 
 when not defined(js):
   # desktop platforms
@@ -124,6 +138,8 @@ when not defined(js):
     ## This unfortunately means that the code will need to list each and
     ## every one of the GL procs it uses, but it's a good opportunity to use
     ## some macro magic so it's not that bad.
+
+    const debug = defined(aglDebugLoader)
 
     macro genLoader(gl: OpenGl): untyped =
       result = newStmtList()
@@ -140,8 +156,17 @@ when not defined(js):
             conv = newTree(nnkCast, procTy, getAddrCall)
             asgn = newAssignment(dot, conv)
           result.add(asgn)
+          when debug:
+            let debugCall = quote:
+              stderr.writeLine "|agl|load| ", `procName`, ": ", `dot` != nil
+              stderr.flushFile()
+            result.add(debugCall)
 
-    genLoader(gl)
+    when debug:
+      expandMacros:
+        genLoader(gl)
+    else:
+      genLoader(gl)
 
 else:
   discard # TODO: webgl
@@ -267,6 +292,36 @@ proc deleteBuffer*(gl: OpenGl, buffer: GlUint) =
 
 proc createVertexArray*(gl: OpenGl): GlUint =
   gl.glGenVertexArrays(1, cast[ptr UncheckedArray[GlUint]](addr result))
+
+proc toGlEnum(T: typedesc): GlEnum =
+  when T is uint8: GL_TUNSIGNED_BYTE
+  elif T is uint16: GL_TUNSIGNED_SHORT
+  elif T is uint32: GL_TUNSIGNED_INT
+  elif T is int8: GL_TBYTE
+  elif T is int16: GL_TSHORT
+  elif T is int32: GL_TINT
+
+proc vertexAttrib*[T](gl: OpenGl, index, stride, offset: int) =
+  when T is float32:
+    gl.glVertexAttribPointer(index.GlUint, 1, GL_TFLOAT,
+                             normalized = false, stride.GlSizei,
+                             cast[pointer](offset))
+  elif T is float64:
+    # TODO: newer versions of OpenGL have this, but I'm yet to track down when
+    # it was introduced. still, it's a performance trap and you most likely
+    # want to use float32
+    {.error: "float64 is unsupported as a vertex field type, use float32".}
+  elif T is SomeInteger and sizeof(T) <= 4:
+    gl.glVertexAttribIPointer(index.GlUint, 1, T.toGlEnum,
+                              stride.GlSizei, cast[pointer](offset))
+  else:
+    {.error: "unsupported vertex field type: <" & $T & ">".}
+
+proc enableVertexAttrib*(gl: OpenGl, index: int) =
+  gl.glEnableVertexAttribArray(index.GlUint)
+
+proc disableVertexAttrib*(gl: OpenGl, index: int) =
+  gl.glDisableVertexAttribArray(index.GlUint)
 
 proc deleteVertexArray*(gl: OpenGl, array: GlUint) =
   var array = array

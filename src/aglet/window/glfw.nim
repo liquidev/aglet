@@ -215,3 +215,5 @@ proc newWindowGlfw*(agl: Aglet, width, height: int, title: string,
 
   result.implWindow()
   result.eventHooks()
+
+  result.IMPL_loadGl()

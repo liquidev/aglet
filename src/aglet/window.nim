@@ -180,7 +180,10 @@ proc pollMouse*(win: Window): Vec2[float] =
   ## returns the current position regardless of the window's focus.
   result = win.pollMouseImpl(win)
 
-proc initGl(win: Window) =
+proc IMPL_loadGl*(win: Window) =
+  ## **Do not use this.**
+  ## Initializes the OpenGL context. This is called internally by
+  ## backend-specific constructors.
   win.gl = newGl()
   win.gl.load(win.getProcAddrImpl)
 
@@ -195,9 +198,6 @@ proc render*(win: Window): Frame =
   ## ``finish`` to stop rendering to the frame.
   assert win.agl.window.AgletWindow.frame == nil,
     "cannot render two frames at once; finish() the old frame first"
-
-  if win.gl == nil:
-    win.initGl()
 
   result = Frame(win: win, gl: win.gl)
   win.getDimensionsImpl(win, result.width, result.height)

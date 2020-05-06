@@ -17,7 +17,7 @@ var win = agl.newWindowGlfw(800, 600, "GLFW window test",
 
 const
   VertexShaderSrc = """
-    #vertex 330 core
+    #version 330 core
 
     in vec2 position;
 
@@ -26,7 +26,7 @@ const
     }
   """
   FragmentShaderSrc = """
-    #vertex 330 core
+    #version 330 core
 
     out vec4 fragmentColor;
 
@@ -35,7 +35,19 @@ const
     }
   """
 
-var prog = win.newProgram(VertexShaderSrc, FragmentShaderSrc)
+type
+  Vertex* = object
+    x, y: float32
+
+var
+  prog = win.newProgram(VertexShaderSrc, FragmentShaderSrc)
+  mesh = win.newArrayBuffer[:Vertex](abuStatic)
+
+mesh.uploadVertices [
+  Vertex(x: 1.0, y: 1.0),
+  Vertex(x: 0.0, y: 1.0),
+  Vertex(x: 1.0, y: 0.0),
+]
 
 while not win.closeRequested:
   var frame = win.render()
@@ -43,4 +55,4 @@ while not win.closeRequested:
   frame.finish()
 
   win.pollEvents do (ev: InputEvent):
-    echo ev
+    discard
