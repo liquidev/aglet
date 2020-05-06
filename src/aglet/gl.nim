@@ -1,7 +1,8 @@
 ## Abstract API for OpenGL.
 
-import macros
-import strutils
+import std/macros
+import std/options
+import std/strutils
 
 type
   # opengl types
@@ -41,18 +42,44 @@ type
   GlVoid* = pointer
 
   OpenGl* = ref object  ## the opengl API and state
+    # state
     sClearColor: tuple[r, g, b, a: GlClampf]
     sClearDepth: GlClampd
     sClearStencil: GlInt
     sFramebuffers: tuple[read, draw: GlUint]
     sViewport: tuple[x, y: GlInt, w, h: GlSizei]
 
+    # state functions
     glBindFramebuffer: proc (target: GLenum, framebuffer: GLuint) {.cdecl.}
     glClear: proc (targets: GlBitfield) {.cdecl.}
     glClearColor: proc (r, g, b, a: GlClampf) {.cdecl.}
     glClearDepth: proc (depth: GlClampd) {.cdecl.}
     glClearStencil: proc (stencil: GlInt) {.cdecl.}
     glViewport: proc (x, y: GlInt, width, height: GlSizei) {.cdecl.}
+
+    # commands
+    glAttachShader: proc (program, shader: GlUint) {.cdecl.}
+    glCompileShader: proc (shader: GlUint) {.cdecl.}
+    glCreateProgram: proc (): GlUint {.cdecl.}
+    glCreateShader: proc (shaderType: GlEnum): GlUint {.cdecl.}
+    glDeleteBuffers: proc (n: GlSizei,
+                           buffers: ptr UncheckedArray[GlUint]) {.cdecl.}
+    glDeleteProgram: proc (program: GlUint) {.cdecl.}
+    glDeleteShader: proc (shader: GlUint) {.cdecl.}
+    glGenBuffers: proc (n: GlSizei,
+                        buffers: ptr UncheckedArray[GlUint]) {.cdecl.}
+    glGetProgramInfoLog: proc (program: GlUint, maxLen: GlSizei,
+                               length: ptr GlSizei, infoLog: cstring) {.cdecl.}
+    glGetProgramiv: proc (program: GlUint, pname: GlEnum,
+                          params: ptr UncheckedArray[GlInt]) {.cdecl.}
+    glGetShaderInfoLog: proc (shader: GlUint, maxLen: GlSizei,
+                              length: ptr GlSizei, infoLog: cstring) {.cdecl.}
+    glGetShaderiv: proc (shader: GlUint, pname: GlEnum,
+                         params: ptr UncheckedArray[GlInt]) {.cdecl.}
+    glLinkProgram: proc (program: GlUint) {.cdecl.}
+    glShaderSource: proc (shader: GlUint, count: GlSizei,
+                          str: cstringArray,
+                          length: ptr UncheckedArray[GlInt]) {.cdecl.}
   FramebufferTarget* = enum
     ftRead, ftDraw
 
@@ -62,6 +89,12 @@ const
   GL_COLOR_BUFFER_BIT* = 0x4000
   GL_READ_FRAMEBUFFER* = 0x8CA8
   GL_DRAW_FRAMEBUFFER* = 0x8CA9
+  GL_FRAGMENT_SHADER* = 0x8B30
+  GL_VERTEX_SHADER* = 0x8B31
+  GL_GEOMETRY_SHADER* = 0x8DD9
+  GL_COMPILE_STATUS* = 0x8B81
+  GL_LINK_STATUS* = 0x8B82
+  GL_INFO_LOG_LENGTH* = 0x8B84
 
 when not defined(js):
   # desktop platforms
@@ -130,3 +163,61 @@ proc bindFramebuffer*(gl: OpenGl, targets: set[FramebufferTarget],
   if ftDraw in targets:
     updateDiff gl.sFramebuffers.draw, buffer:
       gl.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer)
+
+proc createShader*(gl: OpenGl, shaderType: GlEnum,
+                   source: string, outError: var string): Option[GlUint] =
+  var shader = gl.glCreateShader(shaderType)
+
+  var
+    cstr = allocCStringArray [source]
+    len = source.len.GlInt
+  gl.glShaderSource(shader, 1, cstr, cast[ptr UncheckedArray[GlInt]](addr len))
+  deallocCStringArray(cstr)
+
+  gl.glCompileShader(shader)
+  var compileSuccess: GlInt
+  gl.glGetShaderiv(shader, GL_COMPILE_STATUS,
+                   cast[ptr UncheckedArray[GlInt]](addr compileSuccess))
+  if not compileSuccess.bool:
+    var
+      errorLen: GlInt
+      logErrorLen: GlSizei
+    gl.glGetShaderiv(shader, GL_INFO_LOG_LENGTH,
+                     cast[ptr UncheckedArray[GlInt]](addr errorLen))
+    outError = newString(errorLen.Natural)
+    gl.glGetShaderInfoLog(shader, errorLen.GlSizei, addr logErrorLen,
+                          outError[0].unsafeAddr)
+
+    gl.glDeleteShader(shader)
+    result = GlUint.none
+  else:
+    result = some(shader)
+
+proc createProgram*(gl: OpenGl): GlUint =
+  result = gl.glCreateProgram()
+
+proc attachShader*(gl: OpenGl, program, shader: GlUint) =
+  gl.glAttachShader(program, shader)
+
+proc linkProgram*(gl: OpenGl, program: GlUint): Option[string] =
+  gl.glLinkProgram(program)
+  var linkSuccess: GlInt
+  gl.glGetProgramiv(program, GL_LINK_STATUS,
+                    cast[ptr UncheckedArray[GlInt]](addr linkSuccess))
+  if not linkSuccess.bool:
+    var
+      errorLen: GlInt
+      logErrorLen: GlSizei
+      errorStr: string
+    gl.glGetProgramiv(program, GL_INFO_LOG_LENGTH,
+                      cast[ptr UncheckedArray[GlInt]](addr errorLen))
+    errorStr = newString(errorLen.Natural)
+    gl.glGetShaderInfoLog(program, errorLen.GlSizei, addr logErrorLen,
+                          errorStr[0].unsafeAddr)
+    result = some(errorStr)
+
+proc deleteShader*(gl: OpenGl, shader: GlUint) =
+  gl.glDeleteShader(shader)
+
+proc deleteProgram*(gl: OpenGl, program: GlUint) =
+  gl.glDeleteProgram(program)

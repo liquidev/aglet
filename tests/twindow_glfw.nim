@@ -1,6 +1,7 @@
 import glm/vec
 import aglet/[
   input,
+  shaders,
   state,
   target,
   window,

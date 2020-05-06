@@ -1,3 +1,10 @@
+## Abstract window interface. This is implemented by the different backends,
+## which can be found under ``aglet/window/*``.
+##
+## This module contains some leaked implementation details; these are prefixed
+## with ``IMPL_`` and should not be used by user code. The "prelude" file
+## ``import aglet`` omits these procs.
+
 import glm/vec
 
 import gl
@@ -21,6 +28,9 @@ type
     glVersion*: tuple[major, minor: int]
     debugContext*: bool
   Window* = ref object of RootObj
+    ## A backend-independent window. This also contains the OpenGL context, so
+    ## resource allocation is done using this handle.
+
     agl*: Aglet
 
     # events
@@ -132,7 +142,7 @@ proc closeRequested*(win: Window): bool =
   ## Returns whether a window close request has been made.
   result = win.closeRequestedImpl(win)
 
-proc makeCurrent*(win: Window) =
+proc IMPL_makeCurrent*(win: Window) =
   ## **Do not use this.**
   ## Makes a window's context current. You should not use this in normal code.
   ## This is left as part of the public API, but it's an implementation detail
@@ -173,6 +183,11 @@ proc pollMouse*(win: Window): Vec2[float] =
 proc initGl(win: Window) =
   win.gl = newGl()
   win.gl.load(win.getProcAddrImpl)
+
+proc IMPL_getGlContext*(win: Window): OpenGl =
+  ## **Do not use this.**
+  ## Returns the raw OpenGL context for use in internal code.
+  result = win.gl
 
 proc render*(win: Window): Frame =
   ## Starts rendering a single frame of animation.

@@ -52,13 +52,13 @@ proc implWindow(win: WindowGlfw) =
     wing.processEvent = processEvent
     # XXX: hopefully this is enough to make polling *not* be global, but I'll
     # have to confirm this
-    wing.makeCurrent()
+    wing.IMPL_makeCurrent()
     glfwPollEvents()
 
   win.waitEventsImpl = proc (win: Window, processEvent: InputProc,
                              timeout: float) =
     wing.processEvent = processEvent
-    wing.makeCurrent()
+    wing.IMPL_makeCurrent()
     glfwWaitEventsTimeout(timeout.cdouble)
     glfwWaitEvents()
 
@@ -71,11 +71,11 @@ proc implWindow(win: WindowGlfw) =
     glfwMakeContextCurrent(wing.handle)
 
   win.getProcAddrImpl = proc (name: string): pointer =
-    win.makeCurrent()
+    win.IMPL_makeCurrent()
     result = cast[pointer](glfwGetProcAddress(name))
 
   win.setSwapIntervalImpl = proc (win: Window, interval: int) =
-    wing.makeCurrent()
+    wing.IMPL_makeCurrent()
     glfwSwapInterval(interval.cint)
 
   win.swapBuffersImpl = proc (win: Window) =
