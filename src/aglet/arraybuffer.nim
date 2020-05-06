@@ -60,23 +60,33 @@ macro vaoAttribsAux(gl: typed, T: typedesc): untyped =
   var index = 0
 
   let impl = T.getTypeImpl[1].getTypeImpl  # yay for typedesc
+  if impl.kind notin {nnkObjectTy, nnkTupleTy}:
+    error("vertex type must be an object or a tuple", T)
   for identDefs in impl[2]:
     let ty = identDefs[^2]
     for name in identDefs[0..^3]:
-      result.add(quote do:
-        vertexAttrib[`ty`](`gl`, `index`, sizeof(`T`), offsetof(`T`, `name`)))
+      let
+        genericInst = newTree(nnkBracketExpr, bindSym"vertexAttrib", ty)
+        call = newCall(genericInst, gl, newLit(index), newLit(sizeof(T)),
+                       newCall(bindSym"offsetof", T, name))
+      result.add(call)
       inc(index)
+
+  # as much as I don't like this, I don't think there's a better solution to
+  # return *both* some statements and a value from a macro
+  let countDecl = newVarStmt(ident"attribCount", newLit(index))
+  result.add(countDecl)
 
 proc updateVao[V](buffer: ArrayBuffer[V]) =
   if buffer.vao != 0:
     buffer.gl.deleteVertexArray(buffer.vao)
-  buffer.useVbo() 
+  buffer.useVbo()
   buffer.useEbo()
 
-  expandMacros:
-    vaoAttribsAux(buffer.gl, V)
-
+  vaoAttribsAux(buffer.gl, V)
   buffer.vao = buffer.gl.createVertexArray()
+  for index in 0..<attribCount:  # from vaoAttribsAux
+    buffer.gl.disableVertexAttrib(index)
 
 proc uploadVertices*[V](buffer: ArrayBuffer[V], data: openArray[V]) =
   ## Uploads vertex data to the vertex buffer of the given array buffer.

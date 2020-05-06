@@ -302,9 +302,11 @@ proc toGlEnum(T: typedesc): GlEnum =
   elif T is int32: GL_TINT
 
 proc vertexAttrib*[T](gl: OpenGl, index, stride, offset: int) =
+  # XXX: this proc uses literal uint32/int32 instead of the Gl* types because of
+  # symbol binding weirdness with macros
   when T is float32:
-    gl.glVertexAttribPointer(index.GlUint, 1, GL_TFLOAT,
-                             normalized = false, stride.GlSizei,
+    gl.glVertexAttribPointer(GlUint(index), 1, GL_TFLOAT,
+                             normalized = false, GlSizei(stride),
                              cast[pointer](offset))
   elif T is float64:
     # TODO: newer versions of OpenGL have this, but I'm yet to track down when
@@ -312,8 +314,8 @@ proc vertexAttrib*[T](gl: OpenGl, index, stride, offset: int) =
     # want to use float32
     {.error: "float64 is unsupported as a vertex field type, use float32".}
   elif T is SomeInteger and sizeof(T) <= 4:
-    gl.glVertexAttribIPointer(index.GlUint, 1, T.toGlEnum,
-                              stride.GlSizei, cast[pointer](offset))
+    gl.glVertexAttribIPointer(GlUint(index), 1, T.toGlEnum,
+                              GlSizei(stride), cast[pointer](offset))
   else:
     {.error: "unsupported vertex field type: <" & $T & ">".}
 
