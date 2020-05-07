@@ -8,7 +8,7 @@ type
   # opengl types
   GlBitfield* = uint32
   GlBool* = bool
-  Glbyte* = int8
+  GlByte* = int8
   GlChar* = char
   GlCharArb* = byte
   GlClampd* = float64
@@ -46,6 +46,10 @@ type
   BufferTarget* = enum
     btArray, btElementArray
 
+  VertexArray* = object
+    buffers: array[BufferTarget, GlUint]
+    id*: GlUint
+
   OpenGl* = ref object  ## the opengl API and state
     # state
     sBuffers: array[BufferTarget, GlUint]
@@ -53,15 +57,19 @@ type
     sClearDepth: GlClampd
     sClearStencil: GlInt
     sFramebuffers: tuple[read, draw: GlUint]
+    sProgram: GlUint
+    sVertexArray: GlUint
     sViewport: tuple[x, y: GlInt, w, h: GlSizei]
 
     # state functions
     glBindBuffer: proc (target: GLenum, buffer: GlUint) {.cdecl.}
     glBindFramebuffer: proc (target: GlEnum, framebuffer: GlUint) {.cdecl.}
+    glBindVertexArray: proc (array: GlUint) {.cdecl.}
     glClear: proc (targets: GlBitfield) {.cdecl.}
     glClearColor: proc (r, g, b, a: GlClampf) {.cdecl.}
     glClearDepth: proc (depth: GlClampd) {.cdecl.}
     glClearStencil: proc (stencil: GlInt) {.cdecl.}
+    glUseProgram: proc (program: GlUint) {.cdecl.}
     glViewport: proc (x, y: GlInt, width, height: GlSizei) {.cdecl.}
 
     # commands
@@ -127,6 +135,17 @@ const
   GL_TINT* = 0x1404
   GL_TUNSIGNED_INT* = 0x1405
   GL_TFLOAT* = 0x1406
+  GL_POINTS* = 0x0000
+  GL_LINES* = 0x0001
+  GL_LINE_LOOP* = 0x0002
+  GL_LINE_STRIP* = 0x0003
+  GL_TRIANGLES* = 0x0004
+  GL_TRIANGLE_STRIP* = 0x0005
+  GL_TRIANGLE_FAN* = 0x0006
+  GL_LINES_ADJACENCY* = 0x000A
+  GL_LINE_STRIP_ADJACENCY* = 0x000B
+  GL_TRIANGLES_ADJACENCY* = 0x000C
+  GL_TRIANGLE_STRIP_ADJACENCY* = 0x000D
 
 when not defined(js):
   # desktop platforms
@@ -139,7 +158,8 @@ when not defined(js):
     ## every one of the GL procs it uses, but it's a good opportunity to use
     ## some macro magic so it's not that bad.
 
-    const debug = defined(aglDebugLoader)
+    const
+      debug = defined(aglDebugLoader)
 
     macro genLoader(gl: OpenGl): untyped =
       result = newStmtList()
@@ -158,7 +178,7 @@ when not defined(js):
           result.add(asgn)
           when debug:
             let debugCall = quote:
-              stderr.writeLine "|agl|load| ", `procName`, ": ", `dot` != nil
+              stderr.writeLine "|agl/load| ", `procName`, ": ", `dot` != nil
               stderr.flushFile()
             result.add(debugCall)
 
@@ -183,6 +203,13 @@ template updateDiff(a, b, action: untyped) =
   if a != b:
     a = b
     action
+
+template updateDiff(a, b: untyped): bool =
+  if a != b:
+    a = b
+    true
+  else:
+    false
 
 proc viewport*(gl: OpenGl, x, y: GlInt, width, height: GlSizei) =
   updateDiff gl.sViewport, (x, y, width, height):
@@ -215,6 +242,18 @@ proc bindFramebuffer*(gl: OpenGl, targets: set[FramebufferTarget],
   if ftDraw in targets:
     updateDiff gl.sFramebuffers.draw, buffer:
       gl.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer)
+
+proc bindVertexArray*(gl: OpenGl, vao: VertexArray) =
+  var changed = false
+  for target in BufferTarget:
+    changed = changed or updateDiff(gl.sBuffers[target], vao.buffers[target])
+  if changed or gl.sVertexArray != vao.id:
+    gl.glBindVertexArray(vao.id)
+    gl.sVertexArray = vao.id
+
+proc useProgram*(gl: OpenGl, program: GlUint) =
+  updateDiff gl.sProgram, program:
+    gl.glUseProgram(program)
 
 proc createShader*(gl: OpenGl, shaderType: GlEnum,
                    source: string, outError: var string): Option[GlUint] =
@@ -290,8 +329,9 @@ proc deleteBuffer*(gl: OpenGl, buffer: GlUint) =
   var buffer = buffer
   gl.glDeleteBuffers(1, cast[ptr UncheckedArray[GlUint]](addr buffer))
 
-proc createVertexArray*(gl: OpenGl): GlUint =
-  gl.glGenVertexArrays(1, cast[ptr UncheckedArray[GlUint]](addr result))
+proc createVertexArray*(gl: OpenGl): VertexArray =
+  result.buffers = gl.sBuffers
+  gl.glGenVertexArrays(1, cast[ptr UncheckedArray[GlUint]](addr result.id))
 
 proc toGlEnum(T: typedesc): GlEnum =
   when T is uint8: GL_TUNSIGNED_BYTE
@@ -325,6 +365,6 @@ proc enableVertexAttrib*(gl: OpenGl, index: int) =
 proc disableVertexAttrib*(gl: OpenGl, index: int) =
   gl.glDisableVertexAttribArray(index.GlUint)
 
-proc deleteVertexArray*(gl: OpenGl, array: GlUint) =
+proc deleteVertexArray*(gl: OpenGl, array: VertexArray) =
   var array = array
-  gl.glDeleteVertexArrays(1, cast[ptr UncheckedArray[GlUint]](addr array))
+  gl.glDeleteVertexArrays(1, cast[ptr UncheckedArray[GlUint]](addr array.id))

@@ -1,12 +1,5 @@
-import aglet/[
-  arraybuffer,
-  input,
-  program,
-  state,
-  target,
-  window,
-  window/glfw,
-]
+import aglet
+import aglet/window/glfw
 import glm/vec
 
 var agl = initAglet()
@@ -19,10 +12,11 @@ const
   VertexShaderSrc = """
     #version 330 core
 
-    in vec2 position;
+    layout (location = 0) in float x;
+    layout (location = 1) in float y;
 
     void main(void) {
-      gl_Position = vec4(position, 0.0, 1.0);
+      gl_Position = vec4(x, y, 0.0, 1.0);
     }
   """
   FragmentShaderSrc = """
@@ -41,7 +35,7 @@ type
 
 var
   prog = win.newProgram(VertexShaderSrc, FragmentShaderSrc)
-  mesh = win.newArrayBuffer[:Vertex](abuStatic)
+  mesh = win.newMesh[:Vertex](abuStatic)
 
 mesh.uploadVertices [
   Vertex(x: 1.0, y: 1.0),
@@ -51,7 +45,10 @@ mesh.uploadVertices [
 
 while not win.closeRequested:
   var frame = win.render()
+
   frame.clearColor(vec4f(0.0, 0.0, 1.0, 1.0))
+  frame.draw(prog, mesh)
+
   frame.finish()
 
   win.pollEvents do (ev: InputEvent):

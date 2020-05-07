@@ -5,10 +5,10 @@ import std/options
 import gl
 import window
 
+import program_base
+export program_base
+
 type
-  Program* = ref object
-    gl: OpenGl
-    id: GlUint
   ShaderError* = object of ValueError
 
 proc newProgram(gl: OpenGl, vertexSrc, fragmentSrc: string,
