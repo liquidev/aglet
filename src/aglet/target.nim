@@ -2,7 +2,6 @@
 
 import glm/vec
 
-import drawable
 import program_base
 import gl
 
@@ -10,9 +9,8 @@ type
   Target* = ref object of RootObj
     useImpl*: proc (target: Target, gl: OpenGl)
     gl*: OpenGl  ## do not use directly
-  Drawable* = concept source, gl
-    gl is OpenGl
-    draw(source, gl) is void
+  Drawable*[T] {.explain.} = concept source
+    source.draw(OpenGl)
 
 proc use(target: Target) =
   target.useImpl(target, target.gl)
