@@ -60,11 +60,11 @@ proc toGlEnum(dp: DrawPrimitive): GlEnum =
   of dpTriangleStripAdjacency: GL_TRIANGLE_STRIP_ADJACENCY
   of dpTriangleFan: GL_TRIANGLE_FAN
 
-proc vboCapacity*(mesh: Mesh): Natural =
+proc vboCapacity*(mesh: Mesh): int =
   ## Returns the capacity of the mesh's VBO.
   mesh.vboCap
 
-proc vboLen*(mesh: Mesh): Natural =
+proc vboLen*(mesh: Mesh): int =
   ## Returns the length of the mesh's VBO.
   mesh.fVboLen
 
@@ -72,11 +72,11 @@ proc hasEbo*(mesh: Mesh): bool =
   ## Returns whether the mesh has an EBO allocated.
   mesh.ebo != 0
 
-proc eboCapacity*(mesh: Mesh): Natural =
+proc eboCapacity*(mesh: Mesh): int =
   ## Returns the capacity of the mesh's EBO.
   mesh.eboCap
 
-proc eboLen*(mesh: Mesh): Natural =
+proc eboLen*(mesh: Mesh): int =
   ## Returns the length of the mesh's EBO.
   mesh.fEboLen
 
@@ -84,12 +84,12 @@ proc primitive*(mesh: Mesh): DrawPrimitive =
   ## Returns what primitive the mesh is built from.
   mesh.fPrimitive
 
-proc vertexCount*(mesh: Mesh): Natural =
+proc vertexCount*(mesh: Mesh): int =
   ## Returns the total amount of vertices that can be drawn using the mesh.
   if mesh.hasEbo: mesh.eboLen
   else: mesh.vboLen
 
-proc primitiveCount*(mesh: Mesh): Natural =
+proc primitiveCount*(mesh: Mesh): int =
   ## Returns how many primitives the mesh contains.
   let verts = mesh.vertexCount
   case mesh.primitive
@@ -243,21 +243,22 @@ proc updateIndices*[I: IndexType](mesh: Mesh, pos: Natural,
                         data[low(data)].unsafeAddr)
   mesh.fEboLen = max(mesh.fEboLen, pos + data.len)
 
-proc `[]`*[V](mesh: Mesh[V], range: Slice[Natural]): MeshSlice[V] =
+proc `[]`*[V](mesh: Mesh[V], range: Slice[int]): MeshSlice[V] =
   ## Returns a MeshSlice for rendering only specified parts (slices)
   ## of the mesh. The specified bounds refer to vertex indices.
   assert range.a <= range.b,
     "first (lower) bound must be greater than the second (higher) bound"
   assert range.a < mesh.vertexCount, "lower index out of range"
   assert range.b < mesh.vertexCount, "higher index out of range"
-  result = MeshSlice(mesh: mesh, slice: range)
+  result = MeshSlice[V](mesh: mesh, slice: range.a.Natural..range.b.Natural)
 
 proc draw*(slice: MeshSlice, gl: OpenGl) =
   ## **Do not use this directly, see ``target.draw``**
   slice.mesh.use()
 
-proc draw*(mesh: Mesh, gl: OpenGl) =
-  discard
+converter allVertices*[V](mesh: Mesh[V]): MeshSlice[V] =
+  ## Implicit converter to avoid having to use ``
+  result = mesh[0..<mesh.vertexCount]
 
 proc newMesh*[V](win: Window, usage: MeshUsage): Mesh[V] =
   let gl = win.IMPL_getGlContext()

@@ -9,8 +9,8 @@ type
   Target* = ref object of RootObj
     useImpl*: proc (target: Target, gl: OpenGl)
     gl*: OpenGl  ## do not use directly
-  Drawable*[T] {.explain.} = concept source
-    source.draw(OpenGl)
+  Drawable* = concept x
+    x.draw(OpenGl)
 
 proc use(target: Target) =
   target.useImpl(target, target.gl)
@@ -19,15 +19,17 @@ proc clearColor*(target: Target, col: Vec4f) =
   target.use()
   target.gl.clearColor(col.r, col.g, col.b, col.a)
 
-proc clearDepth*(target: Target, depth: float64) =
+proc clearDepth*(target: Target, depth: float32) =
   target.use()
   target.gl.clearDepth(depth)
 
-proc clearStencil*(target: Target, stencil: int) =
+proc clearStencil*(target: Target, stencil: int32) =
   target.use()
   target.gl.clearStencil(stencil.GlInt)
 
 proc draw*[D: Drawable](target: Target, program: Program, source: D) =
+  mixin draw
+
   target.use()
   program.IMPL_use()
   source.draw(target.gl)
