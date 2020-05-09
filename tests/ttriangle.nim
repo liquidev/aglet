@@ -8,6 +8,8 @@ agl.initWindow()
 var win = agl.newWindowGlfw(800, 600, "GLFW window test",
                             winHints(resizable = false))
 
+win.swapInterval = 1
+
 const
   VertexShaderSrc = """
     #version 330 core
@@ -35,12 +37,12 @@ type
 
 var
   prog = win.newProgram(VertexShaderSrc, FragmentShaderSrc)
-  mesh = win.newMesh[:Vertex](abuStatic)
+  mesh = win.newMesh[:Vertex](abuStatic, dpTriangles)
 
 mesh.uploadVertices [
-  Vertex(x: 1.0, y: 1.0),
-  Vertex(x: 0.0, y: 1.0),
-  Vertex(x: 1.0, y: 0.0),
+  Vertex(x: 0.0,  y: 0.5),
+  Vertex(x: -0.5, y: -0.5),
+  Vertex(x: 0.5,  y: -0.5),
 ]
 
 while not win.closeRequested:

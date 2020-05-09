@@ -91,7 +91,7 @@ proc implWindow(win: WindowGlfw) =
     var cw, ch: cint
     glfwGetWindowSize(wing.handle, addr cw, addr ch)
     w = cw.int
-    h = cw.int
+    h = ch.int
 
 proc toModKeySet(bits: cint): set[ModKey] =
   if (bits and GLFW_MOD_SHIFT) != 0: result.incl(mkShift)

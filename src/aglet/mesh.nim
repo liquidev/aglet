@@ -26,7 +26,7 @@ type
     fPrimitive: DrawPrimitive
   MeshSlice*[V] = object
     mesh: Mesh[V]
-    slice: Slice[Natural]
+    range: Slice[Natural]
 
   MeshUsage* = enum
     abuStream   ## mesh is initialized once and used a few times
@@ -84,6 +84,10 @@ proc primitive*(mesh: Mesh): DrawPrimitive =
   ## Returns what primitive the mesh is built from.
   mesh.fPrimitive
 
+proc `primitive=`*(mesh: Mesh, newPrimitive: DrawPrimitive) =
+  ## Changes what primitive the mesh is built from.
+  mesh.fPrimitive = newPrimitive
+
 proc vertexCount*(mesh: Mesh): int =
   ## Returns the total amount of vertices that can be drawn using the mesh.
   if mesh.hasEbo: mesh.eboLen
@@ -140,14 +144,12 @@ proc updateVao[V](mesh: Mesh[V]) =
   mesh.useVbo()
   mesh.useEbo()
 
+  mesh.vao = mesh.gl.createVertexArray()
+  mesh.use()
+
   vaoAttribsAux(mesh.gl, V)
   for index in 0..<attribCount:  # from vaoAtrribsAux
     mesh.gl.enableVertexAttrib(index)
-
-  mesh.vao = mesh.gl.createVertexArray()
-
-  for index in 0..<attribCount:
-    mesh.gl.disableVertexAttrib(index)
 
 proc uploadVertices*[V](mesh: Mesh[V], data: openArray[V]) =
   ## Uploads vertex data to the vertex buffer of the given mesh.
@@ -161,6 +163,7 @@ proc uploadVertices*[V](mesh: Mesh[V], data: openArray[V]) =
   mesh.useVbo()
 
   let dataSize = data.len * sizeof(V)
+  echo data
   if mesh.vboCap < data.len:
     mesh.gl.bufferData(btArray, dataSize, data[low(data)].unsafeAddr,
                        mesh.usage)
@@ -250,17 +253,24 @@ proc `[]`*[V](mesh: Mesh[V], range: Slice[int]): MeshSlice[V] =
     "first (lower) bound must be greater than the second (higher) bound"
   assert range.a < mesh.vertexCount, "lower index out of range"
   assert range.b < mesh.vertexCount, "higher index out of range"
-  result = MeshSlice[V](mesh: mesh, slice: range.a.Natural..range.b.Natural)
+  result = MeshSlice[V](mesh: mesh, range: range.a.Natural..range.b.Natural)
 
 proc draw*(slice: MeshSlice, gl: OpenGl) =
-  ## **Do not use this directly, see ``target.draw``**
+  ## ``Drawable`` implementation for ``target.draw``, do not use directly.
   slice.mesh.use()
+  if slice.mesh.hasEbo:
+    discard  # TODO EBOs
+  else:
+    gl.drawArrays(slice.mesh.primitive.toGlEnum,
+                  slice.range.a, 1 + slice.range.b - slice.range.a)
 
 converter allVertices*[V](mesh: Mesh[V]): MeshSlice[V] =
-  ## Implicit converter to avoid having to use ``
+  ## Implicit converter to avoid having to use ``mesh[0..<mesh.vertexCount]``
+  ## when attempting to draw something.
   result = mesh[0..<mesh.vertexCount]
 
-proc newMesh*[V](win: Window, usage: MeshUsage): Mesh[V] =
+proc newMesh*[V](win: Window, usage: MeshUsage,
+                 primitive: DrawPrimitive): Mesh[V] =
   let gl = win.IMPL_getGlContext()
   new(result) do (mesh: Mesh[V]):
     mesh.gl.deleteBuffer(mesh.vbo)
@@ -272,3 +282,4 @@ proc newMesh*[V](win: Window, usage: MeshUsage): Mesh[V] =
     of abuStream: GL_STREAM_DRAW
     of abuStatic: GL_STATIC_DRAW
     of abuDynamic: GL_DYNAMIC_DRAW
+  result.primitive = primitive

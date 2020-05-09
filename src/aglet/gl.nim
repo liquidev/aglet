@@ -16,7 +16,7 @@ type
   GlClampx* = int32
   GlDouble* = float64
   GlEglImageOes* = distinct pointer
-  GlEnum* = uint32
+  GlEnum* = distinct uint32
   GlFixed* = int32
   GlFloat* = float32
   GlHalf* = uint16
@@ -88,6 +88,7 @@ type
     glDeleteVertexArrays: proc (n: GlSizei,
                                 arrays: ptr UncheckedArray[GlUint]) {.cdecl.}
     glDisableVertexAttribArray: proc (index: GlUint) {.cdecl.}
+    glDrawArrays: proc (mode: GlEnum, first: GlInt, count: GlSizei) {.cdecl.}
     glEnableVertexAttribArray: proc (index: GlUint) {.cdecl.}
     glGenBuffers: proc (n: GlSizei,
                         buffers: ptr UncheckedArray[GlUint]) {.cdecl.}
@@ -112,40 +113,40 @@ type
                                   stride: GlSizei, point: pointer) {.cdecl.}
 
 const
-  GL_DEPTH_BUFFER_BIT* = 0x100
-  GL_STENCIL_BUFFER_BIT* = 0x400
-  GL_COLOR_BUFFER_BIT* = 0x4000
-  GL_READ_FRAMEBUFFER* = 0x8CA8
-  GL_DRAW_FRAMEBUFFER* = 0x8CA9
-  GL_FRAGMENT_SHADER* = 0x8B30
-  GL_VERTEX_SHADER* = 0x8B31
-  GL_GEOMETRY_SHADER* = 0x8DD9
-  GL_COMPILE_STATUS* = 0x8B81
-  GL_LINK_STATUS* = 0x8B82
-  GL_INFO_LOG_LENGTH* = 0x8B84
-  GL_ARRAY_BUFFER* = 0x8892
-  GL_ELEMENT_ARRAY_BUFFER* = 0x8893
-  GL_STREAM_DRAW* = 0x88E0
-  GL_STATIC_DRAW* = 0x88E4
-  GL_DYNAMIC_DRAW* = 0x88E8
-  GL_TBYTE* = 0x1400
-  GL_TUNSIGNED_BYTE* = 0x1401
-  GL_TSHORT* = 0x1402
-  GL_TUNSIGNED_SHORT* = 0x1403
-  GL_TINT* = 0x1404
-  GL_TUNSIGNED_INT* = 0x1405
-  GL_TFLOAT* = 0x1406
-  GL_POINTS* = 0x0000
-  GL_LINES* = 0x0001
-  GL_LINE_LOOP* = 0x0002
-  GL_LINE_STRIP* = 0x0003
-  GL_TRIANGLES* = 0x0004
-  GL_TRIANGLE_STRIP* = 0x0005
-  GL_TRIANGLE_FAN* = 0x0006
-  GL_LINES_ADJACENCY* = 0x000A
-  GL_LINE_STRIP_ADJACENCY* = 0x000B
-  GL_TRIANGLES_ADJACENCY* = 0x000C
-  GL_TRIANGLE_STRIP_ADJACENCY* = 0x000D
+  GL_DEPTH_BUFFER_BIT* = GlEnum(0x100)
+  GL_STENCIL_BUFFER_BIT* = GlEnum(0x400)
+  GL_COLOR_BUFFER_BIT* = GlEnum(0x4000)
+  GL_READ_FRAMEBUFFER* = GlEnum(0x8CA8)
+  GL_DRAW_FRAMEBUFFER* = GlEnum(0x8CA9)
+  GL_FRAGMENT_SHADER* = GlEnum(0x8B30)
+  GL_VERTEX_SHADER* = GlEnum(0x8B31)
+  GL_GEOMETRY_SHADER* = GlEnum(0x8DD9)
+  GL_COMPILE_STATUS* = GlEnum(0x8B81)
+  GL_LINK_STATUS* = GlEnum(0x8B82)
+  GL_INFO_LOG_LENGTH* = GlEnum(0x8B84)
+  GL_ARRAY_BUFFER* = GlEnum(0x8892)
+  GL_ELEMENT_ARRAY_BUFFER* = GlEnum(0x8893)
+  GL_STREAM_DRAW* = GlEnum(0x88E0)
+  GL_STATIC_DRAW* = GlEnum(0x88E4)
+  GL_DYNAMIC_DRAW* = GlEnum(0x88E8)
+  GL_TBYTE* = GlEnum(0x1400)
+  GL_TUNSIGNED_BYTE* = GlEnum(0x1401)
+  GL_TSHORT* = GlEnum(0x1402)
+  GL_TUNSIGNED_SHORT* = GlEnum(0x1403)
+  GL_TINT* = GlEnum(0x1404)
+  GL_TUNSIGNED_INT* = GlEnum(0x1405)
+  GL_TFLOAT* = GlEnum(0x1406)
+  GL_POINTS* = GlEnum(0x0000)
+  GL_LINES* = GlEnum(0x0001)
+  GL_LINE_LOOP* = GlEnum(0x0002)
+  GL_LINE_STRIP* = GlEnum(0x0003)
+  GL_TRIANGLES* = GlEnum(0x0004)
+  GL_TRIANGLE_STRIP* = GlEnum(0x0005)
+  GL_TRIANGLE_FAN* = GlEnum(0x0006)
+  GL_LINES_ADJACENCY* = GlEnum(0x000A)
+  GL_LINE_STRIP_ADJACENCY* = GlEnum(0x000B)
+  GL_TRIANGLES_ADJACENCY* = GlEnum(0x000C)
+  GL_TRIANGLE_STRIP_ADJACENCY* = GlEnum(0x000D)
 
 when not defined(js):
   # desktop platforms
@@ -218,17 +219,17 @@ proc viewport*(gl: OpenGl, x, y: GlInt, width, height: GlSizei) =
 proc clearColor*(gl: OpenGl, r, g, b, a: GlClampf) =
   updateDiff gl.sClearColor, (r, g, b, a):
     gl.glClearColor(r, g, b, a)
-  gl.glClear(GL_COLOR_BUFFER_BIT)
+  gl.glClear(GL_COLOR_BUFFER_BIT.GlBitfield)
 
 proc clearDepth*(gl: OpenGl, depth: GlClampd) =
   updateDiff gl.sClearDepth, depth:
     gl.glClearDepth(depth)
-  gl.glClear(GL_DEPTH_BUFFER_BIT)
+  gl.glClear(GL_DEPTH_BUFFER_BIT.GlBitfield)
 
 proc clearStencil*(gl: OpenGl, stencil: GlInt) =
   updateDiff gl.sClearStencil, stencil:
     gl.glClearStencil(stencil)
-  gl.glClear(GL_DEPTH_BUFFER_BIT)
+  gl.glClear(GL_DEPTH_BUFFER_BIT.GlBitfield)
 
 proc bindBuffer*(gl: OpenGl, target: BufferTarget, buffer: GlUint) =
   updateDiff gl.sBuffers[target], buffer:
@@ -368,3 +369,6 @@ proc disableVertexAttrib*(gl: OpenGl, index: int) =
 proc deleteVertexArray*(gl: OpenGl, array: VertexArray) =
   var array = array
   gl.glDeleteVertexArrays(1, cast[ptr UncheckedArray[GlUint]](addr array.id))
+
+proc drawArrays*(gl: OpenGl, primitive: GlEnum, start, count: int) =
+  gl.glDrawArrays(primitive, start.GlInt, count.GlSizei)
