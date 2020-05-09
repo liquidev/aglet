@@ -14,11 +14,10 @@ const
   VertexShaderSrc = """
     #version 330 core
 
-    layout (location = 0) in float x;
-    layout (location = 1) in float y;
+    layout (location = 0) in vec2 position;
 
     void main(void) {
-      gl_Position = vec4(x, y, 0.0, 1.0);
+      gl_Position = vec4(position, 0.0, 1.0);
     }
   """
   FragmentShaderSrc = """
@@ -33,16 +32,16 @@ const
 
 type
   Vertex* = object
-    x, y: float32
+    position: Vec2f
 
 var
   prog = win.newProgram(VertexShaderSrc, FragmentShaderSrc)
   mesh = win.newMesh[:Vertex](abuStatic, dpTriangles)
 
 mesh.uploadVertices [
-  Vertex(x: 0.0,  y: 0.5),
-  Vertex(x: -0.5, y: -0.5),
-  Vertex(x: 0.5,  y: -0.5),
+  Vertex(position: vec2f(0.0,  0.5)),
+  Vertex(position: vec2f(-0.5, -0.5)),
+  Vertex(position: vec2f(0.5,  -0.5)),
 ]
 
 while not win.closeRequested:

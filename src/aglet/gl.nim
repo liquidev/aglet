@@ -4,6 +4,8 @@ import std/macros
 import std/options
 import std/strutils
 
+import glm/vec
+
 type
   # opengl types
   GlBitfield* = uint32
@@ -345,17 +347,25 @@ proc toGlEnum(T: typedesc): GlEnum =
 proc vertexAttrib*[T](gl: OpenGl, index, stride, offset: int) =
   # XXX: this proc uses literal uint32/int32 instead of the Gl* types because of
   # symbol binding weirdness with macros
-  when T is float32:
-    gl.glVertexAttribPointer(GlUint(index), 1, GL_TFLOAT,
+  when T is Vec:
+    type TT = default(T).T
+  else:
+    type TT = T
+  const
+    N =
+      when T is Vec: default(T).N
+      else: 1
+  when TT is float32:
+    gl.glVertexAttribPointer(GlUint(index), N, GL_TFLOAT,
                              normalized = false, GlSizei(stride),
                              cast[pointer](offset))
-  elif T is float64:
+  elif TT is float64:
     # TODO: newer versions of OpenGL have this, but I'm yet to track down when
     # it was introduced. still, it's a performance trap and you most likely
     # want to use float32
     {.error: "float64 is unsupported as a vertex field type, use float32".}
-  elif T is SomeInteger and sizeof(T) <= 4:
-    gl.glVertexAttribIPointer(GlUint(index), 1, T.toGlEnum,
+  elif TT is SomeInteger and sizeof(TT) <= 4:
+    gl.glVertexAttribIPointer(GlUint(index), N, T.toGlEnum,
                               GlSizei(stride), cast[pointer](offset))
   else:
     {.error: "unsupported vertex field type: <" & $T & ">".}
