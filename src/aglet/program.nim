@@ -1,5 +1,6 @@
 ## Vertex/fragment/geometry shaders and shader programs.
 
+import std/macros
 import std/options
 
 import gl
@@ -11,10 +12,24 @@ export program_base
 type
   ShaderError* = object of ValueError
 
-proc newProgram(gl: OpenGl, vertexSrc, fragmentSrc: string,
-                geometrySrc = ""): Program =
+macro bindAttribLocations(gl: OpenGl, program: GlUint, T: typedesc): untyped =
+  result = newStmtList()
 
-  new(result) do (program: Program):
+  var index = 0
+  let impl = T.getTypeImpl[1].getTypeImpl
+  for identDefs in impl[2]:
+    for name in identDefs[0..^3]:
+      let
+        indexLit = newLit(index)
+        nameLit = newLit(name.repr)
+      result.add(quote do:
+        bindAttribLocation(`gl`, `program`, `indexLit`, `nameLit`))
+      inc(index)
+
+proc newProgram[V](gl: OpenGl, vertexSrc, fragmentSrc: string,
+                   geometrySrc = ""): Program[V] =
+
+  new(result) do (program: Program[V]):
     # delete the program when its lifetime is over
     program.gl.deleteProgram(program.id)
 
@@ -43,6 +58,9 @@ proc newProgram(gl: OpenGl, vertexSrc, fragmentSrc: string,
     geometry = maybeShader.get
     gl.attachShader(result.id, maybeShader.get)
 
+  # bind attribute locations
+  gl.bindAttribLocations(result.id, V)
+
   # link the program
   let linkError = gl.linkProgram(result.id)
 
@@ -55,12 +73,12 @@ proc newProgram(gl: OpenGl, vertexSrc, fragmentSrc: string,
   if linkError.isSome:
     raise newException(ShaderError, "link failed: " & linkError.get)
 
-proc newProgram*(win: Window, vertexSrc, fragmentSrc: string,
-                 geometrySrc = ""): Program =
+proc newProgram*[V](win: Window, vertexSrc, fragmentSrc: string,
+                    geometrySrc = ""): Program[V] =
   ## Creates a new shader program from the given vertex and fragment shader
   ## source code. If the geometry shader's source code is not empty, it will
   ## also be compiled and linked.
   ## This can raise a ``ShaderError`` if any of the shaders fails to compile, or
   ## the program fails to link.
   var gl = win.IMPL_getGlContext()
-  result = gl.newProgram(vertexSrc, fragmentSrc, geometrySrc)
+  result = gl.newProgram[:V](vertexSrc, fragmentSrc, geometrySrc)

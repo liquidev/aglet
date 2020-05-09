@@ -1,7 +1,7 @@
 import gl
 
 type
-  Program* = ref object
+  Program*[V] = ref object
     gl*: OpenGl  ## do not use these fields
     id*: GlUint
 

@@ -76,6 +76,7 @@ type
 
     # commands
     glAttachShader: proc (program, shader: GlUint) {.cdecl.}
+    glBindAttribLocation: proc (program, index: GlUint, name: cstring) {.cdecl.}
     glBufferData: proc (target: GlEnum, size: GlSizeiptr, data: pointer,
                         usage: GlEnum) {.cdecl.}
     glBufferSubData: proc (target: GlEnum, offset: GlIntptr, size: GlSizeiptr,
@@ -292,6 +293,10 @@ proc createProgram*(gl: OpenGl): GlUint =
 
 proc attachShader*(gl: OpenGl, program, shader: GlUint) =
   gl.glAttachShader(program, shader)
+
+proc bindAttribLocation*(gl: OpenGl, program: GlUint,
+                         index: Natural, name: string) =
+  gl.glBindAttribLocation(program, index.GlUint, name)
 
 proc linkProgram*(gl: OpenGl, program: GlUint): Option[string] =
   gl.glLinkProgram(program)
