@@ -4,7 +4,12 @@ import std/macros
 import std/options
 import std/strutils
 
+import glm/mat
 import glm/vec
+export mat
+export vec
+
+import uniform
 
 type
   # opengl types
@@ -51,6 +56,15 @@ type
   VertexArray* = object
     buffers: array[BufferTarget, GlUint]
     id*: GlUint
+
+  UniformfvProc = proc (location: GlInt, count: GlSizei,
+                        value: ptr GlFloat) {.cdecl.}
+  UniformivProc = proc (location: GlInt, count: GlSizei,
+                        value: ptr GlInt) {.cdecl.}
+  UniformuivProc = proc (location: GlInt, count: GlSizei,
+                         value: ptr GlUint) {.cdecl.}
+  MatrixProc = proc (location: GlInt, count: GlSizei, transpose: GlBool,
+                     value: ptr GlFloat) {.cdecl.}
 
   OpenGl* = ref object  ## the opengl API and state
     # state
@@ -105,10 +119,18 @@ type
                               length: ptr GlSizei, infoLog: cstring) {.cdecl.}
     glGetShaderiv: proc (shader: GlUint, pname: GlEnum,
                          params: ptr UncheckedArray[GlInt]) {.cdecl.}
+    glGetUniformLocation: proc (program: GlUint, name: cstring): GlInt {.cdecl.}
     glLinkProgram: proc (program: GlUint) {.cdecl.}
     glShaderSource: proc (shader: GlUint, count: GlSizei,
                           str: cstringArray,
                           length: ptr UncheckedArray[GlInt]) {.cdecl.}
+    glUniform1fv, glUniform2fv, glUniform3fv, glUniform4fv: UniformfvProc
+    glUniform1iv, glUniform2iv, glUniform3iv, glUniform4iv: UniformivProc
+    glUniform1uiv, glUniform2uiv, glUniform3uiv, glUniform4uiv: UniformuivProc
+    glUniformMatrix2fv, glUniformMatrix3fv, glUniformMatrix4fv,
+      glUniformMatrix2x3fv, glUniformMatrix3x2fv,
+      glUniformMatrix2x4fv, glUniformMatrix4x2fv,
+      glUniformMatrix3x4fv, glUniformMatrix4x3fv: MatrixProc
     glVertexAttribPointer: proc (index: GlUint, size: GlInt, typ: GlEnum,
                                  normalized: bool, stride: GlSizei,
                                  point: pointer) {.cdecl.}
@@ -169,22 +191,21 @@ when not defined(js):
       result = newStmtList()
       var fields = bindSym"OpenGl".getImpl[2][0][2]
       for defs in fields:
-        let
-          procNameSym = defs[0]
-          procName = procNameSym.repr
-          procTy = defs[1]
-        if procName.startsWith("gl"):
-          let
-            dot = newDotExpr(gl, procNameSym)
-            getAddrCall = newCall("getProcAddr", newLit(procName))
-            conv = newTree(nnkCast, procTy, getAddrCall)
-            asgn = newAssignment(dot, conv)
-          result.add(asgn)
-          when debug:
-            let debugCall = quote:
-              stderr.writeLine "|agl/load| ", `procName`, ": ", `dot` != nil
-              stderr.flushFile()
-            result.add(debugCall)
+        let procTy = defs[^2]
+        for procNameSym in defs[0..^3]:
+          let procName = procNameSym.repr
+          if procName.startsWith("gl"):
+            let
+              dot = newDotExpr(gl, procNameSym)
+              getAddrCall = newCall("getProcAddr", newLit(procName))
+              conv = newTree(nnkCast, procTy, getAddrCall)
+              asgn = newAssignment(dot, conv)
+            result.add(asgn)
+            when debug:
+              let debugCall = quote:
+                stderr.writeLine "|agl/load| ", `procName`, ": ", `dot` != nil
+                stderr.flushFile()
+              result.add(debugCall)
 
     when debug:
       expandMacros:
@@ -314,6 +335,18 @@ proc linkProgram*(gl: OpenGl, program: GlUint): Option[string] =
     gl.glGetShaderInfoLog(program, errorLen.GlSizei, addr logErrorLen,
                           errorStr[0].unsafeAddr)
     result = some(errorStr)
+
+proc getUniformLocation*(gl: OpenGl, program: GlUint, name: string): GlInt =
+  gl.glGetUniformLocation(program, name)
+
+proc uniform*(gl: OpenGl, program: GlUint, loc: GlInt,
+              u: Uniform | UniformArray) =
+  let n =
+    when u is Uniform: 1
+    elif u is UniformArray: u.vals.len
+
+  case u.ty
+  of utFloat32: gl.glUniform1fv
 
 proc deleteShader*(gl: OpenGl, shader: GlUint) =
   gl.glDeleteShader(shader)

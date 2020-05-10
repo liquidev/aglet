@@ -1,3 +1,6 @@
+import glm/mat
+import glm/vec
+
 import aglet/[
   input,
   mesh,
@@ -13,3 +16,6 @@ export program except IMPL_use
 export state
 export target
 export window except IMPL_makeCurrent, IMPL_loadGl, IMPL_getGlContext
+
+export mat
+export vec

@@ -2,6 +2,7 @@
 
 import std/macros
 import std/options
+import std/tables
 
 import gl
 import window
@@ -25,6 +26,18 @@ macro bindAttribLocations(gl: OpenGl, program: GlUint, T: typedesc): untyped =
       result.add(quote do:
         bindAttribLocation(`gl`, `program`, `indexLit`, `nameLit`))
       inc(index)
+
+proc IMPL_setUniform*[T](program: Program, name: string, value: T) =
+  program.IMPL_use()
+  let index =
+    if name in program.uniformLocationCache:
+      program.uniformLocationCache[name]
+    else:
+      let i = program.gl.getUniformLocation(program.id, name)
+      assert i != -1, "uniform '" & name & "' does not exist"
+      program.uniformLocationCache[name] = i
+      i
+  program.gl.uniform(program.id, index, value)
 
 proc newProgram[V](gl: OpenGl, vertexSrc, fragmentSrc: string,
                    geometrySrc = ""): Program[V] =

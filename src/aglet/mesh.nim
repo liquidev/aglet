@@ -121,7 +121,7 @@ proc useEbo(mesh: Mesh) =
 proc use(mesh: Mesh) =
   mesh.gl.bindVertexArray(mesh.vao)
 
-macro vaoAttribsAux(gl: typed, T: typedesc): untyped =
+macro vaoAttribsAux(gl: typed, T: typedesc, attrCount: typed): untyped =
   result = newStmtList()
 
   var index = 0
@@ -134,8 +134,7 @@ macro vaoAttribsAux(gl: typed, T: typedesc): untyped =
         vertexAttrib[`ty`](`gl`, `index`, sizeof(`T`), offsetof(`T`, `name`)))
       inc(index)
 
-  let countVar = newVarStmt(ident"attribCount", newLit(index))
-  result.add(countVar)
+  result.add(newAssignment(attrCount, newLit(index)))
 
 proc updateVao[V](mesh: Mesh[V]) =
   if mesh.vao.id != 0:
@@ -147,7 +146,8 @@ proc updateVao[V](mesh: Mesh[V]) =
   mesh.vao = mesh.gl.createVertexArray()
   mesh.use()
 
-  vaoAttribsAux(mesh.gl, V)
+  var attribCount = 0
+  vaoAttribsAux(mesh.gl, V, attribCount)
   for index in 0..<attribCount:  # from vaoAtrribsAux
     mesh.gl.enableVertexAttrib(index)
 

@@ -11,6 +11,10 @@ type
     gl*: OpenGl  ## do not use directly
   Drawable* = concept x
     x.draw(OpenGl)
+  UniformSource* = concept x
+    for key, val in uniforms(x):
+      key is string
+      val is UniformType
 
 proc use(target: Target) =
   target.useImpl(target, target.gl)
