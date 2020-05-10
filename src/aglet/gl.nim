@@ -377,7 +377,6 @@ macro uniformAux(gl, loc, u: untyped) =
     cases.add(newTree(nnkOfBranch, ident($utype), call))
 
   result.add(cases)
-  echo result.repr
 
 proc uniform*(gl: OpenGl, loc: GlInt, u: Uniform) =
   var u = u
