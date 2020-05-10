@@ -3,6 +3,7 @@
 import std/macros
 import std/options
 import std/strutils
+import std/sugar
 
 import glm/mat
 import glm/vec
@@ -58,13 +59,13 @@ type
     id*: GlUint
 
   UniformfvProc = proc (location: GlInt, count: GlSizei,
-                        value: ptr GlFloat) {.cdecl.}
+                        value: pointer) {.cdecl.}
   UniformivProc = proc (location: GlInt, count: GlSizei,
-                        value: ptr GlInt) {.cdecl.}
+                        value: pointer) {.cdecl.}
   UniformuivProc = proc (location: GlInt, count: GlSizei,
-                         value: ptr GlUint) {.cdecl.}
+                         value: pointer) {.cdecl.}
   MatrixProc = proc (location: GlInt, count: GlSizei, transpose: GlBool,
-                     value: ptr GlFloat) {.cdecl.}
+                     value: pointer) {.cdecl.}
 
   OpenGl* = ref object  ## the opengl API and state
     # state
@@ -339,14 +340,48 @@ proc linkProgram*(gl: OpenGl, program: GlUint): Option[string] =
 proc getUniformLocation*(gl: OpenGl, program: GlUint, name: string): GlInt =
   gl.glGetUniformLocation(program, name)
 
-proc uniform*(gl: OpenGl, program: GlUint, loc: GlInt,
-              u: Uniform | UniformArray) =
-  let n =
-    when u is Uniform: 1
-    elif u is UniformArray: u.vals.len
+macro uniformAux(gl, loc, u: untyped) =
+  result = newStmtList()
 
-  case u.ty
-  of utFloat32: gl.glUniform1fv
+  var cases = newTree(nnkCaseStmt, newDotExpr(u, ident"ty"))
+  for utype in UniformType:
+    let
+      typeName = ($utype)[2..^1]
+      flatName = typeName.dup(removeSuffix("Array"))
+      uniformName =
+        if flatName == "Float32": "1f"
+        elif flatName == "Int32": "1i"
+        elif flatName == "Uint32": "1ui"
+        elif flatName.startsWith("Vec"): flatName[3..^1]
+        elif flatName.startsWith("Mat"): "Matrix" & flatName[3..^1]
+        else: ""
+      glProc = newDotExpr(gl, ident("glUniform" & uniformName & "v"))
+      value = newDotExpr(u, ident("val" & typeName))
+      valuePtr =
+        if typeName.endsWith("Array"):
+          newCall("unsafeAddr", newTree(nnkBracketExpr, value, newLit(0)))
+        elif uniformName[0] == '1':
+          newCall("unsafeAddr", value)
+        else:
+          newCall("caddr", value)
+      count =
+        if typeName.endsWith("Array"):
+          newCall("GlInt", newCall("len", value))
+        else:
+          newLit(1)
+      call =
+        if uniformName[0] == 'M':  # MatrixNxMfv
+          newCall(glProc, loc, count, newLit(true), valuePtr)
+        else:
+          newCall(glProc, loc, count, valuePtr)
+    cases.add(newTree(nnkOfBranch, ident($utype), call))
+
+  result.add(cases)
+  echo result.repr
+
+proc uniform*(gl: OpenGl, loc: GlInt, u: Uniform) =
+  var u = u
+  uniformAux(gl, loc, u)
 
 proc deleteShader*(gl: OpenGl, shader: GlUint) =
   gl.glDeleteShader(shader)

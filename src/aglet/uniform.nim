@@ -17,7 +17,7 @@ proc typeNameToNode(typeName, arrayRepr: string): NimNode =
     else:
       ident(typeName)
 
-proc addUniformTypeEnum(typesec: var NimNode, typeList: var seq[string]) =
+proc genTypeNames(dest: var seq[string]) =
   const
     Scalars = ["float32", "int32", "uint32"]
     VecSizes = ["2", "3", "4"]
@@ -25,24 +25,25 @@ proc addUniformTypeEnum(typesec: var NimNode, typeList: var seq[string]) =
     MatSizes = ["2", "3", "4", "2x3", "3x2", "2x4", "4x2", "3x4", "4x3"]
     MatTypes = ["f"]
 
-  typeList.add(Scalars)
+  dest.add(Scalars)
 
   for size in VecSizes:
     for ty in VecTypes:
-      typeList.add("Vec" & size & ty)
+      dest.add("Vec" & size & ty)
 
   for size in MatSizes:
     for ty in MatTypes:
-      typeList.add("Mat" & size & ty)
+      dest.add("Mat" & size & ty)
 
   block:
     # this block is here to make the ``arrays`` variable have as short of a
     # lifetime as possible
     var arrays: seq[string]
-    for ty in typeList:
+    for ty in dest:
       arrays.add(ty & "Array")
-    typeList.add(arrays)
+    dest.add(arrays)
 
+proc addUniformTypeEnum(typesec: var NimNode, typeList: seq[string]) =
   var enumDef = newTree(nnkEnumTy, newEmptyNode())
   for ty in typeList:
     let base = "ut" & ty.capitalizeAscii
@@ -58,7 +59,9 @@ proc addUniformObject(typesec: var NimNode, typeList: seq[string]) =
     objDef = newTree(nnkObjectTy, newEmptyNode(), newEmptyNode())
     recList = newNimNode(nnkRecList)
     cases = newTree(nnkRecCase,
-                    newTree(nnkIdentDefs, ident"ty", ident"UniformType",
+                    newTree(nnkIdentDefs,
+                            newTree(nnkPostfix, ident"*", ident"ty"),
+                            ident"UniformType",
                             newEmptyNode()))
 
   for typeName in typeList:
@@ -67,8 +70,9 @@ proc addUniformObject(typesec: var NimNode, typeList: seq[string]) =
       fieldName = "val" & typeName.capitalizeAscii
       ty = typeNameToNode(typeName, "seq")
     cases.add(newTree(nnkOfBranch, ident(enumName),
-                      newTree(nnkIdentDefs, ident(fieldName), ty,
-                              newEmptyNode())))
+                      newTree(nnkIdentDefs,
+                              newTree(nnkPostfix, ident"*", ident(fieldName)),
+                              ty, newEmptyNode())))
 
   recList.add(cases)
   objDef.add(recList)
@@ -104,12 +108,13 @@ macro genUniforms() =
   var
     typesec = newTree(nnkTypeSection)
     types: seq[string]
+
+  genTypeNames(types)
+
   addUniformTypeEnum(typesec, types)
   addUniformObject(typesec, types)
   result.add(typesec)
 
   addConverters(result, types)
-
-  echo result.repr
 
 genUniforms()
