@@ -1,6 +1,7 @@
+import std/times
+
 import aglet
 import aglet/window/glfw
-import glm/vec
 
 var agl = initAglet()
 agl.initWindow()
@@ -14,13 +15,15 @@ const
   VertexShaderSrc = """
     #version 330 core
 
+    uniform float time;
+
     in vec2 position;
     in vec4 color;
 
     out vec4 vertexColor;
 
     void main(void) {
-      gl_Position = vec4(position, 0.0, 1.0);
+      gl_Position = vec4(position + vec2(0.0, sin(time)), 0.0, 1.0);
       vertexColor = color;
     }
   """
@@ -56,11 +59,14 @@ mesh.uploadVertices [
   Vertex(position: vec2f(0.5,  -0.5), color: blue),
 ]
 
+let startTime = epochTime()
 while not win.closeRequested:
   var frame = win.render()
 
   frame.clearColor(vec4f(0.0, 0.0, 0.0, 1.0))
-  frame.draw(prog, mesh)
+  frame.draw(prog, mesh, uniforms {
+    time: float32(epochTime() - startTime),
+  })
 
   frame.finish()
 

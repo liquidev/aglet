@@ -417,8 +417,6 @@ proc toGlEnum(T: typedesc): GlEnum =
   elif T is int32: GL_TINT
 
 proc vertexAttrib*[T](gl: OpenGl, index, stride, offset: int) =
-  # XXX: this proc uses literal uint32/int32 instead of the Gl* types because of
-  # symbol binding weirdness with macros
   when T is Vec:
     type TT = default(T).T
   else:
