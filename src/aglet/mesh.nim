@@ -163,7 +163,6 @@ proc uploadVertices*[V](mesh: Mesh[V], data: openArray[V]) =
   mesh.useVbo()
 
   let dataSize = data.len * sizeof(V)
-  echo data
   if mesh.vboCap < data.len:
     mesh.gl.bufferData(btArray, dataSize, data[low(data)].unsafeAddr,
                        mesh.usage)

@@ -64,6 +64,7 @@ while not win.closeRequested:
   var frame = win.render()
 
   frame.clearColor(vec4f(0.0, 0.0, 0.0, 1.0))
+
   frame.draw(prog, mesh, uniforms {
     time: float32(epochTime() - startTime),
   })
