@@ -29,9 +29,9 @@ type
     range: Slice[Natural]
 
   MeshUsage* = enum
-    abuStream   ## mesh is initialized once and used a few times
-    abuStatic   ## mesh is initialized once and used many times
-    abuDynamic  ## mesh is modified repeatedly and used many times
+    muStream   ## mesh is initialized once and used a few times
+    muStatic   ## mesh is initialized once and used many times
+    muDynamic  ## mesh is modified repeatedly and used many times
 
   DrawPrimitive* = enum
     dpPoints
@@ -59,6 +59,13 @@ proc toGlEnum(dp: DrawPrimitive): GlEnum =
   of dpTriangleStrip: GL_TRIANGLE_STRIP
   of dpTriangleStripAdjacency: GL_TRIANGLE_STRIP_ADJACENCY
   of dpTriangleFan: GL_TRIANGLE_FAN
+
+proc toGlEnum(ty: IndexTypeEnum): GlEnum =
+  case ty
+  of it8: GL_TUNSIGNED_BYTE
+  of it16: GL_TUNSIGNED_SHORT
+  of it32: GL_TUNSIGNED_INT
+  else: GlEnum(0)
 
 proc vboCapacity*(mesh: Mesh): int =
   ## Returns the capacity of the mesh's VBO.
@@ -140,11 +147,11 @@ proc updateVao[V](mesh: Mesh[V]) =
   if mesh.vao.id != 0:
     mesh.gl.deleteVertexArray(mesh.vao)
 
-  mesh.useVbo()
-  mesh.useEbo()
-
   mesh.vao = mesh.gl.createVertexArray()
   mesh.use()
+
+  mesh.useVbo()
+  mesh.useEbo()
 
   var attribCount = 0
   vaoAttribsAux(mesh.gl, V, attribCount)
@@ -172,12 +179,11 @@ proc uploadVertices*[V](mesh: Mesh[V], data: openArray[V]) =
 
   mesh.fVboLen = data.len
 
-proc toEnum(T: IndexType): IndexTypeEnum {.compileTime.} =
-  result =
-    when T is uint8: it8
-    elif T is uint16: it16
-    elif T is uint32: it32
-    else: itNone
+template indexTypeToEnum(T: typedesc): IndexTypeEnum =
+  when T is uint8: it8
+  elif T is uint16: it16
+  elif T is uint32: it32
+  else: itNone
 
 proc uploadIndices*[V; I: IndexType](mesh: Mesh[V],
                                      data: openArray[I]) =
@@ -190,19 +196,19 @@ proc uploadIndices*[V; I: IndexType](mesh: Mesh[V],
   assert mesh.vbo != 0, "vertices must be uploaded before indices"
   if mesh.ebo == 0:
     mesh.ebo = mesh.gl.createBuffer()
-    mesh.eboType = toEnum(I)
+    mesh.eboType = indexTypeToEnum(I)
     mesh.updateVao[:V]()
   else:
-    assert toEnum(T) == mesh.eboType,
-      "data type mismatch: got <" & T & ">, " &
-      "but the EBO is of type <" & mesh.eboType & ">"
+    assert indexTypeToEnum(I) == mesh.eboType,
+      "data type mismatch: got <" & $I & ">, " &
+      "but the EBO is of type <" & $mesh.eboType & ">"
 
   mesh.useEbo()
 
   let dataSize = data.len * sizeof(I)
   if mesh.eboCap < data.len:
-    mesh.gl.bufferData(btElementArray, data[low(data)].unsafeAddr,
-                       dataSize, mesh.usage)
+    mesh.gl.bufferData(btElementArray, dataSize,
+                       data[low(data)].unsafeAddr, mesh.usage)
     mesh.eboCap = data.len
   else:
     mesh.gl.bufferSubData(btElementArray, 0..dataSize,
@@ -232,9 +238,9 @@ proc updateIndices*[I: IndexType](mesh: Mesh, pos: Natural,
   ## ``mesh.eboCapacity``, otherwise an assertion is triggered.
   assert pos + data.len < mesh.eboCapacity,
     "given data won't fit in the index mesh"
-  assert toEnum(T) == mesh.eboType,
-    "data type mismatch: got <" & T & ">, " &
-    "but the EBO is of type <" & mesh.eboType & ">"
+  assert indexTypeToEnum(I) == mesh.eboType,
+    "data type mismatch: got <" & $I & ">, " &
+    "but the EBO is of type <" & $mesh.eboType & ">"
 
   mesh.useEbo()
 
@@ -258,7 +264,9 @@ proc draw*(slice: MeshSlice, gl: OpenGl) =
   ## ``Drawable`` implementation for ``target.draw``, do not use directly.
   slice.mesh.use()
   if slice.mesh.hasEbo:
-    discard  # TODO EBOs
+    gl.drawElements(slice.mesh.primitive.toGlEnum,
+                    slice.range.a, 1 + slice.range.b - slice.range.a,
+                    slice.mesh.eboType.toGlEnum)
   else:
     gl.drawArrays(slice.mesh.primitive.toGlEnum,
                   slice.range.a, 1 + slice.range.b - slice.range.a)
@@ -270,6 +278,10 @@ converter allVertices*[V](mesh: Mesh[V]): MeshSlice[V] =
 
 proc newMesh*[V](win: Window, usage: MeshUsage,
                  primitive: DrawPrimitive): Mesh[V] =
+  ## Creates a new, empty mesh built from the given draw primitive. Set
+  ## ``usage`` depending on how the mesh is going to be used, so that the
+  ## driver's able to place it in a suitable area of GPU memory. See
+  ## ``MeshUsage`` for details.
   let gl = win.IMPL_getGlContext()
   new(result) do (mesh: Mesh[V]):
     mesh.gl.deleteBuffer(mesh.vbo)
@@ -278,7 +290,21 @@ proc newMesh*[V](win: Window, usage: MeshUsage,
   result.gl = gl
   result.usage =
     case usage
-    of abuStream: GL_STREAM_DRAW
-    of abuStatic: GL_STATIC_DRAW
-    of abuDynamic: GL_DYNAMIC_DRAW
+    of muStream: GL_STREAM_DRAW
+    of muStatic: GL_STATIC_DRAW
+    of muDynamic: GL_DYNAMIC_DRAW
   result.primitive = primitive
+
+proc newMesh*[V](win: Window, primitive: DrawPrimitive,
+                 vertices: openArray[V], usage = muStatic): Mesh[V] =
+  ## Creates a new mesh pre-loaded with the given vertices.
+  result = win.newMesh[:V](usage, primitive)
+  result.uploadVertices(vertices)
+
+proc newMesh*[V; I: IndexType](win: Window, primitive: DrawPrimitive,
+                               vertices: openArray[V], indices: openArray[I],
+                               usage = muStatic): Mesh[V] =
+  ## Creates a new mesh pre-loaded with the given vertices and indices.
+  result = win.newMesh[:V](usage, primitive)
+  result.uploadVertices(vertices)
+  result.uploadIndices(indices)

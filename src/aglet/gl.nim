@@ -53,6 +53,12 @@ type
     ftRead, ftDraw
   BufferTarget* = enum
     btArray, btElementArray
+  TextureTarget* = enum
+    ttTexture1D, ttTexture1DArray
+    ttTexture2D, ttTexture2DMultisample, ttTexture2DArray,
+      ttTexture2DMultisampleArray
+    ttTexture3D, ttTexture3DMultisample
+    ttTextureCubeMap, ttTextureCubeMapArray
 
   VertexArray* = object
     buffers: array[BufferTarget, GlUint]
@@ -99,32 +105,31 @@ type
     glCompileShader: proc (shader: GlUint) {.cdecl.}
     glCreateProgram: proc (): GlUint {.cdecl.}
     glCreateShader: proc (shaderType: GlEnum): GlUint {.cdecl.}
-    glDeleteBuffers: proc (n: GlSizei,
-                           buffers: ptr UncheckedArray[GlUint]) {.cdecl.}
+    glDeleteBuffers: proc (n: GlSizei, buffers: pointer) {.cdecl.}
     glDeleteProgram: proc (program: GlUint) {.cdecl.}
     glDeleteShader: proc (shader: GlUint) {.cdecl.}
-    glDeleteVertexArrays: proc (n: GlSizei,
-                                arrays: ptr UncheckedArray[GlUint]) {.cdecl.}
+    glDeleteVertexArrays: proc (n: GlSizei, arrays: pointer) {.cdecl.}
     glDisableVertexAttribArray: proc (index: GlUint) {.cdecl.}
     glDrawArrays: proc (mode: GlEnum, first: GlInt, count: GlSizei) {.cdecl.}
+    glDrawElements: proc (mode: GlEnum, count: GlSizei, kind: GlEnum,
+                          indices: pointer) {.cdecl.}
     glEnableVertexAttribArray: proc (index: GlUint) {.cdecl.}
-    glGenBuffers: proc (n: GlSizei,
-                        buffers: ptr UncheckedArray[GlUint]) {.cdecl.}
-    glGenVertexArrays: proc (n: GlSizei,
-                             arrays: ptr UncheckedArray[GlUint]) {.cdecl.}
+    glGenBuffers: proc (n: GlSizei, buffers: pointer) {.cdecl.}
+    glGenTextures: proc (n: GlSizei, textures: pointer) {.cdecl.}
+    glGenVertexArrays: proc (n: GlSizei, arrays: pointer) {.cdecl.}
+    glGetError: proc (): GlEnum {.cdecl.}
     glGetProgramInfoLog: proc (program: GlUint, maxLen: GlSizei,
                                length: ptr GlSizei, infoLog: cstring) {.cdecl.}
     glGetProgramiv: proc (program: GlUint, pname: GlEnum,
-                          params: ptr UncheckedArray[GlInt]) {.cdecl.}
+                          params: pointer) {.cdecl.}
     glGetShaderInfoLog: proc (shader: GlUint, maxLen: GlSizei,
                               length: ptr GlSizei, infoLog: cstring) {.cdecl.}
     glGetShaderiv: proc (shader: GlUint, pname: GlEnum,
-                         params: ptr UncheckedArray[GlInt]) {.cdecl.}
+                         params: pointer) {.cdecl.}
     glGetUniformLocation: proc (program: GlUint, name: cstring): GlInt {.cdecl.}
     glLinkProgram: proc (program: GlUint) {.cdecl.}
     glShaderSource: proc (shader: GlUint, count: GlSizei,
-                          str: cstringArray,
-                          length: ptr UncheckedArray[GlInt]) {.cdecl.}
+                          str: cstringArray, length: pointer) {.cdecl.}
     glUniform1fv, glUniform2fv, glUniform3fv, glUniform4fv: UniformfvProc
     glUniform1iv, glUniform2iv, glUniform3iv, glUniform4iv: UniformivProc
     glUniform1uiv, glUniform2uiv, glUniform3uiv, glUniform4uiv: UniformuivProc
@@ -173,6 +178,11 @@ const
   GL_LINE_STRIP_ADJACENCY* = GlEnum(0x000B)
   GL_TRIANGLES_ADJACENCY* = GlEnum(0x000C)
   GL_TRIANGLE_STRIP_ADJACENCY* = GlEnum(0x000D)
+  GL_INVALID_ENUM* = GLenum(0x0500)
+  GL_INVALID_VALUE* = GLenum(0x0501)
+  GL_INVALID_OPERATION* = GLenum(0x0502)
+  GL_OUT_OF_MEMORY* = GLenum(0x0505)
+  GL_INVALID_FRAMEBUFFER_OPERATION* = GLenum(0x0505)
 
 when not defined(js):
   # desktop platforms
@@ -237,7 +247,14 @@ template updateDiff(a, b: untyped): bool =
   else:
     false
 
+proc getError(gl: OpenGl): GlEnum =
+  gl.glGetError()
+
+proc `==`(a, b: GlEnum): bool {.borrow.}
+
 proc viewport*(gl: OpenGl, x, y: GlInt, width, height: GlSizei) =
+  assert width >= 0, "viewport width must not be negative"
+  assert height >= 0, "viewport height must not be negative"
   updateDiff gl.sViewport, (x, y, width, height):
     gl.glViewport(x, y, width, height)
 
@@ -259,15 +276,23 @@ proc clearStencil*(gl: OpenGl, stencil: GlInt) =
 proc bindBuffer*(gl: OpenGl, target: BufferTarget, buffer: GlUint) =
   updateDiff gl.sBuffers[target], buffer:
     gl.glBindBuffer(target.toGlEnum, buffer)
+    if gl.getError() == GL_INVALID_VALUE:
+      raise newException(ValueError, "buffer " & $buffer & " doesn't exist")
 
 proc bindFramebuffer*(gl: OpenGl, targets: set[FramebufferTarget],
                       buffer: GlUint) =
   if ftRead in targets:
     updateDiff gl.sFramebuffers.read, buffer:
       gl.glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer)
+      if gl.getError() == GL_INVALID_VALUE:
+        raise newException(ValueError,
+                           "framebuffer " & $buffer & " doesn't exist")
   if ftDraw in targets:
     updateDiff gl.sFramebuffers.draw, buffer:
       gl.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer)
+      if gl.getError() == GL_INVALID_VALUE:
+        raise newException(ValueError,
+                           "framebuffer " & $buffer & " doesn't exist")
 
 proc bindVertexArray*(gl: OpenGl, vao: VertexArray) =
   var changed = false
@@ -276,10 +301,16 @@ proc bindVertexArray*(gl: OpenGl, vao: VertexArray) =
   if changed or gl.sVertexArray != vao.id:
     gl.glBindVertexArray(vao.id)
     gl.sVertexArray = vao.id
+    if gl.getError() == GL_INVALID_VALUE:
+      raise newException(ValueError,
+                         "vertex array " & $vao.id & " doesn't exist")
 
 proc useProgram*(gl: OpenGl, program: GlUint) =
   updateDiff gl.sProgram, program:
     gl.glUseProgram(program)
+    if gl.getError() == GL_INVALID_VALUE:
+      raise newException(ValueError,
+                         "program " & $program & " doesn't exist")
 
 proc createShader*(gl: OpenGl, shaderType: GlEnum,
                    source: string, outError: var string): Option[GlUint] =
@@ -288,19 +319,17 @@ proc createShader*(gl: OpenGl, shaderType: GlEnum,
   var
     cstr = allocCStringArray [source]
     len = source.len.GlInt
-  gl.glShaderSource(shader, 1, cstr, cast[ptr UncheckedArray[GlInt]](addr len))
+  gl.glShaderSource(shader, 1, cstr, addr len)
   deallocCStringArray(cstr)
 
   gl.glCompileShader(shader)
   var compileSuccess: GlInt
-  gl.glGetShaderiv(shader, GL_COMPILE_STATUS,
-                   cast[ptr UncheckedArray[GlInt]](addr compileSuccess))
+  gl.glGetShaderiv(shader, GL_COMPILE_STATUS, addr compileSuccess)
   if not compileSuccess.bool:
     var
       errorLen: GlInt
       logErrorLen: GlSizei
-    gl.glGetShaderiv(shader, GL_INFO_LOG_LENGTH,
-                     cast[ptr UncheckedArray[GlInt]](addr errorLen))
+    gl.glGetShaderiv(shader, GL_INFO_LOG_LENGTH, addr errorLen)
     outError = newString(errorLen.Natural)
     gl.glGetShaderInfoLog(shader, errorLen.GlSizei, addr logErrorLen,
                           outError[0].unsafeAddr)
@@ -323,15 +352,13 @@ proc bindAttribLocation*(gl: OpenGl, program: GlUint,
 proc linkProgram*(gl: OpenGl, program: GlUint): Option[string] =
   gl.glLinkProgram(program)
   var linkSuccess: GlInt
-  gl.glGetProgramiv(program, GL_LINK_STATUS,
-                    cast[ptr UncheckedArray[GlInt]](addr linkSuccess))
+  gl.glGetProgramiv(program, GL_LINK_STATUS, addr linkSuccess)
   if not linkSuccess.bool:
     var
       errorLen: GlInt
       logErrorLen: GlSizei
       errorStr: string
-    gl.glGetProgramiv(program, GL_INFO_LOG_LENGTH,
-                      cast[ptr UncheckedArray[GlInt]](addr errorLen))
+    gl.glGetProgramiv(program, GL_INFO_LOG_LENGTH, addr errorLen)
     errorStr = newString(errorLen.Natural)
     gl.glGetShaderInfoLog(program, errorLen.GlSizei, addr logErrorLen,
                           errorStr[0].unsafeAddr)
@@ -389,7 +416,7 @@ proc deleteProgram*(gl: OpenGl, program: GlUint) =
   gl.glDeleteProgram(program)
 
 proc createBuffer*(gl: OpenGl): GlUint =
-  gl.glGenBuffers(1, cast[ptr UncheckedArray[GlUint]](addr result))
+  gl.glGenBuffers(1, addr result)
 
 proc bufferData*(gl: OpenGl, target: BufferTarget,
                  size: int, data: pointer, usage: GlEnum) =
@@ -402,11 +429,11 @@ proc bufferSubData*(gl: OpenGl, target: BufferTarget,
 
 proc deleteBuffer*(gl: OpenGl, buffer: GlUint) =
   var buffer = buffer
-  gl.glDeleteBuffers(1, cast[ptr UncheckedArray[GlUint]](addr buffer))
+  gl.glDeleteBuffers(1, addr buffer)
 
 proc createVertexArray*(gl: OpenGl): VertexArray =
   result.buffers = gl.sBuffers
-  gl.glGenVertexArrays(1, cast[ptr UncheckedArray[GlUint]](addr result.id))
+  gl.glGenVertexArrays(1, addr result.id)
 
 proc toGlEnum(T: typedesc): GlEnum =
   when T is uint8: GL_TUNSIGNED_BYTE
@@ -448,7 +475,11 @@ proc disableVertexAttrib*(gl: OpenGl, index: int) =
 
 proc deleteVertexArray*(gl: OpenGl, array: VertexArray) =
   var array = array
-  gl.glDeleteVertexArrays(1, cast[ptr UncheckedArray[GlUint]](addr array.id))
+  gl.glDeleteVertexArrays(1, addr array.id)
 
 proc drawArrays*(gl: OpenGl, primitive: GlEnum, start, count: int) =
   gl.glDrawArrays(primitive, start.GlInt, count.GlSizei)
+
+proc drawElements*(gl: OpenGl, primitive: GlEnum, start, count: int,
+                   indexType: GlEnum) =
+  gl.glDrawElements(primitive, count.GlInt, indexType, cast[pointer](start))

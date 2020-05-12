@@ -22,6 +22,9 @@ type
       k is string
       v is Uniform
 
+  EmptyUniforms* = object  ## \
+    ## special type that represents an empty uniform table
+
 proc use(target: Target) =
   target.useImpl(target, target.gl)
 
@@ -57,6 +60,8 @@ proc draw*[D: Drawable, U: UniformSource](target: Target, program: Program,
 
   arrays.draw(target.gl)
 
+const NoUniforms* = EmptyUniforms()
+
 macro uniforms*(pairs: untyped): untyped =
   ## Helper macro that transforms a table constructor to a
   ## ``UniformSource``-compatible tuple. This macro is mainly useful to avoid
@@ -77,6 +82,8 @@ macro uniforms*(pairs: untyped): untyped =
 
   if pairs.kind != nnkTableConstr:
     error("table constructor expected", pairs)
+  if pairs.len == 0:
+    return bindSym"NoUniforms"
   result = newPar()
   for pair in pairs:
     if pair.kind != nnkExprColonExpr:
@@ -87,6 +94,9 @@ macro uniforms*(pairs: untyped): untyped =
     if key.kind != nnkIdent:
       error("invalid uniform name: '" & key.repr & "'", key)
     result.add(newColonExpr(key, newCall(bindSym"toUniform", value)))
+
+iterator getUniforms*(none: EmptyUniforms): (string, Uniform) =
+  ## Yields no uniforms. This is preferred instead of ``uniforms {:}``.
 
 iterator getUniforms*(rec: tuple | object): (string, Uniform) =
   ## Built-in helper iterator for the ``uniforms`` macro. This also allows for
