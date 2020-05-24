@@ -220,6 +220,11 @@ proc dimensions*(frame: Frame): Vec2i =
   ## Returns a frame's dimensions.
   result = vec2(frame.width.int32, frame.height.int32)
 
+proc glVersion*(win: Window): string =
+  ## Returns a string containing the version of OpenGL as reported by the
+  ## driver.
+  result = win.gl.version
+
 proc initWindow*(agl: var Aglet) =
   ## Initializes the windowing submodule. You should call this before doing
   ## anything with windows.

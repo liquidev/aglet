@@ -57,41 +57,55 @@ type
     ttTexture1D, ttTexture1DArray
     ttTexture2D, ttTexture2DMultisample, ttTexture2DArray,
       ttTexture2DMultisampleArray
-    ttTexture3D, ttTexture3DMultisample
-    ttTextureCubeMap, ttTextureCubeMapArray
+    ttTexture3D
+    ttTextureCubeMapPosX, ttTextureCubeMapNegX
+    ttTextureCubeMapPosY, ttTextureCubeMapNegY
+    ttTextureCubeMapPosZ, ttTextureCubeMapNegZ
+
+  OpenGlCapability* = enum
+    glcTexture1D, glcTexture2D, glcTexture3D
 
   VertexArray* = object
     buffers: array[BufferTarget, GlUint]
     id*: GlUint
 
-  UniformfvProc = proc (location: GlInt, count: GlSizei,
-                        value: pointer) {.cdecl.}
-  UniformivProc = proc (location: GlInt, count: GlSizei,
-                        value: pointer) {.cdecl.}
-  UniformuivProc = proc (location: GlInt, count: GlSizei,
+  UniformVecProc = proc (location: GlInt, count: GlSizei,
                          value: pointer) {.cdecl.}
-  MatrixProc = proc (location: GlInt, count: GlSizei, transpose: GlBool,
-                     value: pointer) {.cdecl.}
+  UniformMatrixProc = proc (location: GlInt, count: GlSizei, transpose: GlBool,
+                            value: pointer) {.cdecl.}
 
   OpenGl* = ref object  ## the opengl API and state
+    version*: string
+
     # state
     sBuffers: array[BufferTarget, GlUint]
     sClearColor: tuple[r, g, b, a: GlClampf]
     sClearDepth: GlClampd
     sClearStencil: GlInt
+    sEnabledCapabilities: array[OpenGlCapability, bool]
     sFramebuffers: tuple[read, draw: GlUint]
     sProgram: GlUint
+    sSamplerBindings: seq[GlUint]
+    sTextureUnit: int
+    sTextureUnitBindings: seq[array[TextureTarget, GlUint]]
     sVertexArray: GlUint
     sViewport: tuple[x, y: GlInt, w, h: GlSizei]
 
+    uniformTextureUnit: int
+
     # state functions
-    glBindBuffer: proc (target: GLenum, buffer: GlUint) {.cdecl.}
+    glActiveTexture: proc (texture: GlEnum) {.cdecl.}
+    glBindBuffer: proc (target: GlEnum, buffer: GlUint) {.cdecl.}
     glBindFramebuffer: proc (target: GlEnum, framebuffer: GlUint) {.cdecl.}
+    glBindSampler: proc (unit, sampler: GlUint) {.cdecl.}
+    glBindTexture: proc (target: GlEnum, texture: GlUint) {.cdecl.}
     glBindVertexArray: proc (array: GlUint) {.cdecl.}
     glClear: proc (targets: GlBitfield) {.cdecl.}
     glClearColor: proc (r, g, b, a: GlClampf) {.cdecl.}
     glClearDepth: proc (depth: GlClampd) {.cdecl.}
     glClearStencil: proc (stencil: GlInt) {.cdecl.}
+    glDisable: proc (cap: GlEnum) {.cdecl.}
+    glEnable: proc (cap: GlEnum) {.cdecl.}
     glUseProgram: proc (program: GlUint) {.cdecl.}
     glViewport: proc (x, y: GlInt, width, height: GlSizei) {.cdecl.}
 
@@ -107,7 +121,9 @@ type
     glCreateShader: proc (shaderType: GlEnum): GlUint {.cdecl.}
     glDeleteBuffers: proc (n: GlSizei, buffers: pointer) {.cdecl.}
     glDeleteProgram: proc (program: GlUint) {.cdecl.}
+    glDeleteSamplers: proc (n: GlSizei, samplers: pointer) {.cdecl.}
     glDeleteShader: proc (shader: GlUint) {.cdecl.}
+    glDeleteTextures: proc (n: GlSizei, textures: pointer) {.cdecl.}
     glDeleteVertexArrays: proc (n: GlSizei, arrays: pointer) {.cdecl.}
     glDisableVertexAttribArray: proc (index: GlUint) {.cdecl.}
     glDrawArrays: proc (mode: GlEnum, first: GlInt, count: GlSizei) {.cdecl.}
@@ -115,8 +131,10 @@ type
                           indices: pointer) {.cdecl.}
     glEnableVertexAttribArray: proc (index: GlUint) {.cdecl.}
     glGenBuffers: proc (n: GlSizei, buffers: pointer) {.cdecl.}
+    glGenSamplers: proc (n: GlSizei, samplers: pointer) {.cdecl.}
     glGenTextures: proc (n: GlSizei, textures: pointer) {.cdecl.}
     glGenVertexArrays: proc (n: GlSizei, arrays: pointer) {.cdecl.}
+    glGenerateMipmap: proc (target: GlEnum) {.cdecl.}
     glGetError: proc (): GlEnum {.cdecl.}
     glGetProgramInfoLog: proc (program: GlUint, maxLen: GlSizei,
                                length: ptr GlSizei, infoLog: cstring) {.cdecl.}
@@ -126,17 +144,46 @@ type
                               length: ptr GlSizei, infoLog: cstring) {.cdecl.}
     glGetShaderiv: proc (shader: GlUint, pname: GlEnum,
                          params: pointer) {.cdecl.}
+    glGetString: proc (name: GlEnum): cstring {.cdecl.}
+    glGetIntegerv: proc (pname: GlEnum, params: pointer) {.cdecl.}
     glGetUniformLocation: proc (program: GlUint, name: cstring): GlInt {.cdecl.}
     glLinkProgram: proc (program: GlUint) {.cdecl.}
+    glSamplerParameteri: proc (sampler: GlUint, pname: GlEnum,
+                               param: GlInt) {.cdecl.}
+    glSamplerParameterfv: proc (sampler: GlUint, pname: GlEnum,
+                                params: pointer) {.cdecl.}
     glShaderSource: proc (shader: GlUint, count: GlSizei,
                           str: cstringArray, length: pointer) {.cdecl.}
-    glUniform1fv, glUniform2fv, glUniform3fv, glUniform4fv: UniformfvProc
-    glUniform1iv, glUniform2iv, glUniform3iv, glUniform4iv: UniformivProc
-    glUniform1uiv, glUniform2uiv, glUniform3uiv, glUniform4uiv: UniformuivProc
+    glTexImage1D: proc (target: GlEnum, level, internalFormat: GlInt,
+                        width: GlSizei, border: GlInt, format, kind: GlEnum,
+                        data: pointer) {.cdecl.}
+    glTexSubImage1D: proc (target: GlEnum, level, xoffset: GlInt,
+                           width: GlSizei, format, typ: GlEnum,
+                           data: pointer) {.cdecl.}
+    glTexImage2D: proc (target: GlEnum, level, internalFormat: GlInt,
+                        width, height: GlSizei, border: GlInt,
+                        format, kind: GlEnum, data: pointer) {.cdecl.}
+    glTexSubImage2D: proc (target: GlEnum, level, xoffset, yoffset: GlInt,
+                           width, height: GlSizei, format, typ: GlEnum,
+                           data: pointer) {.cdecl.}
+    glTexImage2DMultisample: proc (target: GlEnum, samples: GlSizei,
+                                   internalFormat: GlInt,
+                                   width, height: GlSizei,
+                                   fixedSampleLocations: GlBool) {.cdecl.}
+    glTexImage3D: proc (target: GlEnum, level, internalFormat: GlInt,
+                        width, height, depth: GlSizei, border: GlInt,
+                        format, kind: GlEnum, data: pointer) {.cdecl.}
+    glTexSubImage3D: proc (target: GlEnum, level: GlInt,
+                           xoffset, yoffset, zoffset: GlInt,
+                           width, height, depth: GlSizei, format, typ: GlEnum,
+                           data: pointer) {.cdecl.}
+    glUniform1fv, glUniform2fv, glUniform3fv, glUniform4fv,
+      glUniform1iv, glUniform2iv, glUniform3iv, glUniform4iv,
+      glUniform1uiv, glUniform2uiv, glUniform3uiv, glUniform4uiv: UniformVecProc
     glUniformMatrix2fv, glUniformMatrix3fv, glUniformMatrix4fv,
       glUniformMatrix2x3fv, glUniformMatrix3x2fv,
       glUniformMatrix2x4fv, glUniformMatrix4x2fv,
-      glUniformMatrix3x4fv, glUniformMatrix4x3fv: MatrixProc
+      glUniformMatrix3x4fv, glUniformMatrix4x3fv: UniformMatrixProc
     glVertexAttribPointer: proc (index: GlUint, size: GlInt, typ: GlEnum,
                                  normalized: bool, stride: GlSizei,
                                  point: pointer) {.cdecl.}
@@ -144,6 +191,8 @@ type
                                   stride: GlSizei, point: pointer) {.cdecl.}
 
 const
+  GL_VERSION* = GlEnum(0x1F02)
+  GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS* = GlEnum(0x8B4D)
   GL_DEPTH_BUFFER_BIT* = GlEnum(0x100)
   GL_STENCIL_BUFFER_BIT* = GlEnum(0x400)
   GL_COLOR_BUFFER_BIT* = GlEnum(0x4000)
@@ -178,11 +227,49 @@ const
   GL_LINE_STRIP_ADJACENCY* = GlEnum(0x000B)
   GL_TRIANGLES_ADJACENCY* = GlEnum(0x000C)
   GL_TRIANGLE_STRIP_ADJACENCY* = GlEnum(0x000D)
-  GL_INVALID_ENUM* = GLenum(0x0500)
-  GL_INVALID_VALUE* = GLenum(0x0501)
-  GL_INVALID_OPERATION* = GLenum(0x0502)
-  GL_OUT_OF_MEMORY* = GLenum(0x0505)
-  GL_INVALID_FRAMEBUFFER_OPERATION* = GLenum(0x0505)
+  GL_INVALID_ENUM* = GlEnum(0x0500)
+  GL_INVALID_VALUE* = GlEnum(0x0501)
+  GL_INVALID_OPERATION* = GlEnum(0x0502)
+  GL_OUT_OF_MEMORY* = GlEnum(0x0505)
+  GL_INVALID_FRAMEBUFFER_OPERATION* = GlEnum(0x0505)
+  GL_TEXTURE_1D* = GlEnum(0x0DE0)
+  GL_TEXTURE_1D_ARRAY* = GlEnum(0x8C18)
+  GL_TEXTURE_2D* = GlEnum(0x0DE1)
+  GL_TEXTURE_2D_ARRAY* = GlEnum(0x8C1A)
+  GL_TEXTURE_2D_MULTISAMPLE* = GlEnum(0x9100)
+  GL_TEXTURE_2D_MULTISAMPLE_ARRAY* = GlEnum(0x9102)
+  GL_TEXTURE_3D* = GlEnum(0x806F)
+  GL_TEXTURE_CUBE_MAP* = GlEnum(0x8513)
+  GL_TEXTURE_CUBE_MAP_POSITIVE_X* = GlEnum(0x8515)
+  GL_TEXTURE0* = GlEnum(0x84C0)
+  GL_RED* = GlEnum(0x1903)
+  GL_GREEN* = GlEnum(0x1904)
+  GL_BLUE* = GlEnum(0x1905)
+  GL_ALPHA* = GlEnum(0x1906)
+  GL_RG* = GlEnum(0x8227)
+  GL_RGB* = GlEnum(0x1907)
+  GL_RGBA* = GlEnum(0x1908)
+  GL_TEXTURE_WRAP_S* = GlEnum(0x2802)
+  GL_TEXTURE_WRAP_T* = GlEnum(0x2803)
+  GL_TEXTURE_WRAP_R* = GlEnum(0x8072)
+  GL_REPEAT* = GlEnum(0x2901)
+  GL_MIRRORED_REPEAT* = GlEnum(0x8370)
+  GL_CLAMP_TO_EDGE* = GlEnum(0x812F)
+  GL_CLAMP_TO_BORDER* = GlEnum(0x812D)
+  GL_TEXTURE_BORDER_COLOR* = GlEnum(0x1004)
+  GL_TEXTURE_COMPARE_MODE* = GlEnum(0x884C)
+  GL_TEXTURE_COMPARE_FUNC* = GlEnum(0x884D)
+  GL_NEAREST* = GlEnum(0x2600)
+  GL_LINEAR* = GlEnum(0x2601)
+  GL_NEAREST_MIPMAP_NEAREST* = GlEnum(0x2700)
+  GL_LINEAR_MIPMAP_NEAREST* = GlEnum(0x2701)
+  GL_NEAREST_MIPMAP_LINEAR* = GlEnum(0x2702)
+  GL_LINEAR_MIPMAP_LINEAR* = GlEnum(0x2703)
+  GL_TEXTURE_MAG_FILTER* = GlEnum(0x2800)
+  GL_TEXTURE_MIN_FILTER* = GlEnum(0x2801)
+
+proc getInt(gl: OpenGl, property: GlEnum, result: ptr GlInt) =
+  gl.glGetIntegerv(property, result)
 
 when not defined(js):
   # desktop platforms
@@ -224,13 +311,57 @@ when not defined(js):
     else:
       genLoader(gl)
 
+    gl.version = $gl.glGetString(GL_VERSION)
+
+    # this is so primitive lol
+    if gl.glGenSamplers == nil:
+      raise newException(OSError,
+                         "minimum required OpenGL version is 3.3, got " &
+                         gl.version.splitWhitespace(1)[0])
+    # query capabilities
+    var textureUnitCount: GlInt
+    gl.getInt(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, addr textureUnitCount)
+
+    # update internal state accordingly
+    gl.sSamplerBindings.setLen(textureUnitCount)
+    gl.sTextureUnitBindings.setLen(textureUnitCount)
+
 else:
-  discard # TODO: webgl
+  # supporting WebGL would be nice, but there are at least a few problems
+  # in place:
+  # - WebGL functions have different signatures and use JavaScript features such
+  #   as ArrayBuffer
+  # - aglet requires sampler object support, only available since WebGL 2
+  #   (OpenGL ES 3)
+  # I may take on this if anyone's interested, but core OpenGL is good enough
+  # for me.
+  {.error: "WebGL is not supported".}
 
 proc toGlEnum(target: BufferTarget): GlEnum =
   case target
   of btArray: GL_ARRAY_BUFFER
   of btElementArray: GL_ELEMENT_ARRAY_BUFFER
+
+proc toGlEnum(target: TextureTarget): GlEnum =
+  case target
+  of ttTexture1D: GL_TEXTURE_1D
+  of ttTexture1DArray: GL_TEXTURE_1D_ARRAY
+  of ttTexture2D: GL_TEXTURE_2D
+  of ttTexture2DArray: GL_TEXTURE_2D_ARRAY
+  of ttTexture2DMultisample: GL_TEXTURE_2D_MULTISAMPLE
+  of ttTexture2DMultisampleArray: GL_TEXTURE_2D_MULTISAMPLE_ARRAY
+  of ttTexture3D: GL_TEXTURE_3D
+  of ttTextureCubeMapPosX..ttTextureCubeMapNegZ:
+    let index = ord(target) - ord(ttTextureCubeMapNegX)
+    GlEnum(GL_TEXTURE_CUBEMAP_POSITIVE_X.int + index)
+
+proc toGlEnum(cap: OpenGlCapability): GlEnum =
+  # lol this is actually deprecated but I'm leaving it in anyways as I don't
+  # want "just a placeholder enum value"
+  case cap
+  of glcTexture1D: GL_TEXTURE_1D
+  of glcTexture2D: GL_TEXTURE_2D
+  of glcTexture3D: GL_TEXTURE_3D
 
 proc newGl*(): OpenGl =
   new(result)
@@ -257,6 +388,11 @@ proc viewport*(gl: OpenGl, x, y: GlInt, width, height: GlSizei) =
   assert height >= 0, "viewport height must not be negative"
   updateDiff gl.sViewport, (x, y, width, height):
     gl.glViewport(x, y, width, height)
+
+proc capability*(gl: OpenGl, cap: OpenGlCapability, enabled: bool) =
+  updateDiff gl.sEnabledCapabilities[cap], enabled:
+    if enabled: gl.glEnable(cap.toGlEnum)
+    else: gl.glDisable(cap.toGlEnum)
 
 proc clearColor*(gl: OpenGl, r, g, b, a: GlClampf) =
   updateDiff gl.sClearColor, (r, g, b, a):
@@ -293,6 +429,29 @@ proc bindFramebuffer*(gl: OpenGl, targets: set[FramebufferTarget],
       if gl.getError() == GL_INVALID_VALUE:
         raise newException(ValueError,
                            "framebuffer " & $buffer & " doesn't exist")
+
+proc bindSampler*(gl: OpenGl, unit: int, sampler: GlUint) =
+  if unit >= gl.sSamplerBindings.len:
+    raise newException(ValueError,
+                       "too many texture bindings " &
+                       "(attempt to use unit " & $unit & ", max is " &
+                       $(gl.sSamplerBindings.len - 1) & ")")
+  updateDiff gl.sSamplerBindings[unit], sampler:
+    gl.glBindSampler(unit.GlUint, sampler)
+
+proc `textureUnit=`*(gl: OpenGl, unit: int) =
+  if unit >= gl.sTextureUnitBindings.len:
+    raise newException(ValueError,
+                       "too many texture bindings " &
+                       "(attempt to use unit " & $unit & ", max is " &
+                       $(gl.sTextureUnitBindings.len - 1) & ")")
+  updateDiff gl.sTextureUnit, unit:
+    let unit = GlEnum(int(GL_TEXTURE0) + unit)
+    gl.glActiveTexture(unit)
+
+proc bindTexture*(gl: OpenGl, target: TextureTarget, texture: GlUint) =
+  updateDiff gl.sTextureUnitBindings[gl.sTextureUnit][target], texture:
+    gl.glBindTexture(target.toGlEnum, texture)
 
 proc bindVertexArray*(gl: OpenGl, vao: VertexArray) =
   var changed = false
@@ -367,41 +526,56 @@ proc linkProgram*(gl: OpenGl, program: GlUint): Option[string] =
 proc getUniformLocation*(gl: OpenGl, program: GlUint, name: string): GlInt =
   gl.glGetUniformLocation(program, name)
 
+proc resetTextureUnitCounter*(gl: OpenGl) =
+  gl.uniformTextureUnit = 0
+
 macro uniformAux(gl, loc, u: untyped) =
   result = newStmtList()
 
   var cases = newTree(nnkCaseStmt, newDotExpr(u, ident"ty"))
   for utype in UniformType:
-    let
-      typeName = ($utype)[2..^1]
-      flatName = typeName.dup(removeSuffix("Array"))
-      uniformName =
-        if flatName == "Float32": "1f"
-        elif flatName == "Int32": "1i"
-        elif flatName == "Uint32": "1ui"
-        elif flatName.startsWith("Vec"): flatName[3..^1]
-        elif flatName.startsWith("Mat"): "Matrix" & flatName[3..^1]
-        else: ""
-      glProc = newDotExpr(gl, ident("glUniform" & uniformName & "v"))
-      value = newDotExpr(u, ident("val" & typeName))
-      valuePtr =
-        if typeName.endsWith("Array"):
-          newCall("unsafeAddr", newTree(nnkBracketExpr, value, newLit(0)))
-        elif uniformName[0] == '1':
-          newCall("unsafeAddr", value)
-        else:
-          newCall("caddr", value)
-      count =
-        if typeName.endsWith("Array"):
-          newCall("GlInt", newCall("len", value))
-        else:
-          newLit(1)
-      call =
-        if uniformName[0] == 'M':  # MatrixNxMfv
-          newCall(glProc, loc, count, newLit(true), valuePtr)
-        else:
-          newCall(glProc, loc, count, valuePtr)
-    cases.add(newTree(nnkOfBranch, ident($utype), call))
+    if utype == utUSampler:
+      let impl = quote do:
+        let usampler = `u`.valUSampler
+        `gl`.textureUnit = `gl`.uniformTextureUnit
+        `gl`.bindTexture(usampler.textureTarget.TextureTarget,
+                         usampler.textureId)
+        `gl`.bindSampler(`gl`.uniformTextureUnit, usampler.samplerId)
+        var uniformValue = `gl`.uniformTextureUnit.GlInt
+        `gl`.glUniform1iv(`loc`, 1, addr uniformValue)
+        inc(`gl`.uniformTextureUnit)
+      cases.add(newTree(nnkOfBranch, ident($utype), impl))
+    else:
+      let
+        typeName = ($utype)[2..^1]
+        flatName = typeName.dup(removeSuffix("Array"))
+        uniformName =
+          if flatName == "Float32": "1f"
+          elif flatName == "Int32": "1i"
+          elif flatName == "Uint32": "1ui"
+          elif flatName.startsWith("Vec"): flatName[3..^1]
+          elif flatName.startsWith("Mat"): "Matrix" & flatName[3..^1]
+          else: ""
+        glProc = newDotExpr(gl, ident("glUniform" & uniformName & "v"))
+        value = newDotExpr(u, ident("val" & typeName))
+        valuePtr =
+          if typeName.endsWith("Array"):
+            newCall("unsafeAddr", newTree(nnkBracketExpr, value, newLit(0)))
+          elif uniformName[0] == '1':
+            newCall("unsafeAddr", value)
+          else:
+            newCall("caddr", value)
+        count =
+          if typeName.endsWith("Array"):
+            newCall("GlInt", newCall("len", value))
+          else:
+            newLit(1)
+        call =
+          if uniformName[0] == 'M':  # MatrixNxMfv
+            newCall(glProc, loc, count, newLit(true), valuePtr)
+          else:
+            newCall(glProc, loc, count, valuePtr)
+      cases.add(newTree(nnkOfBranch, ident($utype), call))
 
   result.add(cases)
 
@@ -476,6 +650,71 @@ proc disableVertexAttrib*(gl: OpenGl, index: int) =
 proc deleteVertexArray*(gl: OpenGl, array: VertexArray) =
   var array = array
   gl.glDeleteVertexArrays(1, addr array.id)
+
+proc createTexture*(gl: OpenGl): GlUint =
+  gl.glGenTextures(1, addr result)
+
+proc data1D*(gl: OpenGl, width: Positive, format, typ: GlEnum) =
+  gl.glTexImage1D(GL_TEXTURE_1D, level = 0, format.GlInt, width.GlSizei,
+                  border = 0, format, typ, data = nil)
+
+proc data2D*(gl: OpenGl, target: TextureTarget, width, height: Positive,
+             format, typ: GlEnum) =
+  assert target in {ttTexture1DArray, ttTexture2D,
+                    ttTextureCubeMapPosX..ttTextureCubeMapNegZ}
+  gl.glTexImage2D(target.toGlEnum, level = 0, format.GlInt,
+                  width.GlSizei, height.GlSizei, border = 0,
+                  format, typ, data = nil)
+
+proc data3D*(gl: OpenGl, target: TextureTarget, width, height, depth: Positive,
+             format, typ: GlEnum) =
+  gl.glTexImage3D(target.toGlEnum, level = 0, format.GlInt,
+                  width.GlSizei, height.GlSizei, depth.GlSizei, border = 0,
+                  format, typ, data = nil)
+
+proc subImage1D*(gl: OpenGl, x: Natural, width: Positive,
+                 format, typ: GlEnum, data: pointer) =
+  gl.glTexSubImage1D(GL_TEXTURE_1D, level = 0, x.GlInt, width.GlSizei,
+                     format, typ, data)
+
+proc subImage2D*(gl: OpenGl, target: TextureTarget,
+                 x, y: Natural, width, height: Positive,
+                 format, typ: GlEnum, data: pointer) =
+  assert target in {ttTexture1DArray, ttTexture2D,
+                    ttTextureCubeMapPosX..ttTextureCubeMapNegZ}
+  gl.glTexSubImage2D(target.toGlEnum, level = 0,
+                     x.GlInt, y.GlInt, width.GlSizei, height.GlSizei,
+                     format, typ, data)
+
+proc subImage3D*(gl: OpenGl, target: TextureTarget,
+                 x, y, z: Natural, width, height, depth: Positive,
+                 format, typ: GlEnum, data: pointer) =
+  assert target in {ttTexture2DArray, ttTexture3D}
+  gl.glTexSubImage3D(target.toGlEnum, level = 0,
+                     x.GlInt, y.GlInt, z.GlInt,
+                     width.GlSizei, height.GlSizei, depth.GlSizei,
+                     format, typ, data)
+
+proc genMipmaps*(gl: OpenGl, target: TextureTarget) =
+  gl.glGenerateMipmap(target.toGlEnum)
+
+proc deleteTexture*(gl: OpenGl, texture: GlUint) =
+  var texture = texture
+  gl.glDeleteTextures(1, addr texture)
+
+proc createSampler*(gl: OpenGl): GlUint =
+  gl.glGenSamplers(1, addr result)
+
+proc samplerParam*(gl: OpenGl, sampler: GlUint, param: GlEnum, value: GlInt) =
+  gl.glSamplerParameteri(sampler, param, value)
+
+proc samplerParam*(gl: OpenGl, sampler: GlUint, param: GlEnum,
+                    value: ptr GlFloat) =
+  gl.glSamplerParameterfv(sampler, param, value)
+
+proc deleteSampler*(gl: OpenGl, sampler: GlUint) =
+  var sampler = sampler
+  gl.glDeleteSamplers(1, addr sampler)
 
 proc drawArrays*(gl: OpenGl, primitive: GlEnum, start, count: int) =
   gl.glDrawArrays(primitive, start.GlInt, count.GlSizei)

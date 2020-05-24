@@ -5,7 +5,6 @@ import std/options
 import std/tables
 
 import gl
-import uniform
 import window
 
 import program_base
@@ -28,8 +27,15 @@ macro bindAttribLocations(gl: OpenGl, program: GlUint, T: typedesc): untyped =
         bindAttribLocation(`gl`, `program`, `indexLit`, `nameLit`))
       inc(index)
 
-proc newProgram[V](gl: OpenGl, vertexSrc, fragmentSrc: string,
-                   geometrySrc = ""): Program[V] =
+proc newProgram*[V](win: Window, vertexSrc, fragmentSrc: string,
+                    geometrySrc = ""): Program[V] =
+  ## Creates a new shader program from the given vertex and fragment shader
+  ## source code. If the geometry shader's source code is not empty, it will
+  ## also be compiled and linked.
+  ## This can raise a ``ShaderError`` if any of the shaders fails to compile, or
+  ## the program fails to link.
+
+  var gl = win.IMPL_getGlContext()
 
   new(result) do (program: Program[V]):
     # delete the program when its lifetime is over
@@ -74,13 +80,3 @@ proc newProgram[V](gl: OpenGl, vertexSrc, fragmentSrc: string,
 
   if linkError.isSome:
     raise newException(ShaderError, "link failed: " & linkError.get)
-
-proc newProgram*[V](win: Window, vertexSrc, fragmentSrc: string,
-                    geometrySrc = ""): Program[V] =
-  ## Creates a new shader program from the given vertex and fragment shader
-  ## source code. If the geometry shader's source code is not empty, it will
-  ## also be compiled and linked.
-  ## This can raise a ``ShaderError`` if any of the shaders fails to compile, or
-  ## the program fails to link.
-  var gl = win.IMPL_getGlContext()
-  result = gl.newProgram[:V](vertexSrc, fragmentSrc, geometrySrc)

@@ -1,5 +1,6 @@
 import aglet
 import aglet/window/glfw
+import glm/noise
 
 type
   Vertex = object
@@ -28,12 +29,13 @@ const
 
     in vec2 fragTextureCoords;
 
-    uniform sampler2D bricks;
+    uniform sampler1D noise;
 
     out vec4 color;
 
     void main(void) {
-      color = vec4(1.0, 1.0, 1.0, 1.0);
+      float intensity = texture(noise, fragTextureCoords.x).r;
+      color = vec4(intensity, 1.0, 1.0, 1.0);
     }
   """
 
@@ -51,11 +53,19 @@ var
     ],
     indices = [0'u32, 1, 2, 2, 3, 0],
   )
+  noiseMap: seq[float32]
+
+for i in 0..<128:
+  noiseMap.add((perlin(vec2f(0.0, i / 128 * 4)) + 1) / 2)
+
+var noiseTex = win.newTexture1D(noiseMap.len, noiseMap[0].unsafeAddr)
 
 while not win.closeRequested:
   var target = win.render()
   target.clearColor(vec4f(0.0, 0.0, 0.0, 1.0))
-  target.draw(prog, rect, NoUniforms)
+  target.draw(prog, rect, uniforms {
+    noise: noiseTex.sampler()
+  })
   target.finish()
 
   win.pollEvents do (event: InputEvent):

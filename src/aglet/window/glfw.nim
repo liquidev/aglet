@@ -48,7 +48,7 @@ proc checkGlfwError() =
 proc implWindow(win: WindowGlfw) =
   template wing: WindowGlfw = win.WindowGlfw
 
-  win.pollEventsImpl = proc (win: Window, processEvent: InputProc) =
+  win.pollEventsImpl = proc (win: Window, processEvent: InputProc) {.nosinks.} =
     wing.processEvent = processEvent
     # XXX: hopefully this is enough to make polling *not* be global, but I'll
     # have to confirm this
@@ -56,7 +56,7 @@ proc implWindow(win: WindowGlfw) =
     glfwPollEvents()
 
   win.waitEventsImpl = proc (win: Window, processEvent: InputProc,
-                             timeout: float) =
+                             timeout: float) {.nosinks.} =
     wing.processEvent = processEvent
     wing.IMPL_makeCurrent()
     glfwWaitEventsTimeout(timeout.cdouble)

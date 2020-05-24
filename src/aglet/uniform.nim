@@ -9,6 +9,18 @@ import std/macros
 import glm/mat
 import glm/vec
 
+type
+  USampler* = object  ## \
+    ## Meta-object for samplers. This is meant for internal use by the texture
+    ## implementation, don't use this.
+
+    # this object deals with some raw data to avoid cyclic dependencies.
+    # it's kind of unsafe but eh. I'd be more afraid if these were pointers, but
+    # those are measly ints, so whatever.
+    # I'm including a mapping of what the type *actually* is supposed to be.
+    textureTarget*: uint8           # -> TextureTarget
+    textureId*, samplerId*: uint32  # -> GlUint
+
 proc typeNameToNode(typeName, arrayRepr: string): NimNode =
   result =
     if typeName.endsWith("Array"):
@@ -42,6 +54,8 @@ proc genTypeNames(dest: var seq[string]) =
     for ty in dest:
       arrays.add(ty & "Array")
     dest.add(arrays)
+
+  dest.add("USampler")
 
 proc addUniformTypeEnum(typesec: var NimNode, typeList: seq[string]) =
   var enumDef = newTree(nnkEnumTy, newEmptyNode())
