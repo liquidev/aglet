@@ -132,3 +132,7 @@ macro genUniforms() =
   addConverters(result, types)
 
 genUniforms()
+
+# to mitigate the warning produced by target.nim:
+when defined(nimHasUsed):
+  {.used.}

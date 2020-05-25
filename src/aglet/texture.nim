@@ -6,6 +6,9 @@ import gl
 import uniform
 import window
 
+
+# types
+
 type
   PixelType* =
     uint8 | Vec2[uint8] | Vec3[uint8] | Vec4[uint8] |
@@ -76,6 +79,9 @@ type
     image.height is SomeInteger
     image.data is ByteArray
 
+
+# utilities
+
 const
   tfMipmapped = {tfNearestMipmapNearest..tfLinearMipmapLinear}
 
@@ -106,6 +112,9 @@ proc dataType(T: typedesc[PixelType]): GlEnum =
   elif T is float32 | Vec2f | Vec3f | Vec4f: GL_TFLOAT
   elif T is int32 | Vec2i | Vec3i | Vec4i: GL_TINT
   elif T is uint32 | Vec2ui | Vec3ui | Vec4ui: GL_TUNSIGNED_INT
+
+
+# getters
 
 proc texture*(sampler: Sampler): Texture =
   ## Retrieves the texture this sampler was created for.
@@ -183,8 +192,12 @@ proc target[T: Texture](texture: T): TextureTarget =
   elif T is Texture3D: ttTexture3D
   elif T is TextureCubeMap: ttTextureCubeMap
 
+
 proc use[T: Texture](texture: T) =
   texture.gl.bindTexture(texture.target, texture.id)
+
+
+# 1D
 
 proc subImage*[T: PixelType](texture: Texture1D, x: int, width: Positive,
                              data: ptr T) =
@@ -228,6 +241,39 @@ proc upload*[T: PixelType](texture: Texture1D, data: openArray[T]) =
 
   assert data.len > 0
   texture.upload(data.len, data[0].unsafeAddr)
+
+template textureInit(gl: OpenGl) =
+  new(result) do (texture: typeof(result)):
+    texture.gl.deleteTexture(texture.id)
+  result.id = gl.createTexture()
+  result.gl = gl
+
+proc newTexture1D*(win: Window): Texture1D =
+  ## Creates a new 1D texture. The texture does not contain any data; a data
+  ## store must be allocated using ``upload`` before the texture is used.
+
+  var gl = win.IMPL_getGlContext()
+  textureInit(gl)
+
+proc newTexture1D*[T: PixelType](win: Window, width: Positive,
+                                 data: ptr T): Texture1D =
+  ## Creates a new 1D texture and initializes it with data stored at the
+  ## given pointer. This procedure is **unsafe** as it deals with pointers.
+  ## Prefer the ``openArray`` version instead.
+
+  result = win.newTexture1D()
+  result.upload[:T](width, data)
+
+proc newTexture1D*[T: PixelType](win: Window, data: openArray[T]): Texture1D =
+  ## Creates a new 1D texture and initializes it with the given data.
+  ## The width of the texture is inferred from the data's length, which must not
+  ## be zero.
+
+  result = win.newTexture1D()
+  result.upload[:T](data)
+
+
+# 2D
 
 proc subImage*[T: PixelType](texture: Texture2D, position: Vec2i,
                              size: Vec2i, data: ptr T) =
@@ -318,6 +364,40 @@ proc upload*[T: BinaryImageBuffer](texture: Texture2D, image: T,
     texture.fHeight = image.height
   texture.subImage(vec2i(0, 0), image, channels)
 
+proc newTexture2D*(win: Window): Texture2D =
+  ## Creates a new 2D texture. The texture does not contain any data; a data
+  ## store must be allocated using ``upload`` before the texture is used.
+
+  var gl = win.IMPL_getGlContext()
+  textureInit(gl)
+
+proc newTexture2D*[T: PixelType](win: Window, size: Vec2i,
+                                 data: ptr T): Texture2D =
+  ## Creates a new 2D texture and initializes it with data stored at the given
+  ## pointer. This procedure is **unsafe** as it deals with pointers.
+  ## Prefer the ``openArray`` and ``BinaryImageBuffer`` versions when possible.
+
+  result = win.newTexture2D()
+  result.upload[:T](size, data)
+
+proc newTexture2D*[T: PixelType](win: Window, size: Vec2i,
+                                 data: openArray[T]): Texture2D =
+  ## Creates a new 2D texture and initializes it with data stored in the given
+  ## array.
+
+  result = win.newTexture2D()
+  result.upload[:T](size, data)
+
+proc newTexture2D*[T: BinaryImageBuffer](win: Window, image: T): Texture2D =
+  ## Creates a new 2D texture and initializes it with pixels stored in the given
+  ## image.
+
+  result = win.newTexture2D()
+  result.upload[:T](image)
+
+
+# sampler
+
 proc sampler*[T: Texture](texture: T,
                           minFilter: TextureMinFilter = tfNearestMipmapLinear,
                           magFilter: TextureMagFilter = tfLinear,
@@ -368,64 +448,3 @@ proc toUniform*(sampler: Sampler): Uniform =
                           textureId: sampler.texture.id,
                           samplerId: sampler.id)
   result = Uniform(ty: utUSampler, valUSampler: usampler)
-
-template textureInit(gl: OpenGl) =
-  new(result) do (texture: typeof(result)):
-    texture.gl.deleteTexture(texture.id)
-  result.id = gl.createTexture()
-  result.gl = gl
-
-proc newTexture1D*(win: Window): Texture1D =
-  ## Creates a new 1D texture. The texture does not contain any data; a data
-  ## store must be allocated using ``upload`` before the texture is used.
-
-  var gl = win.IMPL_getGlContext()
-  textureInit(gl)
-
-proc newTexture1D*[T: PixelType](win: Window, width: Positive,
-                                 data: ptr T): Texture1D =
-  ## Creates a new 1D texture and initializes it with data stored at the
-  ## given pointer. This procedure is **unsafe** as it deals with pointers.
-  ## Prefer the ``openArray`` version instead.
-
-  result = win.newTexture1D()
-  result.upload[:T](width, data)
-
-proc newTexture1D*[T: PixelType](win: Window, data: openArray[T]): Texture1D =
-  ## Creates a new 1D texture and initializes it with the given data.
-  ## The width of the texture is inferred from the data's length, which must not
-  ## be zero.
-
-  result = win.newTexture1D()
-  result.upload[:T](data)
-
-proc newTexture2D*(win: Window): Texture2D =
-  ## Creates a new 2D texture. The texture does not contain any data; a data
-  ## store must be allocated using ``upload`` before the texture is used.
-
-  var gl = win.IMPL_getGlContext()
-  textureInit(gl)
-
-proc newTexture2D*[T: PixelType](win: Window, size: Vec2i,
-                                 data: ptr T): Texture2D =
-  ## Creates a new 2D texture and initializes it with data stored at the given
-  ## pointer. This procedure is **unsafe** as it deals with pointers.
-  ## Prefer the ``openArray`` and ``BinaryImageBuffer`` versions when possible.
-
-  result = win.newTexture2D()
-  result.upload[:T](size, data)
-
-proc newTexture2D*[T: PixelType](win: Window, size: Vec2i,
-                                 data: openArray[T]): Texture2D =
-  ## Creates a new 2D texture and initializes it with data stored in the given
-  ## array.
-
-  result = win.newTexture2D()
-  result.upload[:T](size, data)
-
-proc newTexture2D*[T: BinaryImageBuffer](win: Window, image: T): Texture2D =
-  ## Creates a new 2D texture and initializes it with pixels stored in the given
-  ## image.
-
-  result = win.newTexture2D()
-  result.upload[:T](image)

@@ -37,7 +37,8 @@ const
 
     void main(void) {
       float intensity = texture(noise, fragTextureCoords.x).r;
-      color = texture(bricks, fragTextureCoords) * intensity;
+      vec2 uv = vec2(fragTextureCoords.x, 1.0 - fragTextureCoords.y);
+      color = texture(bricks, fragTextureCoords) + vec4(vec3(intensity), 0.0);
     }
   """
 
@@ -50,15 +51,15 @@ var
     vertices = [
       Vertex(position: vec2f(-0.5,  0.5), textureCoords: vec2f(0.0, 1.0)),
       Vertex(position: vec2f( 0.5,  0.5), textureCoords: vec2f(1.0, 1.0)),
-      Vertex(position: vec2f( 0.5, -0.5), textureCoords: vec2f(0.0, 0.0)),
-      Vertex(position: vec2f(-0.5, -0.5), textureCoords: vec2f(1.0, 0.0)),
+      Vertex(position: vec2f( 0.5, -0.5), textureCoords: vec2f(1.0, 0.0)),
+      Vertex(position: vec2f(-0.5, -0.5), textureCoords: vec2f(0.0, 0.0)),
     ],
     indices = [0'u32, 1, 2, 2, 3, 0],
   )
   noiseMap: seq[float32]
 
 for i in 0..<128:
-  noiseMap.add((perlin(vec2f(0.0, i / 128 * 4)) + 1) / 2)
+  noiseMap.add((perlin(vec2f(0.0, i / 128 * 10)) + 1) / 2)
 
 const
   BricksPng = slurp("data/bricks.png")
