@@ -1,8 +1,5 @@
 ## Base render target. Used by windows and framebuffer objects.
 
-import std/macros
-import std/tables
-
 import glm/vec
 
 import gl

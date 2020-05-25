@@ -20,6 +20,7 @@ type
     tfNearestMipmapLinear
     tfLinearMipmapNearest
     tfLinearMipmapLinear
+
   TextureMinFilter* = TextureFilter
   TextureMagFilter* = range[tfNearest..tfLinear]
 
@@ -44,7 +45,8 @@ type
     gl: OpenGl
     id: GlUint
     samplers: Table[SamplerParams, Sampler]
-    mipmapped, dirty: bool
+    dirty: bool
+
   TextureArray = ref object of Texture
 
   Texture1D* {.final.} = ref object of Texture
@@ -63,6 +65,19 @@ type
     fWidth, fHeight: int
 
   Some2DTexture* = Texture2D | Texture2DArray
+
+  ByteArray* = concept array
+    ## Describes an array of values, of which each one can be casted to a uint8.
+    sizeof(array[int]) == 1
+
+  BinaryImageBuffer* = concept image
+    ## Concept describing an image that holds some arbitrary 8-bit data.
+    image.width is SomeInteger
+    image.height is SomeInteger
+    image.data is ByteArray
+
+const
+  tfMipmapped = {tfNearestMipmapNearest..tfLinearMipmapLinear}
 
 proc toGlEnum(filter: TextureFilter): GlEnum =
   case filter
@@ -171,33 +186,35 @@ proc target[T: Texture](texture: T): TextureTarget =
 proc use[T: Texture](texture: T) =
   texture.gl.bindTexture(texture.target, texture.id)
 
-proc subImage*[T: PixelType](texture: Texture1D, x: Natural, width: Positive,
+proc subImage*[T: PixelType](texture: Texture1D, x: int, width: Positive,
                              data: ptr T) =
   ## Updates a portion of the texture. ``x + width`` must be less than or equal
   ## to ``texture.width``, otherwise an assertion is triggered.
   ## This procedure deals with pointers and so it is **unsafe**, prefer the
   ## ``openArray`` version instead.
 
+  assert x >= 0
   assert x + width <= texture.width, "pixels cannot be copied out of bounds"
   assert data != nil
   texture.use()
   texture.gl.subImage1D(x, width, T.format, T.dataType, data)
   texture.dirty = true
 
-proc subImage*[T: PixelType](texture: Texture1D, x: Natural,
+proc subImage*[T: PixelType](texture: Texture1D, x: int,
                              data: openArray[T]) =
   ## Safe version of ``subImage``. The width is inferred from the length of
   ## ``data``.
 
   texture.subImage[:T](x, data.len, data[0].unsafeAddr)
 
-proc upload*[T: PixelType](texture: Texture1D, width: Positive, data: ptr T) =
+proc upload*[T: PixelType](texture: Texture1D, width: int, data: ptr T) =
   ## Upload generic data to the texture. This will only allocate a new data
   ## store if the texture's existing width does not match the target width.
   ## This procedure is **unsafe** and should only be used in specific cases.
   ## Prefer the ``openArray`` version instead.
 
   assert data != nil
+  assert width > 0
   texture.use()
   if texture.fWidth != width:
     texture.gl.data1D(width, T.format, T.dataType)
@@ -210,7 +227,96 @@ proc upload*[T: PixelType](texture: Texture1D, data: openArray[T]) =
   ## texture's existing width does not match the target width.
 
   assert data.len > 0
-  texture.upload[:T](data.len, data[0].unsafeAddr)
+  texture.upload(data.len, data[0].unsafeAddr)
+
+proc subImage*[T: PixelType](texture: Texture2D, position: Vec2i,
+                             size: Vec2i, data: ptr T) =
+  ## ``subImage`` for 2D textures. Same rules as apply as for 1D textures,
+  ## except the Y coordinate is checked as well.
+  ## This procesure deals with pointers and so, it is **unsafe**. Prefer the
+  ## ``openArray`` version for dealing with generated data, or the
+  ## ``BinaryImageBuffer`` version for dealing with data loaded from other
+  ## libraries like nimPNG or flippy.
+
+  assert position.x >= 0 and position.y >= 0
+  assert size.x > 0 and size.y > 0
+  assert position.x + size.x <= texture.width and
+         position.y + size.y <= texture.height,
+    "pixels cannot be copied out of bounds"
+  assert data != nil
+  texture.use()
+  texture.gl.subImage2D(texture.target, position.x, position.y, size.x, size.y,
+                        T.format, T.dataType, data)
+  texture.dirty = true
+
+proc subImage*[T: PixelType](texture: Texture2D, position: Vec2i, size: Vec2i,
+                             data: openArray[T]) =
+  ## ``subImage`` for 2D textures that accepts an ``openArray`` for data.
+  ## ``data.len`` must be equal to ``size.x * size.y``, otherwise an assertion
+  ## is triggered.
+
+  assert data.len == size.x * size.y
+  texture.subImage(position, size, data[0].unsafeAddr)
+
+proc channelCountToGlEnum(channels: range[1..4]): GlEnum =
+  case channels
+  of 1: GL_RED
+  of 2: GL_RG
+  of 3: GL_RGB
+  of 4: GL_RGBA
+
+proc subImage*[T: BinaryImageBuffer](texture: Texture2D,
+                                     position: Vec2i,
+                                     image: T, channels: range[1..4] = 4) =
+  ## ``subImage`` for loading arbitrary image data to the texture.
+  ## This procedure allows for compatibility with existing image libraries,
+  ## like nimPNG or Flippy, without them being a hard dependency.
+
+  assert image.data.len == image.width * image.height * channels
+  assert position.x >= 0 and position.y >= 0
+  texture.use()
+  texture.gl.subImage2D(texture.target,
+                        position.x, position.y, image.width, image.height,
+                        channelCountToGlEnum(channels), GL_TUNSIGNED_BYTE,
+                        image.data[0].unsafeAddr)
+  texture.dirty = true
+
+proc upload*[T: PixelType](texture: Texture2D, size: Vec2i,
+                           data: ptr T) =
+  ## Uploads arbitrary data to the texture. This only allocates a new data store
+  ## if the texture's existing size does not match the target size.
+  ## This procedure deals with pointers, and so it is **unsafe**. Prefer the
+  ## ``openArray`` and ``BinaryImageBuffer`` versions instead.
+
+  assert data != nil
+  assert size.x > 0 and size.y > 0
+  texture.use()
+  if texture.fWidth != size.x or texture.fHeight != size.y:
+    texture.gl.data2D(texture.target, width, height, T.format, T.dataType)
+    texture.fWidth = size.x
+    texture.fHeight = size.y
+  texture.subImage(vec2i(0, 0), size, data)
+
+proc upload*[T: PixelType](texture: Texture2D, size: Vec2i,
+                           data: openArray[T]) =
+  ## Safe version of ``upload``. ``data.len`` must be equal to
+  ## ``size.x * size.y``, otherwise an assertion is triggered.
+
+  texture.upload(size, data[0].unsafeAddr)
+
+proc upload*[T: BinaryImageBuffer](texture: Texture2D, image: T,
+                                   channels: range[1..4] = 4) =
+  ## Generic image buffer version of ``upload``, for use with libraries like
+  ## nimPNG or Flippy.
+
+  assert image.width > 0 and image.height > 0
+  texture.use()
+  if texture.fWidth != image.width or texture.fHeight != image.height:
+    texture.gl.data2D(texture.target, image.width, image.height,
+                      channelCountToGlEnum(channels), GL_TUNSIGNED_BYTE)
+    texture.fWidth = image.width
+    texture.fHeight = image.height
+  texture.subImage(vec2i(0, 0), image, channels)
 
 proc sampler*[T: Texture](texture: T,
                           minFilter: TextureMinFilter = tfNearestMipmapLinear,
@@ -252,7 +358,7 @@ proc sampler*[T: Texture](texture: T,
 
     texture.samplers[params] = result
 
-  if texture.mipmapped and texture.dirty:
+  if minFilter in tfMipmapped and texture.dirty:
     texture.use()
     texture.gl.genMipmaps(texture.target)
     texture.dirty = false
@@ -268,32 +374,58 @@ template textureInit(gl: OpenGl) =
     texture.gl.deleteTexture(texture.id)
   result.id = gl.createTexture()
   result.gl = gl
-  result.mipmapped = mipmapped
 
-proc newTexture1D*(win: Window, mipmapped = true): Texture1D =
-  ## Creates a new texture. What the texture contains is undefined
-  ## (it may be cleared to zeroes, but some drivers may simply leave leftover
-  ## garbage remaining in the texture).
+proc newTexture1D*(win: Window): Texture1D =
+  ## Creates a new 1D texture. The texture does not contain any data; a data
+  ## store must be allocated using ``upload`` before the texture is used.
 
   var gl = win.IMPL_getGlContext()
-
   textureInit(gl)
 
 proc newTexture1D*[T: PixelType](win: Window, width: Positive,
-                                 data: ptr T, mipmapped = true): Texture1D =
-  ## Creates a new texture and initializes it with some data stored at the given
-  ## pointer. If you want to upload data, this procedure is unsafe as it deals
-  ## with pointers. Prefer the ``openArray`` and ``BinaryImageBuffer`` versions
-  ## instead.
+                                 data: ptr T): Texture1D =
+  ## Creates a new 1D texture and initializes it with data stored at the
+  ## given pointer. This procedure is **unsafe** as it deals with pointers.
+  ## Prefer the ``openArray`` version instead.
 
-  result = win.newTexture1D(mipmapped)
+  result = win.newTexture1D()
   result.upload[:T](width, data)
 
-proc newTexture1D*[T: PixelType](win: Window, data: openArray[T],
-                                 mipmapped = true): Texture1D =
-  ## Creates a new texture and initializes it with the given data.
+proc newTexture1D*[T: PixelType](win: Window, data: openArray[T]): Texture1D =
+  ## Creates a new 1D texture and initializes it with the given data.
   ## The width of the texture is inferred from the data's length, which must not
   ## be zero.
 
-  result = win.newTexture1D(mipmapped)
+  result = win.newTexture1D()
   result.upload[:T](data)
+
+proc newTexture2D*(win: Window): Texture2D =
+  ## Creates a new 2D texture. The texture does not contain any data; a data
+  ## store must be allocated using ``upload`` before the texture is used.
+
+  var gl = win.IMPL_getGlContext()
+  textureInit(gl)
+
+proc newTexture2D*[T: PixelType](win: Window, size: Vec2i,
+                                 data: ptr T): Texture2D =
+  ## Creates a new 2D texture and initializes it with data stored at the given
+  ## pointer. This procedure is **unsafe** as it deals with pointers.
+  ## Prefer the ``openArray`` and ``BinaryImageBuffer`` versions when possible.
+
+  result = win.newTexture2D()
+  result.upload[:T](size, data)
+
+proc newTexture2D*[T: PixelType](win: Window, size: Vec2i,
+                                 data: openArray[T]): Texture2D =
+  ## Creates a new 2D texture and initializes it with data stored in the given
+  ## array.
+
+  result = win.newTexture2D()
+  result.upload[:T](size, data)
+
+proc newTexture2D*[T: BinaryImageBuffer](win: Window, image: T): Texture2D =
+  ## Creates a new 2D texture and initializes it with pixels stored in the given
+  ## image.
+
+  result = win.newTexture2D()
+  result.upload[:T](image)

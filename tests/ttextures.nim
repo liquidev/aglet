@@ -1,6 +1,7 @@
 import aglet
 import aglet/window/glfw
 import glm/noise
+import nimPNG
 
 type
   Vertex = object
@@ -30,12 +31,13 @@ const
     in vec2 fragTextureCoords;
 
     uniform sampler1D noise;
+    uniform sampler2D bricks;
 
     out vec4 color;
 
     void main(void) {
       float intensity = texture(noise, fragTextureCoords.x).r;
-      color = vec4(intensity, 1.0, 1.0, 1.0);
+      color = texture(bricks, fragTextureCoords) * intensity;
     }
   """
 
@@ -58,13 +60,19 @@ var
 for i in 0..<128:
   noiseMap.add((perlin(vec2f(0.0, i / 128 * 4)) + 1) / 2)
 
-var noiseTex = win.newTexture1D(noiseMap.len, noiseMap[0].unsafeAddr)
+const
+  BricksPng = slurp("data/bricks.png")
+
+var
+  noiseTex = win.newTexture1D(noiseMap)
+  bricksTex = win.newTexture2D(decodePNG32(BricksPng))
 
 while not win.closeRequested:
   var target = win.render()
   target.clearColor(vec4f(0.0, 0.0, 0.0, 1.0))
   target.draw(prog, rect, uniforms {
-    noise: noiseTex.sampler()
+    ?noise: noiseTex.sampler(),
+    ?bricks: bricksTex.sampler(magFilter = tfNearest),
   })
   target.finish()
 

@@ -14,6 +14,11 @@ type
 
 const NoUniforms* = EmptyUniforms()
 
+proc isValidUniformName(name: NimNode): bool =
+  result =
+    name.kind == nnkIdent or
+    name.kind == nnkPrefix and name[0] == ident"?" and name[1].kind == nnkIdent
+
 macro uniforms*(pairs: untyped): untyped =
   ## Helper macro that transforms a table constructor to a
   ## ``UniformSource``-compatible tuple. This macro is mainly useful to avoid
@@ -40,11 +45,13 @@ macro uniforms*(pairs: untyped): untyped =
   for pair in pairs:
     if pair.kind != nnkExprColonExpr:
       error("uniform pair 'a: b' expected", pair)
-    let
+    var
       key = pair[0]
       value = pair[1]
-    if key.kind != nnkIdent:
+    if not key.isValidUniformName:
       error("invalid uniform name: '" & key.repr & "'", key)
+    if key.kind == nnkPrefix:
+      key = ident('?' & key[1].strVal)
     result.add(newColonExpr(key, newCall(bindSym"toUniform", value)))
 
 iterator getUniforms*(none: EmptyUniforms): (string, Uniform) =
