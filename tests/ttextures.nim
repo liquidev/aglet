@@ -54,7 +54,7 @@ var
       Vertex(position: vec2f( 0.5, -0.5), textureCoords: vec2f(1.0, 0.0)),
       Vertex(position: vec2f(-0.5, -0.5), textureCoords: vec2f(0.0, 0.0)),
     ],
-    indices = [0'u32, 1, 2, 2, 3, 0],
+    indices = [uint32 0, 1, 2, 2, 3, 0],
   )
   noiseMap: seq[float32]
 

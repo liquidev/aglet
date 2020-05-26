@@ -106,6 +106,7 @@ type
     glClearStencil: proc (stencil: GlInt) {.cdecl.}
     glDisable: proc (cap: GlEnum) {.cdecl.}
     glEnable: proc (cap: GlEnum) {.cdecl.}
+    glPixelStorei: proc (pname: GlEnum, param: GlInt) {.cdecl.}
     glUseProgram: proc (program: GlUint) {.cdecl.}
     glViewport: proc (x, y: GlInt, width, height: GlSizei) {.cdecl.}
 
@@ -267,6 +268,8 @@ const
   GL_LINEAR_MIPMAP_LINEAR* = GlEnum(0x2703)
   GL_TEXTURE_MAG_FILTER* = GlEnum(0x2800)
   GL_TEXTURE_MIN_FILTER* = GlEnum(0x2801)
+  GL_PACK_ALIGNMENT* = GlEnum(0x0D05)
+  GL_UNPACK_ALIGNMENT* = GlEnum(0x0CF5)
 
 proc getInt(gl: OpenGl, property: GlEnum, result: ptr GlInt) =
   gl.glGetIntegerv(property, result)
@@ -325,6 +328,10 @@ when not defined(js):
     # update internal state accordingly
     gl.sSamplerBindings.setLen(textureUnitCount)
     gl.sTextureUnitBindings.setLen(textureUnitCount)
+
+    # apply some default settings because OpenGL is weird
+    gl.glPixelStorei(GL_PACK_ALIGNMENT, 1)
+    gl.glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
 
 else:
   # supporting WebGL would be nice, but there are at least a few problems
@@ -572,7 +579,7 @@ macro uniformAux(gl, loc, u: untyped) =
             newLit(1)
         call =
           if uniformName[0] == 'M':  # MatrixNxMfv
-            newCall(glProc, loc, count, newLit(true), valuePtr)
+            newCall(glProc, loc, count, newLit(false), valuePtr)
           else:
             newCall(glProc, loc, count, valuePtr)
       cases.add(newTree(nnkOfBranch, ident($utype), call))

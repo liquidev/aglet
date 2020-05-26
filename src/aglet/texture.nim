@@ -54,16 +54,16 @@ type
 
   Texture1D* {.final.} = ref object of Texture
     fWidth: int
-  Texture1DArray* {.final.} = ref object of TextureArray
-    fWidth, fLen: int
   Texture2D* {.final.} = ref object of Texture
     fWidth, fHeight: int
     fMultisample: bool
+  Texture3D* {.final.} = ref object of Texture
+    fWidth, fHeight, fDepth: int
+  Texture1DArray* {.final.} = ref object of TextureArray
+    fWidth, fLen: int
   Texture2DArray* {.final.} = ref object of TextureArray
     fWidth, fHeight, fLen: int
     fMultisample: bool
-  Texture3D* {.final.} = ref object of Texture
-    fWidth, fHeight, fDepth: int
   TextureCubeMap* {.final.} = ref object of Texture
     fWidth, fHeight: int
 
@@ -275,19 +275,19 @@ proc newTexture1D*[T: PixelType](win: Window, data: openArray[T]): Texture1D =
 
 # 2D
 
-proc subImage*[T: PixelType](texture: Texture2D, position: Vec2i,
-                             size: Vec2i, data: ptr T) =
+proc subImage*[T: PixelType](texture: Texture2D, position, size: Vec2i,
+                             data: ptr T) =
   ## ``subImage`` for 2D textures. Same rules as apply as for 1D textures,
   ## except the Y coordinate is checked as well.
-  ## This procesure deals with pointers and so, it is **unsafe**. Prefer the
+  ## This procedure deals with pointers and so, it is **unsafe**. Prefer the
   ## ``openArray`` version for dealing with generated data, or the
   ## ``BinaryImageBuffer`` version for dealing with data loaded from other
   ## libraries like nimPNG or flippy.
 
   assert position.x >= 0 and position.y >= 0
   assert size.x > 0 and size.y > 0
-  assert position.x + size.x <= texture.width and
-         position.y + size.y <= texture.height,
+  assert position.x + size.x <= texture.fWidth and
+         position.y + size.y <= texture.fHeight,
     "pixels cannot be copied out of bounds"
   assert data != nil
   texture.use()
@@ -295,7 +295,7 @@ proc subImage*[T: PixelType](texture: Texture2D, position: Vec2i,
                         T.format, T.dataType, data)
   texture.dirty = true
 
-proc subImage*[T: PixelType](texture: Texture2D, position: Vec2i, size: Vec2i,
+proc subImage*[T: PixelType](texture: Texture2D, position, size: Vec2i,
                              data: openArray[T]) =
   ## ``subImage`` for 2D textures that accepts an ``openArray`` for data.
   ## ``data.len`` must be equal to ``size.x * size.y``, otherwise an assertion
@@ -338,7 +338,7 @@ proc upload*[T: PixelType](texture: Texture2D, size: Vec2i,
   assert size.x > 0 and size.y > 0
   texture.use()
   if texture.fWidth != size.x or texture.fHeight != size.y:
-    texture.gl.data2D(texture.target, width, height, T.format, T.dataType)
+    texture.gl.data2D(texture.target, size.x, size.y, T.format, T.dataType)
     texture.fWidth = size.x
     texture.fHeight = size.y
   texture.subImage(vec2i(0, 0), size, data)
@@ -394,6 +394,87 @@ proc newTexture2D*[T: BinaryImageBuffer](win: Window, image: T): Texture2D =
 
   result = win.newTexture2D()
   result.upload[:T](image)
+
+
+# 3D
+
+proc subImage*[T: PixelType](texture: Texture3D, position, size: Vec3i,
+                             data: ptr T) =
+  ## ``subImage`` for 3D texture.
+  ## This procedure deals with pointers and so, it is **unsafe**. Prefer the
+  ## ``openArray`` version instead.
+
+  assert position.x >= 0 and position.y >= 0 and position.z >= 0
+  assert size.x > 0 and size.y > 0 and size.z > 0
+  assert position.x + size.x <= texture.fWidth and
+         position.y + size.y <= texture.fHeight and
+         position.z + size.z <= texture.fDepth,
+    "pixels cannot be copied out of bounds"
+  assert data != nil
+  texture.use()
+  texture.gl.subImage3D(texture.target,
+                        position.x, position.y, position.z,
+                        size.x, size.y, size.z,
+                        T.format, T.dataType, data)
+  texture.dirty = true
+
+proc subImage*[T: PixelType](texture: Texture3D, position, size: Vec3i,
+                             data: openArray[T]) =
+  ## ``subImage`` for 3D textures that accepts an ``openArray`` for data.
+  ## ``data.len`` must be equal to ``size.x * size.y * size.z``, otherwise an
+  ## assertion is triggered.
+
+proc upload*[T: PixelType](texture: Texture3D, size: Vec3i, data: ptr T) =
+  ## Uploads arbitrary data to the texture. This only allocates a new data store
+  ## if the texture's existing size does not match the target size.
+  ## This procedure deals with pointers, and so it is **unsafe**. Prefer the
+  ## ``openArray`` version instead.
+
+  assert data != nil
+  assert size.x > 0 and size.y > 0 and size.z > 0
+  texture.use()
+  if texture.fWidth != size.x or
+     texture.fHeight != size.y or
+     texture.fDepth != size.z:
+    texture.gl.data3D(texture.target, size.x, size.y, size.z,
+                      T.format, T.dataType)
+    texture.fWidth = size.x
+    texture.fHeight = size.y
+    texture.fDepth = size.z
+  texture.subImage(vec3i(0, 0, 0), size, data)
+
+proc upload*[T: PixelType](texture: Texture3D, size: Vec3i,
+                           data: openArray[T]) =
+  ## Safe version of ``upload``. ``data.len`` must be equal to
+  ## ``size.x * size.y * size.z``, otherwise an assertion is triggered.
+
+  assert data.len == size.x * size.y * size.z
+  texture.upload(size, data[0].unsafeAddr)
+
+proc newTexture3D*(win: Window): Texture3D =
+  ## Creates a new 3D texture without and data. A data store must be allocated
+  ## using ``upload`` before the texture is used.
+
+  var gl = win.IMPL_getGlContext()
+  textureInit(gl)
+
+proc newTexture3D*[T: PixelType](win: Window, size: Vec3i,
+                                 data: ptr T): Texture3D =
+  ## Creates a new 3D texture and initializes it with data stored at the given
+  ## pointer. This procedure is **unsafe** as it deals with pointers.
+  ## Prefer the ``openArray`` version instead.
+
+  result = win.newTexture3D()
+  result.upload[:T](size, data)
+
+proc newTexture3D*[T: PixelType](win: Window, size: Vec3i,
+                                 data: openArray[T]): Texture3D =
+  ## Creates a new 3D texture and initializes it with data stored in the given
+  ## array. ``data.len`` must be equal to ``size.x * size.y * size.z``,
+  ## otherwise an assertion is triggered.
+
+  result = win.newTexture3D()
+  result.upload[:T](size, data)
 
 
 # sampler

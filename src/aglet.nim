@@ -9,12 +9,17 @@
 ## - ``target`` – generic surface for drawing
 ## - ``window`` – abstract window interface
 ## - ``input`` – input events
+## - ``util`` – various utilities like the ``uniforms`` macro
 ##
 ## In addition to this, you'll need to import a context creation backend:
 ##
 ## - ``window/glfw`` – cross-platform context management using GLFW3
+##
+## As an added bonus, aglet also exports the common ``vec``, ``mat``, and
+## ``mat_transform`` modules from nim-glm.
 
 import glm/mat
+import glm/mat_transform
 import glm/vec
 
 import aglet/[
@@ -40,4 +45,5 @@ export util
 export window except IMPL_makeCurrent, IMPL_loadGl, IMPL_getGlContext
 
 export mat
+export mat_transform
 export vec
