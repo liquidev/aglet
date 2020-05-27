@@ -1,12 +1,6 @@
 import glm/vec
-import aglet/[
-  input,
-  shaders,
-  state,
-  target,
-  window,
-  window/glfw,
-]
+import aglet
+import aglet/window/glfw
 
 var agl = initAglet()
 agl.initWindow()

@@ -51,18 +51,21 @@ var
   prog = win.newProgram[:Vertex](VertexSource, FragmentSource)
 
 const
-  Density = 32
+  Density = 64
   TextureDensity = 4
+  Noise = 0.01
+  NoiseRange = -Noise..Noise
 
 var volumePoints: seq[Vertex]
 for iz in -Density..Density:
   for iy in -Density..Density:
     for ix in -Density..Density:
       let position =
-        vec3f(ix / Density, iy / Density, iz / Density)# +
-        #vec3f(rand(-0.05..0.05), rand(-0.05..0.05), rand(-0.05..0.05))
+        vec3f(ix / Density, iy / Density, iz / Density) +
+        vec3f(rand(NoiseRange), rand(NoiseRange), rand(NoiseRange))
       var texture = (position + 1) / 2
       volumePoints.add(Vertex(position: position, textureCoords: texture))
+echo "point count: ", volumePoints.len
 
 var volumePixels: seq[Vec3f]
 for iz in 0..<TextureDensity:
@@ -93,12 +96,18 @@ const
   Origin = vec3f(0.0)
   Up = vec3f(0.0, 1.0, 0.0)
 
+let drawParams = defaultDrawParams().derive:
+  depthTest on
+
 while not win.closeRequested:
   var target = win.render()
+
+  target.clearColor(vec4f(0.0, 0.0, 0.0, 1.0))
+  target.clearDepth(0.0)
+
   let
     aspect = target.dimensions.x / target.dimensions.y
     projection = perspective(Fov.float32, aspect, 0.01, 100.0)
-  target.clearColor(vec4f(0.0, 0.0, 0.0, 1.0))
   target.draw(prog, mesh, uniforms {
     model: mat4f(),
     view: lookAt(eye = vec3f(0.0, 0.0, CameraRadius),
@@ -108,10 +117,12 @@ while not win.closeRequested:
       .rotateY(rotationY)
       .scale(zoom),
     projection: projection,
-    volume: volume.sampler(wrapS = twClampToEdge,
+    volume: volume.sampler(magFilter = tfNearest,
+                           wrapS = twClampToEdge,
                            wrapT = twClampToEdge,
                            wrapR = twClampToEdge),
-  })
+  }, drawParams)
+
   target.finish()
 
   win.pollEvents do (event: InputEvent):

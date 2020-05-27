@@ -7,6 +7,7 @@
 ## - ``program`` – shader program creation
 ## - ``uniform`` – dynamic GLSL uniform wrapper type
 ## - ``target`` – generic surface for drawing
+## - ``drawparams`` – drawing parameters and OpenGL features
 ## - ``window`` – abstract window interface
 ## - ``input`` – input events
 ## - ``util`` – various utilities like the ``uniforms`` macro
@@ -23,6 +24,7 @@ import glm/mat_transform
 import glm/vec
 
 import aglet/[
+  drawparams,
   input,
   mesh,
   program,
@@ -34,6 +36,7 @@ import aglet/[
   window,
 ]
 
+export drawparams except IMPL_apply
 export input
 export mesh except IMPL_draw
 export program except IMPL_use, IMPL_setUniform

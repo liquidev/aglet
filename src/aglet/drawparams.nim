@@ -606,7 +606,8 @@ proc IMPL_apply*(params: DrawParams, gl: OpenGl) =
                      blend.alpha.src.toGlEnum, blend.alpha.dest.toGlEnum)
 
     gl.capability(glcColorLogicOp, p.colorLogicOp.isSome)
-    gl.logicOp(p.colorLogicOp.get.toGlEnum)
+    if p.colorLogicOp.isSome:
+      gl.logicOp(p.colorLogicOp.get.toGlEnum)
 
     gl.colorMask(p.colorMask.red, p.colorMask.green, p.colorMask.blue,
                  p.colorMask.alpha)

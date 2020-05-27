@@ -46,7 +46,7 @@ type
 
 var
   prog = win.newProgram[:Vertex](VertexShaderSrc, FragmentShaderSrc)
-  mesh = win.newMesh[:Vertex](abuStatic, dpTriangles)
+  mesh = win.newMesh[:Vertex](muStatic, dpTriangles)
 
 const
   red = vec4f(1.0, 0.0, 0.0, 1.0)
@@ -59,6 +59,8 @@ mesh.uploadVertices [
   Vertex(position: vec2f(0.5,  -0.5), color: blue),
 ]
 
+let drawParams = defaultDrawParams()
+
 let startTime = epochTime()
 while not win.closeRequested:
   var frame = win.render()
@@ -67,7 +69,7 @@ while not win.closeRequested:
 
   frame.draw(prog, mesh, uniforms {
     time: float32(epochTime() - startTime),
-  })
+  }, drawParams)
 
   frame.finish()
 

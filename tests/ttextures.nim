@@ -68,13 +68,15 @@ var
   noiseTex = win.newTexture1D(noiseMap)
   bricksTex = win.newTexture2D(decodePNG32(BricksPng))
 
+let drawParams = defaultDrawParams()
+
 while not win.closeRequested:
   var target = win.render()
   target.clearColor(vec4f(0.0, 0.0, 0.0, 1.0))
   target.draw(prog, rect, uniforms {
     ?noise: noiseTex.sampler(),
     ?bricks: bricksTex.sampler(magFilter = tfNearest),
-  })
+  }, drawParams)
   target.finish()
 
   win.pollEvents do (event: InputEvent):
