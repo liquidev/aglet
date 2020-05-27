@@ -1,5 +1,6 @@
 ## Abstract API for OpenGL.
 
+import std/hashes
 import std/macros
 import std/options
 import std/strutils
@@ -10,45 +11,16 @@ import glm/vec
 export mat
 export vec
 
+import enums
 import uniform
+
+import gl_enum
+import gl_types
+export gl_enum
+export gl_types
 
 type
   # opengl types
-  GlBitfield* = uint32
-  GlBool* = bool
-  GlByte* = int8
-  GlChar* = char
-  GlCharArb* = byte
-  GlClampd* = float64
-  GlClampf* = float32
-  GlClampx* = int32
-  GlDouble* = float64
-  GlEglImageOes* = distinct pointer
-  GlEnum* = distinct uint32
-  GlFixed* = int32
-  GlFloat* = float32
-  GlHalf* = uint16
-  GlHalfArb* = uint16
-  GlHalfNv* = uint16
-  GlHandleArb* = uint32
-  GlInt* = int32
-  GlInt64* = int64
-  GlInt64Ext* = int64
-  GlIntptr* = int
-  GlIntptrArb* = int
-  GlShort* = int16
-  GlSizei* = int32
-  GlSizeiptr* = int
-  GlSizeiptrArb* = int
-  GlSync* = distinct pointer
-  GlUbyte* = uint8
-  GlUint* = uint32
-  GlUint64* = uint64
-  GlUint64Ext* = uint64
-  GlUshort* = uint16
-  GlVdpauSurfaceNv* = int32
-  GlVoid* = pointer
-
   FramebufferTarget* = enum
     ftRead, ftDraw
   BufferTarget* = enum
@@ -63,7 +35,19 @@ type
     ttTextureCubeMapPosZ, ttTextureCubeMapNegZ
 
   OpenGlCapability* = enum
-    glcTexture1D, glcTexture2D, glcTexture3D
+    glcBlend
+    glcColorLogicOp
+    glcCullFace
+    glcDepthTest
+    glcDither
+    glcLineSmooth
+    glcMultisample
+    glcPolygonSmooth
+    glcPrimitiveRestart
+    glcScissorTest
+    glcStencilTest
+    glcTextureCubeMapSeamless
+    glcProgramPointSize
 
   VertexArray* = object
     buffers: array[BufferTarget, GlUint]
@@ -78,20 +62,38 @@ type
     version*: string
 
     # state
+    sBlendColor: tuple[r, g, b, a: GlClampf]
+    sBlendEquation: tuple[rgb, alpha: GlEnum]
+    sBlendFunc: tuple[srcRgb, destRgb, srcAlpha, destAlpha: GlEnum]
     sBuffers: array[BufferTarget, GlUint]
     sClearColor: tuple[r, g, b, a: GlClampf]
     sClearDepth: GlClampd
     sClearStencil: GlInt
+    sColorMask: tuple[r, g, b, a: GlBool]
+    sCullFace: GlEnum
+    sDepthMask: bool
     sEnabledCapabilities: array[OpenGlCapability, bool]
     sFramebuffers: tuple[read, draw: GlUint]
+    sFrontFace: GlEnum
+    sHints: array[Hint, GlEnum]
+    sLogicOp: GlEnum
+    sLineWidth: GlFloat
+    sPointSize: GlFloat
+    sPolygonModes: array[Facing, GlEnum]
+    sPrimitiveRestartIndex: GlUint
     sProgram: GlUint
     sSamplerBindings: seq[GlUint]
+    sScissor: tuple[x, y: GlInt, width, height: GlSizei]
+    sStencilFuncs: array[Facing, tuple[fn: GlEnum, refr: GlInt, mask: GlUint]]
+    sStencilMasks: array[Facing, GlUint]
+    sStencilOps: array[Facing, tuple[sfail, dpfail, dppass: GlEnum]]
     sTextureUnit: int
     sTextureUnitBindings: seq[array[TextureTarget, GlUint]]
     sVertexArray: GlUint
     sViewport: tuple[x, y: GlInt, w, h: GlSizei]
 
     uniformTextureUnit: int
+    currentDrawParamsHash*: Hash  # opt used by IMPL_apply in drawparams.nim
 
     # state functions
     glActiveTexture: proc (texture: GlEnum) {.cdecl.}
@@ -100,13 +102,32 @@ type
     glBindSampler: proc (unit, sampler: GlUint) {.cdecl.}
     glBindTexture: proc (target: GlEnum, texture: GlUint) {.cdecl.}
     glBindVertexArray: proc (array: GlUint) {.cdecl.}
+    glBlendColor: proc (r, g, b, a: GlClampf) {.cdecl.}
+    glBlendEquationSeparate: proc (modeRGB, modeAlpha: GlEnum) {.cdecl.}
+    glBlendFuncSeparate: proc (srcRGB, destRGB: GlEnum,
+                               srcAlpha, destAlpha: GlEnum) {.cdecl.}
     glClear: proc (targets: GlBitfield) {.cdecl.}
     glClearColor: proc (r, g, b, a: GlClampf) {.cdecl.}
     glClearDepth: proc (depth: GlClampd) {.cdecl.}
     glClearStencil: proc (stencil: GlInt) {.cdecl.}
+    glColorMask: proc (r, g, b, a: GlBool) {.cdecl.}
+    glCullFace: proc (mode: GlEnum) {.cdecl.}
+    glDepthMask: proc (mask: GlBool) {.cdecl.}
     glDisable: proc (cap: GlEnum) {.cdecl.}
     glEnable: proc (cap: GlEnum) {.cdecl.}
+    glFrontFace: proc (mode: GlEnum) {.cdecl.}
+    glHint: proc (target, mode: GlEnum) {.cdecl.}
+    glLineWidth: proc (width: GlFloat) {.cdecl.}
+    glLogicOp: proc (opcode: GlEnum) {.cdecl.}
     glPixelStorei: proc (pname: GlEnum, param: GlInt) {.cdecl.}
+    glPointSize: proc (size: GlFloat) {.cdecl.}
+    glPolygonMode: proc (face, mode: GlEnum) {.cdecl.}
+    glPrimitiveRestartIndex: proc (index: GlUint) {.cdecl.}
+    glScissor: proc (x, y: GlInt, width, height: GlSizei) {.cdecl.}
+    glStencilFuncSeparate: proc (face, fn: GlEnum, reference: GlInt,
+                                 mask: GlUint) {.cdecl.}
+    glStencilMaskSeparate: proc (face: GlEnum, mask: GlUint) {.cdecl.}
+    glStencilOpSeparate: proc (face, sfail, dpfail, dppass: GlEnum) {.cdecl.}
     glUseProgram: proc (program: GlUint) {.cdecl.}
     glViewport: proc (x, y: GlInt, width, height: GlSizei) {.cdecl.}
 
@@ -191,85 +212,6 @@ type
     glVertexAttribIPointer: proc (index: GlUint, size: GlInt, typ: GlEnum,
                                   stride: GlSizei, point: pointer) {.cdecl.}
 
-const
-  GL_VERSION* = GlEnum(0x1F02)
-  GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS* = GlEnum(0x8B4D)
-  GL_DEPTH_BUFFER_BIT* = GlEnum(0x100)
-  GL_STENCIL_BUFFER_BIT* = GlEnum(0x400)
-  GL_COLOR_BUFFER_BIT* = GlEnum(0x4000)
-  GL_READ_FRAMEBUFFER* = GlEnum(0x8CA8)
-  GL_DRAW_FRAMEBUFFER* = GlEnum(0x8CA9)
-  GL_FRAGMENT_SHADER* = GlEnum(0x8B30)
-  GL_VERTEX_SHADER* = GlEnum(0x8B31)
-  GL_GEOMETRY_SHADER* = GlEnum(0x8DD9)
-  GL_COMPILE_STATUS* = GlEnum(0x8B81)
-  GL_LINK_STATUS* = GlEnum(0x8B82)
-  GL_INFO_LOG_LENGTH* = GlEnum(0x8B84)
-  GL_ARRAY_BUFFER* = GlEnum(0x8892)
-  GL_ELEMENT_ARRAY_BUFFER* = GlEnum(0x8893)
-  GL_STREAM_DRAW* = GlEnum(0x88E0)
-  GL_STATIC_DRAW* = GlEnum(0x88E4)
-  GL_DYNAMIC_DRAW* = GlEnum(0x88E8)
-  GL_TBYTE* = GlEnum(0x1400)
-  GL_TUNSIGNED_BYTE* = GlEnum(0x1401)
-  GL_TSHORT* = GlEnum(0x1402)
-  GL_TUNSIGNED_SHORT* = GlEnum(0x1403)
-  GL_TINT* = GlEnum(0x1404)
-  GL_TUNSIGNED_INT* = GlEnum(0x1405)
-  GL_TFLOAT* = GlEnum(0x1406)
-  GL_POINTS* = GlEnum(0x0000)
-  GL_LINES* = GlEnum(0x0001)
-  GL_LINE_LOOP* = GlEnum(0x0002)
-  GL_LINE_STRIP* = GlEnum(0x0003)
-  GL_TRIANGLES* = GlEnum(0x0004)
-  GL_TRIANGLE_STRIP* = GlEnum(0x0005)
-  GL_TRIANGLE_FAN* = GlEnum(0x0006)
-  GL_LINES_ADJACENCY* = GlEnum(0x000A)
-  GL_LINE_STRIP_ADJACENCY* = GlEnum(0x000B)
-  GL_TRIANGLES_ADJACENCY* = GlEnum(0x000C)
-  GL_TRIANGLE_STRIP_ADJACENCY* = GlEnum(0x000D)
-  GL_INVALID_ENUM* = GlEnum(0x0500)
-  GL_INVALID_VALUE* = GlEnum(0x0501)
-  GL_INVALID_OPERATION* = GlEnum(0x0502)
-  GL_OUT_OF_MEMORY* = GlEnum(0x0505)
-  GL_INVALID_FRAMEBUFFER_OPERATION* = GlEnum(0x0505)
-  GL_TEXTURE_1D* = GlEnum(0x0DE0)
-  GL_TEXTURE_1D_ARRAY* = GlEnum(0x8C18)
-  GL_TEXTURE_2D* = GlEnum(0x0DE1)
-  GL_TEXTURE_2D_ARRAY* = GlEnum(0x8C1A)
-  GL_TEXTURE_2D_MULTISAMPLE* = GlEnum(0x9100)
-  GL_TEXTURE_2D_MULTISAMPLE_ARRAY* = GlEnum(0x9102)
-  GL_TEXTURE_3D* = GlEnum(0x806F)
-  GL_TEXTURE_CUBE_MAP* = GlEnum(0x8513)
-  GL_TEXTURE_CUBE_MAP_POSITIVE_X* = GlEnum(0x8515)
-  GL_TEXTURE0* = GlEnum(0x84C0)
-  GL_RED* = GlEnum(0x1903)
-  GL_GREEN* = GlEnum(0x1904)
-  GL_BLUE* = GlEnum(0x1905)
-  GL_ALPHA* = GlEnum(0x1906)
-  GL_RG* = GlEnum(0x8227)
-  GL_RGB* = GlEnum(0x1907)
-  GL_RGBA* = GlEnum(0x1908)
-  GL_TEXTURE_WRAP_S* = GlEnum(0x2802)
-  GL_TEXTURE_WRAP_T* = GlEnum(0x2803)
-  GL_TEXTURE_WRAP_R* = GlEnum(0x8072)
-  GL_REPEAT* = GlEnum(0x2901)
-  GL_MIRRORED_REPEAT* = GlEnum(0x8370)
-  GL_CLAMP_TO_EDGE* = GlEnum(0x812F)
-  GL_CLAMP_TO_BORDER* = GlEnum(0x812D)
-  GL_TEXTURE_BORDER_COLOR* = GlEnum(0x1004)
-  GL_TEXTURE_COMPARE_MODE* = GlEnum(0x884C)
-  GL_TEXTURE_COMPARE_FUNC* = GlEnum(0x884D)
-  GL_NEAREST* = GlEnum(0x2600)
-  GL_LINEAR* = GlEnum(0x2601)
-  GL_NEAREST_MIPMAP_NEAREST* = GlEnum(0x2700)
-  GL_LINEAR_MIPMAP_NEAREST* = GlEnum(0x2701)
-  GL_NEAREST_MIPMAP_LINEAR* = GlEnum(0x2702)
-  GL_LINEAR_MIPMAP_LINEAR* = GlEnum(0x2703)
-  GL_TEXTURE_MAG_FILTER* = GlEnum(0x2800)
-  GL_TEXTURE_MIN_FILTER* = GlEnum(0x2801)
-  GL_PACK_ALIGNMENT* = GlEnum(0x0D05)
-  GL_UNPACK_ALIGNMENT* = GlEnum(0x0CF5)
 
 proc getInt(gl: OpenGl, property: GlEnum, result: ptr GlInt) =
   gl.glGetIntegerv(property, result)
@@ -333,6 +275,22 @@ when not defined(js):
     gl.glPixelStorei(GL_PACK_ALIGNMENT, 1)
     gl.glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
 
+    # initialize default state stuff
+    gl.sBlendEquation = (GL_FUNC_ADD, GL_FUNC_ADD)
+    gl.sBlendFunc = (GL_ONE, GL_ZERO,
+                     GL_ONE, GL_ZERO)
+    gl.sCullFace = GL_BACK
+    gl.sEnabledCapabilities[glcDither] = true
+    gl.sFrontFace = GL_CCW
+    gl.sLogicOp = GL_COPY
+    gl.sLineWidth = 1
+    gl.sPointSize = 1
+    gl.sPolygonModes = [GL_FILL, GL_FILL]
+    # as much as I don't like this, I don't think there's a better solution to
+    # this that wouldn't require me to know the size of the window on load time
+    gl.sScissor = (high(GlInt), high(GlInt), high(GlSizei), high(GlSizei))
+    gl.sStencilMasks = [high(uint32), high(uint32)]
+
 else:
   # supporting WebGL would be nice, but there are at least a few problems
   # in place:
@@ -366,9 +324,30 @@ proc toGlEnum(cap: OpenGlCapability): GlEnum =
   # lol this is actually deprecated but I'm leaving it in anyways as I don't
   # want "just a placeholder enum value"
   case cap
-  of glcTexture1D: GL_TEXTURE_1D
-  of glcTexture2D: GL_TEXTURE_2D
-  of glcTexture3D: GL_TEXTURE_3D
+  of glcBlend: GL_BLEND
+  of glcColorLogicOp: GL_COLOR_LOGIC_OP
+  of glcCullFace: GL_CULL_FACE
+  of glcDepthTest: GL_DEPTH_TEST
+  of glcDither: GL_DITHER
+  of glcLineSmooth: GL_LINE_SMOOTH
+  of glcMultisample: GL_MULTISAMPLE
+  of glcPolygonSmooth: GL_POLYGON_SMOOTH
+  of glcPrimitiveRestart: GL_PRIMITIVE_RESTART
+  of glcScissorTest: GL_SCISSOR_TEST
+  of glcStencilTest: GL_STENCIL_TEST
+  of glcTextureCubeMapSeamless: GL_TEXTURE_CUBE_MAP_SEAMLESS
+  of glcProgramPointSize: GL_PROGRAM_POINT_SIZE
+
+proc toGlEnum*(hint: Hint): GlEnum =
+  case hint
+  of hintFragmentShaderDerivative: GL_FRAGMENT_SHADER_DERIVATIVE_HINT
+  of hintLineSmooth: GL_LINE_SMOOTH_HINT
+  of hintPolygonSmooth: GL_POLYGON_SMOOTH_HINT
+
+proc toGlEnum*(facing: Facing): GlEnum =
+  case facing
+  of facingBack: GL_BACK
+  of facingFront: GL_FRONT
 
 proc newGl*(): OpenGl =
   new(result)
@@ -470,6 +449,76 @@ proc bindVertexArray*(gl: OpenGl, vao: VertexArray) =
     if gl.getError() == GL_INVALID_VALUE:
       raise newException(ValueError,
                          "vertex array " & $vao.id & " doesn't exist")
+
+proc blendColor*(gl: OpenGl, r, g, b, a: GlClampf) =
+  updateDiff gl.sBlendColor, (r, g, b, a):
+    gl.glBlendColor(r, g, b, a)
+
+proc blendEquation*(gl: OpenGl, colorMode, alphaMode: GlEnum) =
+  updateDiff gl.sBlendEquation, (colorMode, alphaMode):
+    gl.glBlendEquationSeparate(colorMode, alphaMode)
+
+proc blendFunc*(gl: OpenGl, srcRgb, destRgb, srcAlpha, destAlpha: GlEnum) =
+  updateDiff gl.sBlendFunc, (srcRgb, destRgb, srcAlpha, destAlpha):
+    gl.glBlendFuncSeparate(srcRgb, destRgb, srcAlpha, destAlpha)
+
+proc colorMask*(gl: OpenGl, red, green, blue, alpha: GlBool) =
+  updateDiff gl.sColorMask, (red, green, blue, alpha):
+    gl.glColorMask(red, green, blue, alpha)
+
+proc cullFace*(gl: OpenGl, mode: GlEnum) =
+  updateDiff gl.sCullFace, mode:
+    gl.glCullFace(mode)
+
+proc depthMask*(gl: OpenGl, enabled: bool) =
+  updateDiff gl.sDepthMask, enabled:
+    gl.glDepthMask(enabled)
+
+proc frontFace*(gl: OpenGl, mode: GlEnum) =
+  updateDiff gl.sFrontFace, mode:
+    gl.glFrontFace(mode)
+
+proc hint*(gl: OpenGl, hint: Hint, mode: GlEnum) =
+  updateDiff gl.sHints[hint], mode:
+    gl.glHint(hint.toGlEnum, mode)
+
+proc logicOp*(gl: OpenGl, opcode: GlEnum) =
+  updateDiff gl.sLogicOp, opcode:
+    gl.glLogicOp(opcode)
+
+proc lineWidth*(gl: OpenGl, width: GlFloat) =
+  updateDiff gl.sLineWidth, width:
+    gl.glLineWidth(width)
+
+proc pointSize*(gl: OpenGl, size: GlFloat) =
+  updateDiff gl.sPointSize, size:
+    gl.glPointSize(size)
+
+proc polygonMode*(gl: OpenGl, facing: Facing, mode: GlEnum) =
+  updateDiff gl.sPolygonModes[facing], mode:
+    gl.glPolygonMode(facing.toGlEnum, mode)
+
+proc primitiveRestartIndex*(gl: OpenGl, index: GlUint) =
+  updateDiff gl.sPrimitiveRestartIndex, index:
+    gl.glPrimitiveRestartIndex(index)
+
+proc scissor*(gl: OpenGl, x, y: GlInt, width, height: GlSizei) =
+  updateDiff gl.sScissor, (x, y, width, height):
+    gl.glScissor(x, y, width, height)
+
+proc stencilFunc*(gl: OpenGl, facing: Facing, fn: GlEnum, reference: GlInt,
+                  mask: GlUint) =
+  updateDiff gl.sStencilFuncs[facing], (fn, reference, mask):
+    gl.glStencilFuncSeparate(facing.toGlEnum, fn, reference, mask)
+
+proc stencilMask*(gl: OpenGl, facing: Facing, mask: GlUint) =
+  updateDiff gl.sStencilMasks[facing], mask:
+    gl.glStencilMaskSeparate(facing.toGlEnum, mask)
+
+proc stencilOp*(gl: OpenGl, facing: Facing,
+                sfail, dpfail, dppass: GlEnum) =
+  updateDiff gl.sStencilOps[facing], (sfail, dpfail, dppass):
+    gl.glStencilOpSeparate(facing.toGlEnum, sfail, dpfail, dppass)
 
 proc useProgram*(gl: OpenGl, program: GlUint) =
   updateDiff gl.sProgram, program:

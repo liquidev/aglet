@@ -2,6 +2,7 @@
 
 import glm/vec
 
+import drawparams
 import gl
 import program_base
 import uniform
@@ -38,7 +39,8 @@ proc clearStencil*(target: Target, stencil: int32) =
   target.gl.clearStencil(stencil.GlInt)
 
 proc draw*[D: Drawable, U: UniformSource](target: Target, program: Program,
-                                          arrays: D, uniforms: U) =
+                                          arrays: D, uniforms: U,
+                                          params: DrawParams) =
   ## Draw vertices to the target, using the given shader program,
   ## using vertices from the given ``Drawable`` (most commonly a ``MeshSlice``),
   ## passing the uniforms from the provided source to the shader program.
@@ -47,6 +49,8 @@ proc draw*[D: Drawable, U: UniformSource](target: Target, program: Program,
   mixin getUniforms
 
   target.use()
+
+  params.IMPL_apply(target.gl)
 
   program.IMPL_use()
   for key, value in getUniforms(uniforms):

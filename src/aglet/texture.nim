@@ -3,6 +3,7 @@
 import std/tables
 
 import gl
+import rect
 import uniform
 import window
 

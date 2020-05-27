@@ -6,7 +6,11 @@ import std/options
 
 import glm/vec
 
+import enums
+import gl
 import rect
+
+export enums
 
 # this module is one of the few places where I decided to use abbreviated names
 # to fit into 80 columns easier. we're not glium :)
@@ -71,35 +75,22 @@ type
     clOrReverse     ## s or not d
     clOrInverted    ## not s or d
 
-  Facing* = enum
-    ## Face targeting mode. The facing is determined from the winding order; if
-    ## vertices are wound clockwise, the face is interpreted as a facing
-    ## backwards. If vertices are wound counterclockwise, the face is
-    ## interpreted as a facing to the front. This setting may be overridden
-    ## using the ``frontFace`` draw parameter.
-    facingFront         ## target front faces
-    facingBack          ## target back faces
-  Winding* = enum
-    ## Winding order.
-    windingCounterclockwise
-    windingClockwise
-
-  StencilEquation* = enum
+  CompareFunc* = enum
     ## Equation for checking if the stencil test passes.
     ## Nim operators are used.
-    seNever         ## false
-    seLess          ## (reference and mask) <  (stencil and mask)
-    seLessEqual     ## (reference and mask) <= (stencil and mask)
-    seGreater       ## (reference and mask) >  (stencil and mask)
-    seGreaterEqual  ## (reference and mask) >= (stencil and mask)
-    seEqual         ## (reference and mask) == (stencil and mask)
-    seNotEqual      ## (reference and mask) != (stencil and mask)
-    seAlways        ## true
+    cfNever         ## false
+    cfLess          ## (reference and mask) <  (stencil and mask)
+    cfLessEqual     ## (reference and mask) <= (stencil and mask)
+    cfGreater       ## (reference and mask) >  (stencil and mask)
+    cfGreaterEqual  ## (reference and mask) >= (stencil and mask)
+    cfEqual         ## (reference and mask) == (stencil and mask)
+    cfNotEqual      ## (reference and mask) != (stencil and mask)
+    cfAlways        ## true
   StencilFunc* = object
     ## Function for stencil testing. Refer to ``StencilEquation`` for details on
     ## how each individual ``equation`` value works.
-    equation: StencilEquation  ## the equation to apply
-    reference: int32           ## reference value
+    equation: CompareFunc  ## the equation to apply
+    reference: int32       ## reference value
     mask: uint32
       ## bitmask with which ``reference`` and ``stencil`` are ANDed when testing
   StencilAction* = enum
@@ -127,6 +118,7 @@ type
     ## Stencil buffer operation mode.
     funcs: array[Facing, StencilFunc]  ## functions for individual facings
     ops: array[Facing, StencilOp]      ## operations for individual facings
+    masks: array[Facing, uint32]       ## bitmasks for write operations
 
   PolygonMode* = enum
     ## Mode used for polygon rendering.
@@ -138,17 +130,6 @@ type
     ## Mask specifying which color channels are to be written to when rendering.
     red, green, blue, alpha: bool
 
-  Hint* = enum
-    hintFragmentShaderDerivative
-    hintLineSmooth
-    hintPolygonSmooth
-
-  HintValue* = enum
-    ## Value for implementation-specific hints.
-    hvDontCare  ## don't care, the driver can do what it wants
-    hvFastest   ## prefer faster outcome
-    hvNicest    ## prefer nicer outcome
-
   DrawParamsVal = object
     blend: Option[BlendMode]
     colorLogicOp: Option[ColorLogic]
@@ -156,17 +137,18 @@ type
     depthMask: bool
     depthTest: bool
     dither: bool
-    faceCulling: Option[set[Facing]]
+    faceCulling: set[Facing]
     frontFace: Winding
     hints: array[Hint, HintValue]
+    lineSmooth: bool
     lineWidth: float32
     multisample: bool
     pointSize: float32
     polygonMode: array[Facing, PolygonMode]
+    polygonSmooth: bool
     primitiveRestartIndex: Option[uint32]
     programPointSize: bool
     scissor: Option[Recti]
-    stencilMask: uint32
     stencilMode: Option[StencilMode]
     seamlessCubeMap: bool
   DrawParams* = object
@@ -216,24 +198,29 @@ const
     ## beMax blend equation.
 
 proc stencilMode*(funcs: array[Facing, StencilFunc],
-                  ops: array[Facing, StencilOp]): StencilMode =
+                  ops: array[Facing, StencilOp],
+                  masks: array[Facing, uint32] =
+                    [high(uint32), high(uint32)]): StencilMode =
   ## Constructs a stencil mode using the provided stencil functions and
   ## operations.
   StencilMode(
     funcs: funcs,
     ops: ops,
+    masks: masks,
   )
 
-proc stencilMode*(funcBoth: StencilFunc, opBoth: StencilOp): StencilMode =
+proc stencilMode*(funcBoth: StencilFunc, opBoth: StencilOp,
+                  maskBoth = high(uint32)): StencilMode =
   ## Constructs a stencil mode. ``funcBoth`` and ``opBoth`` are used both for
   ## front and back faces.
   StencilMode(
     funcs: [funcBoth, funcBoth],
     ops: [opBoth, opBoth],
+    masks: [maskBoth, maskBoth],
   )
 
-proc stencilFunc*(equation: StencilEquation,
-                  reference: int32, mask = high(uint32)): StencilFunc =
+proc stencilFunc*(equation: CompareFunc, reference: int32,
+                  mask = high(uint32)): StencilFunc =
   ## Constructs a stencil test function using the given equation,
   ## reference value, and optional bitmask.
   StencilFunc(
@@ -307,16 +294,10 @@ proc dither*(params; enabled: bool) =
   params.val.dither = enabled
 
 proc faceCulling*(params; facings: set[Facing]) =
-  ## Enables face culling.
+  ## Enables or disables face culling.
   ##
   ## **Default:** disabled
-  params.val.faceCulling = some(facings)
-
-proc noFaceCulling*(params) =
-  ## Disables face culling.
-  ##
-  ## **Default:** disabled
-  params.val.faceCulling = set[Facing].none
+  params.val.faceCulling = facings
 
 proc frontFace*(params; winding: Winding) =
   ## Sets the front face winding direction.
@@ -332,6 +313,13 @@ proc hint*(params; hint: Hint, value: HintValue) =
   ## - ``hintLineSmooth``: ``hvDontCare``
   ## - ``hintPolygonSmooth``: ``hvDontCare``
   params.val.hints[hint] = value
+
+proc lineSmooth*(params; enabled: bool) =
+  ## Enables or disables line antialiasing. This feature can be used without
+  ## multisampling.
+  ##
+  ## **Default:** ``off``
+  params.val.lineSmooth = enabled
 
 proc lineWidth*(params; width: float32) =
   ## Sets the line width. The allowed range of values is implementation-defined,
@@ -373,6 +361,15 @@ proc polygonMode*(params; facings: set[Facing], mode: PolygonMode) =
   for facing in facings:
     params.val.polygonMode[facing] = mode
 
+proc polygonSmooth*(params; enabled: bool) =
+  ## Enables or disables polygon antialiasing. This feature can be used without
+  ## multisampling.
+  ## Alpha blending must be enabled and polygons must be sorted from front to
+  ## back to produce correct results.
+  ##
+  ## **Default:** ``off``
+  params.val.lineSmooth = enabled
+
 proc primitiveRestartIndex*(params; index: uint32) =
   ## Enables the primitive restart index. The usage of this index in any mesh
   ## will cause the current primitive to be restarted. This is useful for
@@ -399,13 +396,6 @@ proc noScissor*(params) =
   ##
   ## **Default:** disabled
   params.val.scissor = Recti.none
-
-proc stencilMask*(params; mask: uint32) =
-  ## Enables the stencil mask. If enabled, each fragment written to the stencil
-  ## buffer will be ANDed with the provided mask.
-  ##
-  ## **Default:** ``high(uint32)``
-  params.val.stencilMask = mask
 
 proc stencil*(params; mode: StencilMode) =
   ## Enables stencil testing. If enabled, a per-fragment stencil test is
@@ -438,10 +428,30 @@ proc finish*(params) =
   ## sets of draw parameters.
   params.hash = hashData(addr params, sizeof(params))
 
+proc `==`*(a, b: DrawParams): bool =
+  ## Compares two sets of draw parameters by their hash.
+  a.hash == b.hash
+
+proc defaultDrawParams*(): DrawParams
+
 macro derive*(params: DrawParams, body: untyped): untyped =
   ## A macro for making param deriving nice. Creates a block with a temporary
   ## variable ``params``, and prepends it to the arguments of every single call
   ## in the block. Finally, adds a call to ``finish(params)``.
+
+  runnableExamples:
+    let
+      cool = defaultDrawParams().derive:
+        multisample on
+        depthTest on
+      lame = block:
+        var p = defaultDrawParams()
+        p.multisample on
+        p.depthTest on
+        p.finish
+        p
+    assert cool == lame
+
   var stmts = newStmtList()
 
   var paramsSym = genSym(nskVar, "params")
@@ -460,7 +470,6 @@ macro derive*(params: DrawParams, body: untyped): untyped =
   stmts.add(paramsSym)
 
   result = newBlockStmt(stmts)
-  echo result.repr
 
 proc defaultDrawParams*(): DrawParams =
   ## Returns a set of draw parameters matching that described in procedure
@@ -473,13 +482,12 @@ proc defaultDrawParams*(): DrawParams =
     hint hintLineSmooth, hvDontCare
     hint hintPolygonSmooth, hvDontCare
     # mesh
-    noFaceCulling
+    faceCulling {}
     frontFace windingCounterclockwise
     noPrimitiveRestartIndex
     # fragment tests
     colorMask on, on, on, on
     depthMask on
-    stencilMask high(uint32)
     noStencil
     noScissor
     depthTest off
@@ -495,3 +503,161 @@ proc defaultDrawParams*(): DrawParams =
     dither on
     multisample off
     seamlessCubeMapSampling off
+
+proc toGlEnum(blendEquation: BlendEquation): GlEnum =
+  case blendEquation
+  of beAdd: GL_FUNC_ADD
+  of beSubtract: GL_FUNC_SUBTRACT
+  of beReverseSubtract: GL_FUNC_REVERSE_SUBTRACT
+  of beMin: GL_MIN
+  of beMax: GL_MAX
+
+proc toGlEnum(blendFactor: BlendFactor): GlEnum =
+  case blendFactor
+  of bfZero: GL_ZERO
+  of bfOne: GL_ONE
+  of bfSrcColor: GL_SRC_COLOR
+  of bfOneMinusSrcColor: GL_ONE_MINUS_SRC_COLOR
+  of bfDestColor: GL_DST_COLOR
+  of bfOneMinusDestColor: GL_ONE_MINUS_DST_COLOR
+  of bfSrcAlpha: GL_SRC_ALPHA
+  of bfSrcAlphaSaturate: GL_SRC_ALPHA_SATURATE
+  of bfOneMinusSrcAlpha: GL_ONE_MINUS_SRC_ALPHA
+  of bfDestAlpha: GL_DST_ALPHA
+  of bfOneMinusDestAlpha: GL_ONE_MINUS_DST_ALPHA
+  of bfConstColor: GL_CONSTANT_COLOR
+  of bfOneMinusConstColor: GL_ONE_MINUS_CONSTANT_COLOR
+  of bfConstAlpha: GL_CONSTANT_ALPHA
+  of bfOneMinusConstAlpha: GL_ONE_MINUS_CONSTANT_ALPHA
+
+proc toGlEnum(colorLogic: ColorLogic): GlEnum =
+  case colorLogic
+  of clClear: GL_CLEAR
+  of clSet: GL_SET
+  of clCopy: GL_COPY
+  of clCopyInverted: GL_COPY_INVERTED
+  of clNoop: GL_NOOP
+  of clInvert: GL_INVERT
+  of clAnd: GL_AND
+  of clNand: GL_NAND
+  of clOr: GL_OR
+  of clNor: GL_NOR
+  of clXor: GL_XOR
+  of clEquiv: GL_EQUIV
+  of clAndReverse: GL_AND_REVERSE
+  of clAndInverted: GL_AND_INVERTED
+  of clOrReverse: GL_OR_REVERSE
+  of clOrInverted: GL_OR_INVERTED
+
+proc toGlEnum(compareFunc: CompareFunc): GlEnum =
+  case compareFunc
+  of cfNever: GL_NEVER
+  of cfLess: GL_LESS
+  of cfLessEqual: GL_LEQUAL
+  of cfGreater: GL_GREATER
+  of cfGreaterEqual: GL_GEQUAL
+  of cfEqual: GL_EQUAL
+  of cfNotEqual: GL_NOTEQUAL
+  of cfAlways: GL_ALWAYS
+
+proc toGlEnum(stencilAction: StencilAction): GlEnum =
+  case stencilAction
+  of saKeep: GL_KEEP
+  of saZero: GL_ZERO
+  of saReplace: GL_REPLACE
+  of saInc: GL_INCR
+  of saIncWrap: GL_INCR_WRAP
+  of saDec: GL_DECR
+  of saDecWrap: GL_DECR_WRAP
+  of saInvert: GL_INVERT
+
+proc toGlEnum(hintValue: HintValue): GlEnum =
+  case hintValue
+  of hvDontCare: GL_DONT_CARE
+  of hvFastest: GL_FASTEST
+  of hvNicest: GL_NICEST
+
+proc toGlEnum(polygonMode: PolygonMode): GlEnum =
+  case polygonMode
+  of pmFill: GL_FILL
+  of pmLine: GL_LINE
+  of pmPoint: GL_POINT
+
+proc IMPL_apply*(params: DrawParams, gl: OpenGl) =
+  ## Apply the given draw parameters to the GL context.
+  ## **Implementation detail, do not use.**
+
+  # big optimization: update the state only if the hash is different.
+  # yes, this does lead to more convoluted code but the extra speed is worth it
+  if gl.currentDrawParamsHash != params.hash:
+    gl.currentDrawParamsHash = params.hash
+
+    let p = params.val
+
+    gl.capability(glcBlend, p.blend.isSome)
+    if p.blend.isSome:
+      let blend = p.blend.get
+      gl.blendColor(blend.constant.r, blend.constant.g, blend.constant.g,
+                    blend.constant.a)
+      gl.blendEquation(blend.color.equation.toGlEnum,
+                       blend.alpha.equation.toGlEnum)
+      if blend.color.equation in {beAdd, beSubtract, beReverseSubtract}:
+        gl.blendFunc(blend.color.src.toGlEnum, blend.color.dest.toGlEnum,
+                     blend.alpha.src.toGlEnum, blend.alpha.dest.toGlEnum)
+
+    gl.capability(glcColorLogicOp, p.colorLogicOp.isSome)
+    gl.logicOp(p.colorLogicOp.get.toGlEnum)
+
+    gl.colorMask(p.colorMask.red, p.colorMask.green, p.colorMask.blue,
+                 p.colorMask.alpha)
+
+    gl.depthMask(p.depthMask)
+
+    gl.capability(glcCullFace, p.faceCulling.card > 0)
+    if p.faceCulling.card > 0:
+      gl.cullFace(
+        if p.faceCulling == {facingFront, facingBack}: GL_FRONT_AND_BACK
+        elif p.faceCulling == {facingFront}: GL_FRONT
+        else: GL_BACK
+      )
+
+    for hint, value in p.hints:
+      gl.hint(hint, value.toGlEnum)
+
+    gl.lineWidth(p.lineWidth)
+
+    gl.pointSize(p.pointSize)
+
+    for facing, mode in p.polygonMode:
+      gl.polygonMode(facing, mode.toGlEnum)
+
+    gl.capability(glcPrimitiveRestart, p.primitiveRestartIndex.isSome)
+    if p.primitiveRestartIndex.isSome:
+      gl.primitiveRestartIndex(p.primitiveRestartIndex.get.GlUint)
+
+    gl.capability(glcScissorTest, p.scissor.isSome)
+    if p.scissor.isSome:
+      let rect = p.scissor.get
+      gl.scissor(rect.x, rect.y, rect.width, rect.height)
+
+    gl.capability(glcStencilTest, p.stencilMode.isSome)
+    if p.stencilMode.isSome:
+      let mode = p.stencilMode.get
+      for facing, fn in mode.funcs:
+        gl.stencilFunc(facing, fn.equation.toGlEnum,
+                       fn.reference.GlInt, fn.mask.GlUint)
+      for facing, op in mode.ops:
+        gl.stencilOp(facing,
+                     op.stencilFail.toGlEnum,
+                     op.stencilPassDepthFail.toGlEnum,
+                     op.stencilPassDepthPass.toGlEnum)
+      for facing, mask in mode.masks:
+        gl.stencilMask(facing, mask)
+
+    gl.capability(glcDepthTest, p.depthTest)
+    gl.capability(glcDither, p.dither)
+    gl.capability(glcLineSmooth, p.lineSmooth)
+    gl.capability(glcMultisample, p.multisample)
+    gl.capability(glcPolygonSmooth, p.polygonSmooth)
+    gl.capability(glcTextureCubeMapSeamless, p.seamlessCubeMap)
+    gl.capability(glcProgramPointSize, p.programPointSize)
