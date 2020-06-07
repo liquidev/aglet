@@ -41,19 +41,25 @@ const
     out vec4 color;
 
     void main(void) {
-      color = texture(volume, fragTextureCoords);
+      float intensity = texture(volume, fragTextureCoords).r;
+      if (intensity > 0.5) {
+        discard;
+      } else {
+        color = vec4(0.01);
+      }
     }
   """
 
 var
   win = agl.newWindowGlfw(800, 600, "tcloud",
-                          winHints(resizable = false))
+                          winHints(resizable = false,
+                                   msaaSamples = 1))
   prog = win.newProgram[:Vertex](VertexSource, FragmentSource)
 
 const
-  Density = 64
-  TextureDensity = 4
-  Noise = 0.01
+  Density = 128
+  TextureDensity = 16
+  Noise = 0.02
   NoiseRange = -Noise..Noise
 
 var volumePoints: seq[Vertex]
@@ -67,15 +73,16 @@ for iz in -Density..Density:
       volumePoints.add(Vertex(position: position, textureCoords: texture))
 echo "point count: ", volumePoints.len
 
-var volumePixels: seq[Vec3f]
+var volumePixels: seq[float32]
 for iz in 0..<TextureDensity:
   for iy in 0..<TextureDensity:
     for ix in 0..<TextureDensity:
       let
-        r = ix / TextureDensity
-        g = iy / TextureDensity
-        b = iz / TextureDensity
-      volumePixels.add(vec3f(r, g, b))
+        x = ix / TextureDensity
+        y = iy / TextureDensity
+        z = iz / TextureDensity
+        noise = (simplex(vec3f(x, y, z) * 3) + 1) / 2
+      volumePixels.add(noise)
 
 var
   mesh = win.newMesh(dpPoints, volumePoints)
@@ -96,14 +103,16 @@ const
   Origin = vec3f(0.0)
   Up = vec3f(0.0, 1.0, 0.0)
 
-let drawParams = defaultDrawParams().derive:
-  depthTest on
+let
+  additiveBlending = blendMode(blendAdd(bfOne, bfOne), blendAdd(bfOne, bfZero))
+  drawParams = defaultDrawParams().derive:
+    blend additiveBlending
 
 while not win.closeRequested:
   var target = win.render()
 
   target.clearColor(vec4f(0.0, 0.0, 0.0, 1.0))
-  target.clearDepth(0.0)
+  target.clearDepth(1.0)
 
   let
     aspect = target.dimensions.x / target.dimensions.y
@@ -117,10 +126,10 @@ while not win.closeRequested:
       .rotateY(rotationY)
       .scale(zoom),
     projection: projection,
-    volume: volume.sampler(magFilter = tfNearest,
-                           wrapS = twClampToEdge,
-                           wrapT = twClampToEdge,
-                           wrapR = twClampToEdge),
+    ?volume: volume.sampler(magFilter = tfLinear,
+                            wrapS = twClampToEdge,
+                            wrapT = twClampToEdge,
+                            wrapR = twClampToEdge),
   }, drawParams)
 
   target.finish()

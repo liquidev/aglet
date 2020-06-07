@@ -34,20 +34,20 @@ type
     ttTextureCubeMapPosY, ttTextureCubeMapNegY
     ttTextureCubeMapPosZ, ttTextureCubeMapNegZ
 
-  OpenGlCapability* = enum
-    glcBlend
-    glcColorLogicOp
-    glcCullFace
-    glcDepthTest
-    glcDither
-    glcLineSmooth
-    glcMultisample
-    glcPolygonSmooth
-    glcPrimitiveRestart
-    glcScissorTest
-    glcStencilTest
-    glcTextureCubeMapSeamless
-    glcProgramPointSize
+  OpenGlFeature* = enum
+    glfBlend
+    glfColorLogicOp
+    glfCullFace
+    glfDepthTest
+    glfDither
+    glfLineSmooth
+    glfMultisample
+    glfPolygonSmooth
+    glfPrimitiveRestart
+    glfScissorTest
+    glfStencilTest
+    glfTextureCubeMapSeamless
+    glfProgramPointSize
 
   VertexArray* = object
     buffers: array[BufferTarget, GlUint]
@@ -71,8 +71,9 @@ type
     sClearStencil: GlInt
     sColorMask: tuple[r, g, b, a: GlBool]
     sCullFace: GlEnum
+    sDepthFunc: GlEnum
     sDepthMask: bool
-    sEnabledCapabilities: array[OpenGlCapability, bool]
+    sEnabledFeatures: array[OpenGlFeature, bool]
     sFramebuffers: tuple[read, draw: GlUint]
     sFrontFace: GlEnum
     sHints: array[Hint, GlEnum]
@@ -112,6 +113,7 @@ type
     glClearStencil: proc (stencil: GlInt) {.cdecl.}
     glColorMask: proc (r, g, b, a: GlBool) {.cdecl.}
     glCullFace: proc (mode: GlEnum) {.cdecl.}
+    glDepthFunc: proc (fn: GlEnum) {.cdecl.}
     glDepthMask: proc (mask: GlBool) {.cdecl.}
     glDisable: proc (cap: GlEnum) {.cdecl.}
     glEnable: proc (cap: GlEnum) {.cdecl.}
@@ -280,7 +282,10 @@ when not defined(js):
     gl.sBlendFunc = (GL_ONE, GL_ZERO,
                      GL_ONE, GL_ZERO)
     gl.sCullFace = GL_BACK
-    gl.sEnabledCapabilities[glcDither] = true
+    gl.sClearDepth = 1
+    gl.sColorMask = (on, on, on, on)
+    gl.sDepthMask = true
+    gl.sEnabledFeatures[glfDither] = true
     gl.sFrontFace = GL_CCW
     gl.sLogicOp = GL_COPY
     gl.sLineWidth = 1
@@ -320,23 +325,23 @@ proc toGlEnum(target: TextureTarget): GlEnum =
     let index = ord(target) - ord(ttTextureCubeMapNegX)
     GlEnum(GL_TEXTURE_CUBEMAP_POSITIVE_X.int + index)
 
-proc toGlEnum(cap: OpenGlCapability): GlEnum =
+proc toGlEnum(feature: OpenGlFeature): GlEnum =
   # lol this is actually deprecated but I'm leaving it in anyways as I don't
   # want "just a placeholder enum value"
-  case cap
-  of glcBlend: GL_BLEND
-  of glcColorLogicOp: GL_COLOR_LOGIC_OP
-  of glcCullFace: GL_CULL_FACE
-  of glcDepthTest: GL_DEPTH_TEST
-  of glcDither: GL_DITHER
-  of glcLineSmooth: GL_LINE_SMOOTH
-  of glcMultisample: GL_MULTISAMPLE
-  of glcPolygonSmooth: GL_POLYGON_SMOOTH
-  of glcPrimitiveRestart: GL_PRIMITIVE_RESTART
-  of glcScissorTest: GL_SCISSOR_TEST
-  of glcStencilTest: GL_STENCIL_TEST
-  of glcTextureCubeMapSeamless: GL_TEXTURE_CUBE_MAP_SEAMLESS
-  of glcProgramPointSize: GL_PROGRAM_POINT_SIZE
+  case feature
+  of glfBlend: GL_BLEND
+  of glfColorLogicOp: GL_COLOR_LOGIC_OP
+  of glfCullFace: GL_CULL_FACE
+  of glfDepthTest: GL_DEPTH_TEST
+  of glfDither: GL_DITHER
+  of glfLineSmooth: GL_LINE_SMOOTH
+  of glfMultisample: GL_MULTISAMPLE
+  of glfPolygonSmooth: GL_POLYGON_SMOOTH
+  of glfPrimitiveRestart: GL_PRIMITIVE_RESTART
+  of glfScissorTest: GL_SCISSOR_TEST
+  of glfStencilTest: GL_STENCIL_TEST
+  of glfTextureCubeMapSeamless: GL_TEXTURE_CUBE_MAP_SEAMLESS
+  of glfProgramPointSize: GL_PROGRAM_POINT_SIZE
 
 proc toGlEnum*(hint: Hint): GlEnum =
   case hint
@@ -375,10 +380,10 @@ proc viewport*(gl: OpenGl, x, y: GlInt, width, height: GlSizei) =
   updateDiff gl.sViewport, (x, y, width, height):
     gl.glViewport(x, y, width, height)
 
-proc capability*(gl: OpenGl, cap: OpenGlCapability, enabled: bool) =
-  updateDiff gl.sEnabledCapabilities[cap], enabled:
-    if enabled: gl.glEnable(cap.toGlEnum)
-    else: gl.glDisable(cap.toGlEnum)
+proc feature*(gl: OpenGl, feature: OpenGlFeature, enabled: bool) =
+  updateDiff gl.sEnabledFeatures[feature], enabled:
+    if enabled: gl.glEnable(feature.toGlEnum)
+    else: gl.glDisable(feature.toGlEnum)
 
 proc clearColor*(gl: OpenGl, r, g, b, a: GlClampf) =
   updateDiff gl.sClearColor, (r, g, b, a):
@@ -469,6 +474,10 @@ proc colorMask*(gl: OpenGl, red, green, blue, alpha: GlBool) =
 proc cullFace*(gl: OpenGl, mode: GlEnum) =
   updateDiff gl.sCullFace, mode:
     gl.glCullFace(mode)
+
+proc depthFunc*(gl: OpenGl, function: GlEnum) =
+  updateDiff gl.sDepthFunc, function:
+    gl.glDepthFunc(function)
 
 proc depthMask*(gl: OpenGl, enabled: bool) =
   updateDiff gl.sDepthMask, enabled:
@@ -710,21 +719,21 @@ proc deleteVertexArray*(gl: OpenGl, array: VertexArray) =
 proc createTexture*(gl: OpenGl): GlUint =
   gl.glGenTextures(1, addr result)
 
-proc data1D*(gl: OpenGl, width: Positive, format, typ: GlEnum) =
-  gl.glTexImage1D(GL_TEXTURE_1D, level = 0, format.GlInt, width.GlSizei,
-                  border = 0, format, typ, data = nil)
+proc data1D*(gl: OpenGl, width: Positive, internalFormat, format, typ: GlEnum) =
+  gl.glTexImage1D(GL_TEXTURE_1D, level = 0, internalFormat.GlInt,
+                  width.GlSizei, border = 0, format, typ, data = nil)
 
 proc data2D*(gl: OpenGl, target: TextureTarget, width, height: Positive,
-             format, typ: GlEnum) =
+             internalFormat, format, typ: GlEnum) =
   assert target in {ttTexture1DArray, ttTexture2D,
                     ttTextureCubeMapPosX..ttTextureCubeMapNegZ}
-  gl.glTexImage2D(target.toGlEnum, level = 0, format.GlInt,
+  gl.glTexImage2D(target.toGlEnum, level = 0, internalFormat.GlInt,
                   width.GlSizei, height.GlSizei, border = 0,
                   format, typ, data = nil)
 
 proc data3D*(gl: OpenGl, target: TextureTarget, width, height, depth: Positive,
-             format, typ: GlEnum) =
-  gl.glTexImage3D(target.toGlEnum, level = 0, format.GlInt,
+             internalFormat, format, typ: GlEnum) =
+  gl.glTexImage3D(target.toGlEnum, level = 0, internalFormat.GlInt,
                   width.GlSizei, height.GlSizei, depth.GlSizei, border = 0,
                   format, typ, data = nil)
 

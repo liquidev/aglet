@@ -193,13 +193,12 @@ proc newWindowGlfw*(agl: Aglet, width, height: int, title: string,
   glfwWindowHint(GLFW_SAMPLES, hints.msaaSamples.cint)
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API)
-  when defined(linux):
+  when not defined(aglGlfwUseNativeGl):
     # XXX: verify compatibility on older drivers/GPUs on linux
     # I've read that EGL is faster than GLX because it has less indirections,
     # but I'm not sure about the compatibility across different systems
     glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API)
   else:
-    # windows and osx don't support EGL
     glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API)
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, hints.glVersion.major.cint)
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, hints.glVersion.minor.cint)

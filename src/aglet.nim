@@ -42,7 +42,7 @@ export mesh except IMPL_draw
 export program except IMPL_use, IMPL_setUniform
 export state
 export target
-export texture
+export texture except internalFormat, dataType
 export uniform
 export util
 export window except IMPL_makeCurrent, IMPL_loadGl, IMPL_getGlContext

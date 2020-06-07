@@ -135,7 +135,7 @@ type
     colorLogicOp: Option[ColorLogic]
     colorMask: ColorMask
     depthMask: bool
-    depthTest: bool
+    depthTest: Option[CompareFunc]
     dither: bool
     faceCulling: set[Facing]
     frontFace: Winding
@@ -281,11 +281,17 @@ proc depthMask*(params; enabled: bool) =
   ## **Default:** ``on``
   params.val.depthMask = enabled
 
-proc depthTest*(params; enabled: bool) =
-  ## Enables or disables depth testing.
+proc depthTest*(params; function = cfLess) =
+  ## Enables depth testing.
   ##
-  ## **Default:** ``off``
-  params.val.depthTest = enabled
+  ## **Default:** disabled
+  params.val.depthTest = some(function)
+
+proc noDepthTest*(params) =
+  ## Enables depth testing.
+  ##
+  ## **Default:** disabled
+  params.val.depthTest = CompareFunc.none
 
 proc dither*(params; enabled: bool) =
   ## Enables or disables dithering.
@@ -490,7 +496,7 @@ proc defaultDrawParams*(): DrawParams =
     depthMask on
     noStencil
     noScissor
-    depthTest off
+    noDepthTest
     # rasterization
     lineWidth 1
     pointSize 1
@@ -594,7 +600,7 @@ proc IMPL_apply*(params: DrawParams, gl: OpenGl) =
 
     let p = params.val
 
-    gl.capability(glcBlend, p.blend.isSome)
+    gl.feature(glfBlend, p.blend.isSome)
     if p.blend.isSome:
       let blend = p.blend.get
       gl.blendColor(blend.constant.r, blend.constant.g, blend.constant.g,
@@ -605,7 +611,7 @@ proc IMPL_apply*(params: DrawParams, gl: OpenGl) =
         gl.blendFunc(blend.color.src.toGlEnum, blend.color.dest.toGlEnum,
                      blend.alpha.src.toGlEnum, blend.alpha.dest.toGlEnum)
 
-    gl.capability(glcColorLogicOp, p.colorLogicOp.isSome)
+    gl.feature(glfColorLogicOp, p.colorLogicOp.isSome)
     if p.colorLogicOp.isSome:
       gl.logicOp(p.colorLogicOp.get.toGlEnum)
 
@@ -614,7 +620,11 @@ proc IMPL_apply*(params: DrawParams, gl: OpenGl) =
 
     gl.depthMask(p.depthMask)
 
-    gl.capability(glcCullFace, p.faceCulling.card > 0)
+    gl.feature(glfDepthTest, p.depthTest.isSome)
+    if p.depthTest.isSome:
+      gl.depthFunc(p.depthTest.get.toGlEnum)
+
+    gl.feature(glfCullFace, p.faceCulling.card > 0)
     if p.faceCulling.card > 0:
       gl.cullFace(
         if p.faceCulling == {facingFront, facingBack}: GL_FRONT_AND_BACK
@@ -632,16 +642,16 @@ proc IMPL_apply*(params: DrawParams, gl: OpenGl) =
     for facing, mode in p.polygonMode:
       gl.polygonMode(facing, mode.toGlEnum)
 
-    gl.capability(glcPrimitiveRestart, p.primitiveRestartIndex.isSome)
+    gl.feature(glfPrimitiveRestart, p.primitiveRestartIndex.isSome)
     if p.primitiveRestartIndex.isSome:
       gl.primitiveRestartIndex(p.primitiveRestartIndex.get.GlUint)
 
-    gl.capability(glcScissorTest, p.scissor.isSome)
+    gl.feature(glfScissorTest, p.scissor.isSome)
     if p.scissor.isSome:
       let rect = p.scissor.get
       gl.scissor(rect.x, rect.y, rect.width, rect.height)
 
-    gl.capability(glcStencilTest, p.stencilMode.isSome)
+    gl.feature(glfStencilTest, p.stencilMode.isSome)
     if p.stencilMode.isSome:
       let mode = p.stencilMode.get
       for facing, fn in mode.funcs:
@@ -655,10 +665,9 @@ proc IMPL_apply*(params: DrawParams, gl: OpenGl) =
       for facing, mask in mode.masks:
         gl.stencilMask(facing, mask)
 
-    gl.capability(glcDepthTest, p.depthTest)
-    gl.capability(glcDither, p.dither)
-    gl.capability(glcLineSmooth, p.lineSmooth)
-    gl.capability(glcMultisample, p.multisample)
-    gl.capability(glcPolygonSmooth, p.polygonSmooth)
-    gl.capability(glcTextureCubeMapSeamless, p.seamlessCubeMap)
-    gl.capability(glcProgramPointSize, p.programPointSize)
+    gl.feature(glfDither, p.dither)
+    gl.feature(glfLineSmooth, p.lineSmooth)
+    gl.feature(glfMultisample, p.multisample)
+    gl.feature(glfPolygonSmooth, p.polygonSmooth)
+    gl.feature(glfTextureCubeMapSeamless, p.seamlessCubeMap)
+    gl.feature(glfProgramPointSize, p.programPointSize)
