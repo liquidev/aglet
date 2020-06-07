@@ -11,7 +11,7 @@ current state. Modern programming languages are more suited towards using
 objects for resource allocation and managenent, and that's what aglet strives to
 provide.
 aglet uses Nim's type system to ensure OpenGL type safety. When you get a
-`Texture2D` object, you can be sure it's a 2D texture. It's not of a vague
+`Texture2D` object, you can be sure it's a 2D texture. It's not a vague
 `GLuint` that does not really describe anything.
 Apart from that, you don't have to worry about keeping track of all this
 state—aglet does all the bookkeeping for you, and even avoids unnecessary API
