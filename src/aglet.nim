@@ -27,6 +27,7 @@ import aglet/[
   drawparams,
   input,
   mesh,
+  pixeltypes,
   program,
   state,
   target,
@@ -39,6 +40,7 @@ import aglet/[
 export drawparams except IMPL_apply
 export input
 export mesh except IMPL_draw
+export pixeltypes except internalFormat
 export program except IMPL_use, IMPL_setUniform
 export state
 export target

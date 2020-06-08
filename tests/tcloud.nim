@@ -73,7 +73,7 @@ for iz in -Density..Density:
       volumePoints.add(Vertex(position: position, textureCoords: texture))
 echo "point count: ", volumePoints.len
 
-var volumePixels: seq[float32]
+var volumePixels: seq[Red32f]
 for iz in 0..<TextureDensity:
   for iy in 0..<TextureDensity:
     for ix in 0..<TextureDensity:
@@ -82,7 +82,7 @@ for iz in 0..<TextureDensity:
         y = iy / TextureDensity
         z = iz / TextureDensity
         noise = (simplex(vec3f(x, y, z) * 3) + 1) / 2
-      volumePixels.add(noise)
+      volumePixels.add(noise.red32f)
 
 var
   mesh = win.newMesh(dpPoints, volumePoints)

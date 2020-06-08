@@ -1,6 +1,7 @@
 ## Framebuffers and renderbuffers for rendering to textures.
 
 import gl
+import pixeltypes
 import texture
 
 type
@@ -12,6 +13,8 @@ type
     ## function as depth and stencil attachments.
     gl: OpenGl
     id: GlUint
+
+  RenderbufferPixelType* = AnyPixelType
 
   ColorSource* = object
     ## Abstract interface for color sources.
@@ -32,4 +35,6 @@ type
 
 # renderbuffer
 
-proc newRenderbuffer*(size: Vec2i, kind: RenderbufferKind)
+proc newRenderbuffer*[T: RenderbufferPixelType](size: Vec2i): Renderbuffer =
+  ## Creates a new renderbuffer.
+  new(result)
