@@ -1,7 +1,7 @@
 import aglet
 import aglet/window/glfw
 import glm/noise
-import nimPNG
+from nimPNG import decodePng32
 
 type
   Vertex = object
@@ -56,17 +56,17 @@ var
     ],
     indices = [uint32 0, 1, 2, 2, 3, 0],
   )
-  noiseMap: seq[float32]
+  noiseMap: seq[Red32f]
 
 for i in 0..<128:
-  noiseMap.add((perlin(vec2f(0.0, i / 128 * 10)) + 1) / 2)
+  noiseMap.add(red32f((perlin(vec2f(0.0, i / 128 * 10)) + 1) / 2))
 
 const
   BricksPng = slurp("data/bricks.png")
 
 var
   noiseTex = win.newTexture1D(noiseMap)
-  bricksTex = win.newTexture2D(decodePNG32(BricksPng))
+  bricksTex = win.newTexture2D(Rgba8, decodePng32(BricksPng))
 
 let drawParams = defaultDrawParams()
 

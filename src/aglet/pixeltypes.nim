@@ -176,19 +176,19 @@ proc internalFormat*(T: type[AnyPixelType]): GlEnum =
   ## Implementation detail, do not use.
   when T is Red8: GL_R8
   elif T is Red16: GL_R16
-  elif T is Red32: GL_R32
+  elif T is Red32: GL_R32UI
   elif T is Red32f: GL_R32F
   elif T is Rg8: GL_RG8
   elif T is Rg16: GL_RG16
-  elif T is Rg32: GL_RG32
+  elif T is Rg32: GL_RG32UI
   elif T is Rg32f: GL_RG32F
   elif T is Rgb8: GL_RGB8
   elif T is Rgb16: GL_RGB16
-  elif T is Rgb32: GL_RGB32
+  elif T is Rgb32: GL_RGB32UI
   elif T is Rgb32f: GL_RGB32F
   elif T is Rgba8: GL_RGBA8
   elif T is Rgba16: GL_RGBA16
-  elif T is Rgba32: GL_RGBA32
+  elif T is Rgba32: GL_RGBA32UI
   elif T is Rgba32f: GL_RGBA32F
   elif T is Depth16: GL_DEPTH_COMPONENT16
   elif T is Depth24: GL_DEPTH_COMPONENT24
@@ -200,3 +200,10 @@ proc internalFormat*(T: type[AnyPixelType]): GlEnum =
   elif T is Stencil16: GL_STENCIL_INDEX16
   elif T is Depth24Stencil8: GL_DEPTH24_STENCIL8
   elif T is Depth32fStencil8: GL_DEPTH32F_STENCIL8
+
+proc channels*(T: type[ColorPixelType]): range[1..4] =
+  ## Returns the number of channels a given color pixel type holds.
+  when T is Red8 | Red16 | Red32 | Red32f: 1
+  when T is Rg8 | Rg16 | Rg32 | Rg32f: 2
+  when T is Rgb8 | Rgb16 | Rgb32 | Rgb32f: 3
+  when T is Rgba8 | Rgba16 | Rgba32 | Rgba32f: 4

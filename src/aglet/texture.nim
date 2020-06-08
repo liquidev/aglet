@@ -116,11 +116,11 @@ proc toGlEnum(wrap: TextureWrap): GlEnum =
   of twClampToBorder: GL_CLAMP_TO_BORDER
 
 proc format(T: type[TexturePixelType]): GlEnum =
-  when T is Vec4: GL_RGBA
-  elif T is Vec3: GL_RGB
-  elif T is Vec2: GL_RG
+  when T is Red8 | Red16 | Red32 | Red32f: GL_RED
+  elif T is Rg8 | Rg16 | Rg32 | Rg32f: GL_RG
+  elif T is Rgb8 | Rgb16 | Rgb32 | Rgb32f: GL_RGB
+  elif T is Rgba8 | Rgba16 | Rgba32 | Rgba32f: GL_RGBA
   elif T is Depth16 | Depth24 | Depth32: GL_DEPTH_COMPONENT
-  else: GL_RED
 
 proc dataType(T: type[AnyPixelType]): GlEnum =
   when T is Red8 | Rg8 | Rgb8 | Rgba8: GL_TUNSIGNED_BYTE
@@ -338,15 +338,15 @@ proc subImage*[T: ColorPixelType](texture: Texture2D[T], position, size: Vec2i,
   assert data.len == size.x * size.y
   texture.subImage(position, size, data[0].unsafeAddr)
 
-proc subImage*[I: BinaryImageBuffer](T: type[ColorPixelType],
-                                     texture: Texture2D[T],
+proc subImage*[T: ColorPixelType,
+               I: BinaryImageBuffer](texture: Texture2D[T],
                                      position: Vec2i,
                                      image: I) =
   ## ``subImage`` for loading arbitrary image data to the texture.
   ## This procedure allows for compatibility with existing image libraries,
   ## like nimPNG or Flippy, without them being a hard dependency.
 
-  assert image.data.len == image.width * image.height * channels
+  assert image.data.len == image.width * image.height * T.channels
   assert position.x >= 0 and position.y >= 0
   texture.use()
   texture.gl.subImage2D(texture.target,
@@ -379,8 +379,8 @@ proc upload*[T: ColorPixelType](texture: Texture2D[T], size: Vec2i,
 
   texture.upload(size, data[0].unsafeAddr)
 
-proc upload*[I: BinaryImageBuffer](T: type[ColorPixelType],
-                                   texture: Texture2D[T], image: T) =
+proc upload*[T: ColorPixelType,
+             I: BinaryImageBuffer](texture: Texture2D[T], image: I) =
   ## Generic image buffer version of ``upload``, for use with libraries like
   ## nimPNG or Flippy.
 
@@ -391,7 +391,7 @@ proc upload*[I: BinaryImageBuffer](T: type[ColorPixelType],
                       T.internalFormat, T.format, GL_TUNSIGNED_BYTE)
     texture.fWidth = image.width
     texture.fHeight = image.height
-  texture.subImage(T, vec2i(0, 0), image)
+  texture.subImage(vec2i(0, 0), image)
 
 proc newTexture2D*[T: ColorPixelType](win: Window): Texture2D[T] =
   ## Creates a new 2D texture. The texture does not contain any data; a data
@@ -423,7 +423,7 @@ proc newTexture2D*[I: BinaryImageBuffer](win: Window, T: type[ColorPixelType],
   ## image.
 
   result = win.newTexture2D[:T]()
-  result.upload[:T](image)
+  result.upload[:T, I](image)
 
 
 # 3D
