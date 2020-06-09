@@ -5,6 +5,8 @@
 ## with ``IMPL_`` and should not be used by user code. The "prelude" file
 ## ``import aglet`` omits these procs.
 
+import std/options
+
 import glm/vec
 
 import gl
@@ -15,7 +17,8 @@ import target
 type
   AgletWindow = ref object of AgletSubmodule ## the window submodule's state
     current: Window
-    frame: Frame
+    frame: Option[Frame]
+
   WindowHints* = object ## \
     ## window hints. For most hints, if a backend does not support them, they
     ## should be ignored
@@ -27,6 +30,7 @@ type
     msaaSamples*: int
     glVersion*: tuple[major, minor: int]
     debugContext*: bool
+
   Window* = ref object of RootObj
     ## A backend-independent window. This also contains the OpenGL context, so
     ## resource allocation is done using this handle.
@@ -40,7 +44,7 @@ type
                            timeout: float) ## \
       ## waits for incoming events and passes each one to ``processEvent`` \
       ## stops waiting after the given timeout if it's not -1
-    pollMouseImpl*: proc (win: Window): Vec2[float] ## \
+    pollMouseImpl*: proc (win: Window): Vec2f ## \
       ## polls the OS for the mouse cursor's position
 
     # context
@@ -64,11 +68,11 @@ type
       ## stores the window's dimensions in w and h
 
     keyStates: array[low(Key).int..high(Key).int, bool]
-    mousePos: Vec2[float]
+    mousePos: Vec2f
     gl: OpenGl
-  Frame* = ref object of Target
-    win: Window
-    width, height: int
+
+  Frame* = object of Target
+    window: Window
 
 proc winHints*(resizable = true, visible = true, decorated = true,
                focused = true, floating = false, maximized = false,
@@ -107,65 +111,54 @@ proc winHints*(resizable = true, visible = true, decorated = true,
 
 const DefaultWindowHints* = winHints()
 
-proc interceptEvents(win: Window, userCallback: InputProc): InputProc =
+proc interceptEvents(window: Window, userCallback: InputProc): InputProc =
   ## Wrap the user callback in some special stuff aglet needs to do for key
   ## polling etc. to work.
   result = proc (ev: InputEvent) =
     if ev.kind in {iekKeyPress, iekKeyRelease}:
-      win.keyStates[ev.key.int] = ev.kind == iekKeyPress
+      window.keyStates[ev.key.int] = ev.kind == iekKeyPress
 
     userCallback(ev)
 
     if ev.kind == iekMouseMove:
-      win.mousePos = ev.mousePos
+      window.mousePos = ev.mousePos
 
-proc pollEvents*(win: Window, processEvent: InputProc) =
+proc pollEvents*(window: Window, processEvent: InputProc) =
   ## Poll for incoming events from the given window. ``processEvent`` will be
   ## called for each incoming event.
-  win.pollEventsImpl(win, win.interceptEvents(processEvent))
+  window.pollEventsImpl(window, window.interceptEvents(processEvent))
 
-proc waitEvents*(win: Window, processEvent: InputProc,
+proc waitEvents*(window: Window, processEvent: InputProc,
                  timeout = -1.0) =
   ## Wait for incoming events from the given window. ``processEvent`` will be
   ## called for each incoming event. If ``timeout`` is specified, the procedure
   ## will only wait for the specified amount of seconds, and then continue
   ## execution.
-  win.waitEventsImpl(win, win.interceptEvents(processEvent), timeout)
+  window.waitEventsImpl(window, window.interceptEvents(processEvent), timeout)
 
-proc requestClose*(win: Window) =
+proc requestClose*(window: Window) =
   ## Requests that the window gets closed. This may not *actually* close the
   ## window, it only sets a bit in the window's state, and the application
   ## determines whether the window actually closes.
-  win.requestCloseImpl(win)
+  window.requestCloseImpl(window)
 
-proc closeRequested*(win: Window): bool =
+proc closeRequested*(window: Window): bool =
   ## Returns whether a window close request has been made.
-  result = win.closeRequestedImpl(win)
+  result = window.closeRequestedImpl(window)
 
-proc IMPL_makeCurrent*(win: Window) =
-  ## **Do not use this.**
-  ## Makes a window's context current. You should not use this in normal code.
-  ## This is left as part of the public API, but it's an implementation detail
-  ## left in because of global state.
-
-  # avoid unnecessary state changes
-  if win.agl.window.AgletWindow.current != win:
-    win.agl.window.AgletWindow.current = win
-    win.makeCurrentImpl(win)
-
-proc `swapInterval=`*(win: Window, interval: int) =
+proc `swapInterval=`*(window: Window, interval: int) =
   ## Sets the window's buffer swap interval.
   ## The swap interval controls whether VSync should be used. A value of 0
   ## disables VSync, a value of 1 enables VSync at the monitor's refresh rate,
   ## and any values higher than that enable VSync at the monitor's refresh rate
   ## divided by the interval.
-  win.setSwapIntervalImpl(win, interval)
+  window.setSwapIntervalImpl(window, interval)
 
-proc key*(win: Window, key: Key): bool =
+proc key*(window: Window, key: Key): bool =
   ## Returns the pressed state of the given key. ``true`` is pressed.
-  result = win.keyStates[key.int]
+  result = window.keyStates[key.int]
 
-proc mouse*(win: Window): Vec2[float] =
+proc mouse*(window: Window): Vec2f =
   ## Returns the current position of the mouse cursor in the window.
   ## This may be used in an input event handler to query the last mouse
   ## position.
@@ -173,12 +166,70 @@ proc mouse*(win: Window): Vec2[float] =
   ## If the window is not focused, it returns the last position of the cursor
   ## when the window *was* focused. If you need the mouse position when the
   ## window is not focused, consider using the (slower) ``pollMouse``.
-  result = win.mousePos
+  result = window.mousePos
 
-proc pollMouse*(win: Window): Vec2[float] =
+proc pollMouse*(window: Window): Vec2f =
   ## Polls the OS for the mouse cursor's position. Unlike ``mouse``, this works
   ## returns the current position regardless of the window's focus.
-  result = win.pollMouseImpl(win)
+  result = window.pollMouseImpl(window)
+
+proc size*(window: Window): Vec2i =
+  ## Returns the current size of the window as a vector.
+  var x, y: int
+  window.getDimensionsImpl(window, x, y)
+  result = vec2i(x.int32, y.int32)
+
+proc width*(window: Window): int =
+  ## Returns the current width of the window.
+  result = window.size.x
+
+proc height*(window: Window): int =
+  ## Returns the current height of the window.
+  result = window.size.y
+
+proc IMPL_makeCurrent*(window: Window) =
+  ## **Do not use this.**
+  ## Makes a window's context current. You should not use this in normal code.
+  ## This is left as part of the public API, but it's an implementation detail
+  ## left in because of global state.
+
+  # avoid unnecessary state changes
+  if window.agl.window.AgletWindow.current != window:
+    window.agl.window.AgletWindow.current = window
+    window.makeCurrentImpl(window)
+
+proc render*(window: Window): Frame =
+  ## Starts rendering a single frame of animation.
+  ## Only one frame may be rendered at a time. After rendering the frame, use
+  ## ``finish`` to stop rendering to the frame.
+
+  assert window.agl.window.AgletWindow.frame.isNone,
+    "only one frame may be rendered at a time, call finish() to finalize " &
+    "the previous frame"
+
+  result = Frame(gl: window.gl, window: window)
+
+  result.useImpl = proc (target: Target, gl: OpenGl) =
+    window.IMPL_makeCurrent()
+    gl.bindFramebuffer({ftRead, ftDraw}, 0)
+    gl.viewport(0, 0, window.width.GlSizei, window.height.GlSizei)
+
+  window.agl.window.AgletWindow.frame = some(result)
+
+proc finish*(frame: Frame) =
+  ## Finishes a frame blitting it onto the screen.
+  frame.window.agl.window.AgletWindow.frame = Frame.none
+  frame.window.swapBuffersImpl(frame.window)
+
+proc glVersion*(window: Window): string =
+  ## Returns a string containing the version of OpenGL as reported by the
+  ## driver.
+  result = window.gl.version
+
+proc initWindow*(agl: var Aglet) =
+  ## Initializes the windowing submodule. You should call this before doing
+  ## anything with windows.
+  agl.window = AgletWindow()
 
 proc IMPL_loadGl*(win: Window) =
   ## **Do not use this.**
@@ -191,41 +242,3 @@ proc IMPL_getGlContext*(win: Window): OpenGl =
   ## **Do not use this.**
   ## Returns the raw OpenGL context for use in internal code.
   result = win.gl
-
-proc render*(win: Window): Frame =
-  ## Starts rendering a single frame of animation.
-  ## Only one frame may be rendered at a time. After rendering the frame, use
-  ## ``finish`` to stop rendering to the frame.
-  assert win.agl.window.AgletWindow.frame == nil,
-    "cannot render two frames at once; finish() the old frame first"
-
-  result = Frame(win: win, gl: win.gl)
-  win.getDimensionsImpl(win, result.width, result.height)
-
-  result.useImpl = proc (target: Target, gl: OpenGl) =
-    gl.bindFramebuffer({ftRead, ftDraw}, 0)
-    gl.viewport(0, 0, target.Frame.width.GlSizei, target.Frame.height.GlSizei)
-
-  win.agl.window.AgletWindow.frame = result
-
-proc finishFrame(win: Window) =
-  win.agl.window.AgletWindow.frame = nil
-
-proc finish*(frame: Frame) =
-  ## Finishes a frame blitting it onto the screen.
-  frame.win.swapBuffersImpl(frame.win)
-  frame.win.finishFrame()
-
-proc dimensions*(frame: Frame): Vec2i =
-  ## Returns a frame's dimensions.
-  result = vec2(frame.width.int32, frame.height.int32)
-
-proc glVersion*(win: Window): string =
-  ## Returns a string containing the version of OpenGL as reported by the
-  ## driver.
-  result = win.gl.version
-
-proc initWindow*(agl: var Aglet) =
-  ## Initializes the windowing submodule. You should call this before doing
-  ## anything with windows.
-  agl.window = AgletWindow(current: nil)

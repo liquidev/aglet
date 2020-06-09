@@ -62,10 +62,10 @@ proc implWindow(win: WindowGlfw) =
     glfwWaitEventsTimeout(timeout.cdouble)
     glfwWaitEvents()
 
-  win.pollMouseImpl = proc (win: Window): Vec2[float] =
+  win.pollMouseImpl = proc (win: Window): Vec2f =
     var x, y: cdouble
     glfwGetCursorPos(wing.handle, addr x, addr y)
-    result = vec2(x.float, y.float)
+    result = vec2f(x, y)
 
   win.makeCurrentImpl = proc (win: Window) =
     glfwMakeContextCurrent(wing.handle)
@@ -135,7 +135,7 @@ proc eventHooks(win: WindowGlfw) =
   glfwSetCursorPosCallback(win.handle) do (win: ptr GLFWwindow,
                                            x, y: cdouble) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekMouseMove,
-                                 mousePos: vec2(x.float, y.float)))
+                                 mousePos: vec2f(x, y)))
 
   glfwSetCursorEnterCallback(win.handle) do (win: ptr GLFWwindow,
                                              entered: cint) {.cdecl.}:
@@ -147,7 +147,7 @@ proc eventHooks(win: WindowGlfw) =
   glfwSetScrollCallback(win.handle) do (win: ptr GLFWwindow,
                                         x, y: cdouble) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekMouseScroll,
-                                 scrollPos: vec2(x.float, y.float)))
+                                 scrollPos: vec2f(x, y)))
 
   glfwSetDropCallback(win.handle) do (win: ptr GLFWwindow,
                                       count: cint,

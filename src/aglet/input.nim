@@ -52,7 +52,8 @@ type
     case kind*: InputEventKind
     of iekKeyPress..iekKeyRelease:
       key*: Key            ## the pressed key
-      scancode*: int       ## the pressed key's scancode \
+      scancode*: int
+        ## the pressed key's scancode
         ## (keyboard layout-independent number, useful for saving keys)
       kMods*: set[ModKey]  ## any modifier keys
     of iekKeyChar:
@@ -61,16 +62,17 @@ type
       button*: MouseButton  ## the pressed mouse button
       bMods*: set[ModKey]   ## any modifier keys
     of iekMouseMove:
-      mousePos*: Vec2[float]  ## the new mouse position
+      mousePos*: Vec2f  ## the new mouse position
     of iekMouseEnter, iekMouseLeave: discard
     of iekMouseScroll:
-      scrollPos*: Vec2[float]  
+      scrollPos*: Vec2f
     of iekFileDrop:
       filePaths*: seq[string]
   InputProc* = proc (ev: InputEvent) ## input event handler
 
 const
-  mbLeft* = mb1    ## the left mouse button. Using these constants is \
+  mbLeft* = mb1
+    ## The left mouse button. Using these constants is
     ## preferred over using ``mb1..3`` directly to aid readability.
-  mbRight* = mb2   ## the right mouse button
-  mbMiddle* = mb3  ## the middle mouse button
+  mbRight* = mb2   ## The right mouse button.
+  mbMiddle* = mb3  ## The middle mouse button.

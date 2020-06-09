@@ -16,6 +16,7 @@ type
     it32 = "uint32"
 
   Mesh*[V] = ref object
+    window: Window
     gl: OpenGl
     vao: VertexArray
     vbo, ebo: GlUint
@@ -120,12 +121,15 @@ proc primitiveCount*(mesh: Mesh): int =
     max(0, verts - 2)
 
 proc useVbo(mesh: Mesh) =
+  mesh.window.IMPL_makeCurrent()
   mesh.gl.bindBuffer(btArray, mesh.vbo)
 
 proc useEbo(mesh: Mesh) =
+  mesh.window.IMPL_makeCurrent()
   mesh.gl.bindBuffer(btElementArray, mesh.ebo)
 
 proc use(mesh: Mesh) =
+  mesh.window.IMPL_makeCurrent()
   mesh.gl.bindVertexArray(mesh.vao)
 
 macro vaoAttribsAux(gl: typed, T: typedesc, attrCount: typed): untyped =
@@ -144,6 +148,7 @@ macro vaoAttribsAux(gl: typed, T: typedesc, attrCount: typed): untyped =
   result.add(newAssignment(attrCount, newLit(index)))
 
 proc updateVao[V](mesh: Mesh[V]) =
+  mesh.window.IMPL_makeCurrent()
   if mesh.vao.id != 0:
     mesh.gl.deleteVertexArray(mesh.vao)
 
@@ -162,6 +167,8 @@ proc uploadVertices*[V](mesh: Mesh[V], data: openArray[V]) =
   ## Uploads vertex data to the vertex buffer of the given mesh.
   ## This operation is optimized, so if the data store can fit the given array,
   ## it is not reallocated.
+
+  mesh.window.IMPL_makeCurrent()
 
   if mesh.vbo == 0:
     mesh.vbo = mesh.gl.createBuffer()
@@ -193,6 +200,8 @@ proc uploadIndices*[V; I: IndexType](mesh: Mesh[V],
   ## This operation is optimized, so if the data store can fit the given array,
   ## it is not reallocated.
 
+  mesh.window.IMPL_makeCurrent()
+
   assert mesh.vbo != 0, "vertices must be uploaded before indices"
   if mesh.ebo == 0:
     mesh.ebo = mesh.gl.createBuffer()
@@ -220,6 +229,7 @@ proc updateVertices*[V](mesh: Mesh[V], pos: Natural,
                         data: openArray[V]) =
   ## Updates vertices at the given position. ``pos + data.len`` must be less
   ## than ``mesh.vboCapacity``, otherwise an assertion is triggered.
+
   assert pos + data.len < mesh.vboCapacity,
     "given data won't fit in the vertex mesh"
 
@@ -236,6 +246,7 @@ proc updateIndices*[I: IndexType](mesh: Mesh, pos: Natural,
                                   data: openArray[I]) =
   ## Updates indices at the given range. ``pos + data.len``` must be less than
   ## ``mesh.eboCapacity``, otherwise an assertion is triggered.
+
   assert pos + data.len < mesh.eboCapacity,
     "given data won't fit in the index mesh"
   assert indexTypeToEnum(I) == mesh.eboType,
@@ -276,14 +287,16 @@ converter allVertices*[V](mesh: Mesh[V]): MeshSlice[V] =
   ## when attempting to draw something.
   result = mesh[0..<mesh.vertexCount]
 
-proc newMesh*[V](win: Window, usage: MeshUsage,
+proc newMesh*[V](window: Window, usage: MeshUsage,
                  primitive: DrawPrimitive): Mesh[V] =
   ## Creates a new, empty mesh built from the given draw primitive. Set
   ## ``usage`` depending on how the mesh is going to be used, so that the
   ## driver's able to place it in a suitable area of GPU memory. See
   ## ``MeshUsage`` for details.
-  let gl = win.IMPL_getGlContext()
+  window.IMPL_makeCurrent()
+  let gl = window.IMPL_getGlContext()
   new(result) do (mesh: Mesh[V]):
+    mesh.window.IMPL_makeCurrent()
     mesh.gl.deleteBuffer(mesh.vbo)
     if mesh.hasEbo:
       mesh.gl.deleteBuffer(mesh.ebo)
@@ -295,16 +308,16 @@ proc newMesh*[V](win: Window, usage: MeshUsage,
     of muDynamic: GL_DYNAMIC_DRAW
   result.primitive = primitive
 
-proc newMesh*[V](win: Window, primitive: DrawPrimitive,
+proc newMesh*[V](window: Window, primitive: DrawPrimitive,
                  vertices: openArray[V], usage = muStatic): Mesh[V] =
   ## Creates a new mesh pre-loaded with the given vertices.
-  result = win.newMesh[:V](usage, primitive)
+  result = window.newMesh[:V](usage, primitive)
   result.uploadVertices(vertices)
 
-proc newMesh*[V; I: IndexType](win: Window, primitive: DrawPrimitive,
+proc newMesh*[V; I: IndexType](window: Window, primitive: DrawPrimitive,
                                vertices: openArray[V], indices: openArray[I],
                                usage = muStatic): Mesh[V] =
   ## Creates a new mesh pre-loaded with the given vertices and indices.
-  result = win.newMesh[:V](usage, primitive)
+  result = window.newMesh[:V](usage, primitive)
   result.uploadVertices(vertices)
   result.uploadIndices(indices)

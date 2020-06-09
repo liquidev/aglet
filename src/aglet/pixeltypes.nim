@@ -172,6 +172,44 @@ proc rgba*(red, green, blue, alpha: float32): Rgba32f =
   ## Alias for ``rgba32f``.
   rgba32f(red, green, blue, alpha)
 
+
+# color getters
+
+proc r*(color: Red8): uint8 = uint8(color)
+proc r*(color: Red16): uint16 = uint16(color)
+proc r*(color: Red32): uint32 = uint32(color)
+proc r*(color: Red32f): float32 = float32(color)
+
+template colorFieldsRg(T, R: type): untyped =
+  proc r*(color: T): R {.borrow.}
+  proc g*(color: T): R {.borrow.}
+
+colorFieldsRg Rg8, uint8
+colorFieldsRg Rg16, uint16
+colorFieldsRg Rg32, uint32
+colorFieldsRg Rg32f, float32
+
+template colorFieldsRgb(T, R: type): untyped =
+  proc r*(color: T): R {.borrow.}
+  proc g*(color: T): R {.borrow.}
+  proc b*(color: T): R {.borrow.}
+
+colorFieldsRgb Rgb8, uint8
+colorFieldsRgb Rgb16, uint16
+colorFieldsRgb Rgb32, uint32
+colorFieldsRgb Rgb32f, float32
+
+template colorFieldsRgba(T, R: type): untyped =
+  proc r*(color: T): R {.borrow.}
+  proc g*(color: T): R {.borrow.}
+  proc b*(color: T): R {.borrow.}
+  proc a*(color: T): R {.borrow.}
+
+colorFieldsRgba Rgba8, uint8
+colorFieldsRgba Rgba16, uint16
+colorFieldsRgba Rgba32, uint32
+colorFieldsRgba Rgba32f, float32
+
 proc internalFormat*(T: type[AnyPixelType]): GlEnum =
   ## Implementation detail, do not use.
   when T is Red8: GL_R8

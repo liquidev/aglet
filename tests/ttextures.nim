@@ -12,7 +12,7 @@ var agl = initAglet()
 agl.initWindow()
 
 const
-  VertexSource = """
+  VertexSource = glsl"""
     #version 330 core
 
     layout (location = 0) in vec2 position;
@@ -25,7 +25,7 @@ const
       fragTextureCoords = textureCoords;
     }
   """
-  FragmentSource = """
+  FragmentSource = glsl"""
     #version 330 core
 
     in vec2 fragTextureCoords;
@@ -72,7 +72,7 @@ let drawParams = defaultDrawParams()
 
 while not win.closeRequested:
   var target = win.render()
-  target.clearColor(vec4f(0.0, 0.0, 0.0, 1.0))
+  target.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
   target.draw(prog, rect, uniforms {
     ?noise: noiseTex.sampler(),
     ?bricks: bricksTex.sampler(magFilter = tfNearest),

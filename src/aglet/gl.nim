@@ -58,7 +58,9 @@ type
   UniformMatrixProc = proc (location: GlInt, count: GlSizei, transpose: GlBool,
                             value: pointer) {.cdecl.}
 
-  OpenGl* = ref object  ## the opengl API and state
+  OpenGl* = ref object
+    ## The OpenGL API and state.
+    ## This object is quite a behemoth, but that's also what OpenGL is.
     version*: string
 
     # state
@@ -83,6 +85,7 @@ type
     sPolygonModes: array[Facing, GlEnum]
     sPrimitiveRestartIndex: GlUint
     sProgram: GlUint
+    sRenderbuffer: GlUint
     sSamplerBindings: seq[GlUint]
     sScissor: tuple[x, y: GlInt, width, height: GlSizei]
     sStencilFuncs: array[Facing, tuple[fn: GlEnum, refr: GlInt, mask: GlUint]]
@@ -100,6 +103,7 @@ type
     glActiveTexture: proc (texture: GlEnum) {.cdecl.}
     glBindBuffer: proc (target: GlEnum, buffer: GlUint) {.cdecl.}
     glBindFramebuffer: proc (target: GlEnum, framebuffer: GlUint) {.cdecl.}
+    glBindRenderbuffer: proc (target: GlEnum, renderbuffer: GlUint) {.cdecl.}
     glBindSampler: proc (unit, sampler: GlUint) {.cdecl.}
     glBindTexture: proc (target: GlEnum, texture: GlUint) {.cdecl.}
     glBindVertexArray: proc (array: GlUint) {.cdecl.}
@@ -144,6 +148,8 @@ type
     glCreateProgram: proc (): GlUint {.cdecl.}
     glCreateShader: proc (shaderType: GlEnum): GlUint {.cdecl.}
     glDeleteBuffers: proc (n: GlSizei, buffers: pointer) {.cdecl.}
+    glDeleteFramebuffers: proc (n: GlSizei, framebuffers: pointer) {.cdecl.}
+    glDeleteRenderbuffers: proc (n: GlSizei, renderbuffers: pointer) {.cdecl.}
     glDeleteProgram: proc (program: GlUint) {.cdecl.}
     glDeleteSamplers: proc (n: GlSizei, samplers: pointer) {.cdecl.}
     glDeleteShader: proc (shader: GlUint) {.cdecl.}
@@ -155,6 +161,8 @@ type
                           indices: pointer) {.cdecl.}
     glEnableVertexAttribArray: proc (index: GlUint) {.cdecl.}
     glGenBuffers: proc (n: GlSizei, buffers: pointer) {.cdecl.}
+    glGenFramebuffers: proc (n: GlSizei, framebuffers: pointer) {.cdecl.}
+    glGenRenderbuffers: proc (n: GlSizei, renderbuffers: pointer) {.cdecl.}
     glGenSamplers: proc (n: GlSizei, samplers: pointer) {.cdecl.}
     glGenTextures: proc (n: GlSizei, textures: pointer) {.cdecl.}
     glGenVertexArrays: proc (n: GlSizei, arrays: pointer) {.cdecl.}
@@ -172,6 +180,9 @@ type
     glGetIntegerv: proc (pname: GlEnum, params: pointer) {.cdecl.}
     glGetUniformLocation: proc (program: GlUint, name: cstring): GlInt {.cdecl.}
     glLinkProgram: proc (program: GlUint) {.cdecl.}
+    glRenderbufferStorageMultisample: proc (target: GlEnum, samples: GlSizei,
+                                            internalFormat: GlEnum,
+                                            width, height: GlSizei) {.cdecl.}
     glSamplerParameteri: proc (sampler: GlUint, pname: GlEnum,
                                param: GlInt) {.cdecl.}
     glSamplerParameterfv: proc (sampler: GlUint, pname: GlEnum,
@@ -213,7 +224,6 @@ type
                                  point: pointer) {.cdecl.}
     glVertexAttribIPointer: proc (index: GlUint, size: GlInt, typ: GlEnum,
                                   stride: GlSizei, point: pointer) {.cdecl.}
-
 
 proc getInt(gl: OpenGl, property: GlEnum, result: ptr GlInt) =
   gl.glGetIntegerv(property, result)
@@ -420,6 +430,10 @@ proc bindFramebuffer*(gl: OpenGl, targets: set[FramebufferTarget],
       if gl.getError() == GL_INVALID_VALUE:
         raise newException(ValueError,
                            "framebuffer " & $buffer & " doesn't exist")
+
+proc bindRenderbuffer*(gl: OpenGl, renderbuffer: GlUint) =
+  updateDiff gl.sRenderbuffer, renderbuffer:
+    gl.glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer)
 
 proc bindSampler*(gl: OpenGl, unit: int, sampler: GlUint) =
   if unit >= gl.sSamplerBindings.len:
@@ -780,6 +794,25 @@ proc samplerParam*(gl: OpenGl, sampler: GlUint, param: GlEnum,
 proc deleteSampler*(gl: OpenGl, sampler: GlUint) =
   var sampler = sampler
   gl.glDeleteSamplers(1, addr sampler)
+
+proc createFramebuffer*(gl: OpenGl): GlUint =
+  gl.glGenFramebuffers(1, addr result)
+
+proc deleteFramebuffer*(gl: OpenGl, framebuffer: GlUint) =
+  var framebuffer = framebuffer
+  gl.glDeleteFramebuffers(1, addr framebuffer)
+
+proc createRenderbuffer*(gl: OpenGl): GlUint =
+  gl.glGenRenderbuffers(1, addr result)
+
+proc renderbufferStorage*(gl: OpenGl, width, height, samples: GlSizei,
+                          internalFormat: GlEnum) =
+  gl.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
+                                      internalFormat, width, height)
+
+proc deleteRenderbuffer*(gl: OpenGl, renderbuffer: GlUint) =
+  var renderbuffer = renderbuffer
+  gl.glDeleteRenderbuffers(1, addr renderbuffer)
 
 proc drawArrays*(gl: OpenGl, primitive: GlEnum, start, count: int) =
   gl.glDrawArrays(primitive, start.GlInt, count.GlSizei)

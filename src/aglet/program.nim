@@ -11,7 +11,10 @@ import program_base
 export program_base
 
 type
-  ShaderError* = object of ValueError
+  GlslSource* = distinct string
+    ## GLSL source code type, for extra type safety.
+
+  ShaderError* = object of Defect
 
 macro bindAttribLocations(gl: OpenGl, program: GlUint, T: typedesc): untyped =
   result = newStmtList()
@@ -27,15 +30,21 @@ macro bindAttribLocations(gl: OpenGl, program: GlUint, T: typedesc): untyped =
         bindAttribLocation(`gl`, `program`, `indexLit`, `nameLit`))
       inc(index)
 
-proc newProgram*[V](win: Window, vertexSrc, fragmentSrc: string,
-                    geometrySrc = ""): Program[V] =
+proc glsl*(source: string): GlslSource =
+  ## Shorthand for constructing GLSL source code.
+  result = GlslSource(source)
+
+proc newProgram*[V](window: Window, vertexSrc, fragmentSrc: GlslSource,
+                    geometrySrc = glsl""): Program[V] =
   ## Creates a new shader program from the given vertex and fragment shader
   ## source code. If the geometry shader's source code is not empty, it will
   ## also be compiled and linked.
   ## This can raise a ``ShaderError`` if any of the shaders fails to compile, or
   ## the program fails to link.
 
-  var gl = win.IMPL_getGlContext()
+  window.IMPL_makeCurrent()
+
+  var gl = window.IMPL_getGlContext()
 
   new(result) do (program: Program[V]):
     # delete the program when its lifetime is over
@@ -47,20 +56,22 @@ proc newProgram*[V](win: Window, vertexSrc, fragmentSrc: string,
   # compile all the shaders
   var errorMsg: string
 
-  let vertex = gl.createShader(GL_VERTEX_SHADER, vertexSrc, errorMsg)
+  let vertex = gl.createShader(GL_VERTEX_SHADER, vertexSrc.string, errorMsg)
   if vertex.isNone:
     raise newException(ShaderError, "vertex compile failed: " & errorMsg)
   gl.attachShader(result.id, vertex.get)
 
-  let fragment = gl.createShader(GL_FRAGMENT_SHADER, fragmentSrc, errorMsg)
+  let fragment = gl.createShader(GL_FRAGMENT_SHADER,
+                                 fragmentSrc.string, errorMsg)
   if fragment.isNone:
     raise newException(ShaderError, "fragment compile failed: " & errorMsg)
   gl.attachShader(result.id, fragment.get)
 
-  let hasGeometry = geometrySrc.len > 0
+  let hasGeometry = geometrySrc.string.len > 0
   var geometry: GlUint
   if hasGeometry:
-    let maybeShader = gl.createShader(GL_GEOMETRY_SHADER, geometrySrc, errorMsg)
+    let maybeShader = gl.createShader(GL_GEOMETRY_SHADER,
+                                      geometrySrc.string, errorMsg)
     if maybeShader.isNone:
       raise newException(ShaderError, "geometry compile failed: " & errorMsg)
     geometry = maybeShader.get

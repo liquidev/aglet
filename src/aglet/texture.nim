@@ -2,6 +2,7 @@
 
 import std/tables
 
+import framebuffer_attachment
 import gl
 import pixeltypes
 import rect
@@ -12,7 +13,7 @@ import window
 # types
 
 type
-  TexturePixelType* = ColorPixelType | DepthPixelType
+  TexturePixelType* = ColorPixelType | DepthPixelType | DepthStencilPixelType
     ## Pixel formats supported by textures.
 
   TextureFilter* = enum
@@ -48,8 +49,9 @@ type
     id: GlUint
     textureTarget: TextureTarget
 
-  Texture* = ref object of RootObj
+  Texture* = ref object of FramebufferAttachment
     ## Base texture. All other texture types inherit from this.
+    window: Window
     gl: OpenGl
     id: GlUint
     samplers: Table[SamplerParams, Sampler]
@@ -62,23 +64,24 @@ type
     fWidth: int
   Texture2D*[T: TexturePixelType] {.final.} = ref object of Texture
     ## 2D texture.
-    fWidth, fHeight: int
+    fSize: Vec2i
     fSamples: int
   Texture3D*[T: TexturePixelType] {.final.} = ref object of Texture
     ## 3D texture.
-    fWidth, fHeight, fDepth: int
+    fSize: Vec3i
   Texture1DArray*[T: TexturePixelType] {.final.} = ref object of TextureArray
     ## An array of 1D textures.
     fWidth, fLen: int
   Texture2DArray*[T: TexturePixelType] {.final.} = ref object of TextureArray
     ## An array of 2D textures.
-    fWidth, fHeight, fLen: int
+    fSize: Vec2i
+    fLen: int
     fSamples: int
   TextureCubeMap*[T: TexturePixelType] {.final.} = ref object of Texture
     ## A cubemap texture. This stores six textures for all the individual sides
     ## of a cube. This is commonly used for skyboxes, as it only requires one
     ## texture unit while providing a total of 6 textures.
-    fWidth, fHeight: int
+    fSize: Vec2i
 
   Some2DTexture* = Texture2D | Texture2DArray
     ## Texture that can be multisampled.
@@ -123,7 +126,7 @@ proc format(T: type[TexturePixelType]): GlEnum =
   elif T is Depth16 | Depth24 | Depth32: GL_DEPTH_COMPONENT
 
 proc dataType(T: type[AnyPixelType]): GlEnum =
-  when T is Red8 | Rg8 | Rgb8 | Rgba8: GL_TUNSIGNED_BYTE
+  when T is Red8 | Rg8 | Rgb8 | Rgba8 | Depth24: GL_TUNSIGNED_BYTE
   elif T is Red16 | Rg16 | Rgb16 | Rgba16 |
             Depth16: GL_TUNSIGNED_SHORT
   elif T is Red32 | Rg32 | Rgb32 | Rgba32: GL_TUNSIGNED_INT
@@ -152,21 +155,29 @@ proc len*(array: Texture1DArray): int =
   ## Returns how many 1D textures the array stores.
   array.fLen
 
+proc size*(texture: Texture2D): Vec2i =
+  ## Returns the size of the texture as a vector.
+  texture.fSize
+
 proc width*(texture: Texture2D): int =
   ## Returns the width of the texture.
-  texture.fWidth
+  texture.size.x
 
 proc height*(texture: Texture2D): int =
   ## Returns the height of the texture.
-  texture.fHeight
+  texture.size.y
+
+proc size*(array: Texture2DArray): Vec2i =
+  ## Returns the size of the array's textures as a vector.
+  array.fSize
 
 proc width*(array: Texture2DArray): int =
   ## Returns the width of all the 2D textures stored in the array.
-  array.fWidth
+  array.size.x
 
 proc height*(array: Texture2DArray): int =
   ## Returns the height of all the 2D textures stored in the array.
-  array.fHeight
+  array.size.y
 
 proc len*(array: Texture2DArray): int =
   ## Returns how many 2D textures the array stores.
@@ -181,25 +192,33 @@ proc samples*(texture: Some2DTexture): bool =
   ## Returns 0 if the texture is not multisampled.
   texture.fSamples
 
+proc size*(texture: Texture3D): Vec3i =
+  ## Returns the size of the texture as a vector.
+  texture.fSize
+
 proc width*(texture: Texture3D): int =
   ## Returns the width of the texture.
-  texture.fWidth
+  texture.size.x
 
 proc height*(texture: Texture3D): int =
   ## Returns the height of the texture.
-  texture.fHeight
+  texture.size.y
 
 proc depth*(texture: Texture3D): int =
   ## Returns the depth of the texture.
-  texture.fDepth
+  texture.size.z
+
+proc size*(texture: TextureCubeMap): Vec2i =
+  ## Returns the size of the cubemap's textures as a vector.
+  texture.fSize
 
 proc width*(texture: TextureCubeMap): int =
   ## Returns the width of each texture in the cubemap.
-  texture.fWidth
+  texture.size.x
 
 proc height*(texture: TextureCubeMap): int =
   ## Returns the height of each texture in the cubemap.
-  texture.fHeight
+  texture.size.y
 
 proc target[T: Texture](texture: T): TextureTarget =
   when T is Texture1D: ttTexture1D
@@ -214,6 +233,7 @@ proc target[T: Texture](texture: T): TextureTarget =
   elif T is TextureCubeMap: ttTextureCubeMap
 
 proc use[T: Texture](texture: T) =
+  texture.window.IMPL_makeCurrent()
   texture.gl.bindTexture(texture.target, texture.id)
 
 
@@ -277,24 +297,26 @@ template textureInit(gl: OpenGl) =
   # bind createTexture, deleteTexture
 
   new(result) do (texture: typeof(result)):
+    texture.window.IMPL_makeCurrent()
     deleteTexture(texture.gl, texture.id)
   result.id = createTexture(gl)
   result.gl = gl
 
-proc newTexture1D*[T: TexturePixelType](win: Window): Texture1D[T] =
+proc newTexture1D*[T: TexturePixelType](window: Window): Texture1D[T] =
   ## Creates a new 1D texture. The texture does not contain any data; a data
   ## store must be allocated using ``upload`` before the texture is used.
 
-  var gl = win.IMPL_getGlContext()
+  window.IMPL_makeCurrent()
+  var gl = window.IMPL_getGlContext()
   textureInit(gl)
 
-proc newTexture1D*[T: ColorPixelType](win: Window, width: Positive,
+proc newTexture1D*[T: ColorPixelType](window: Window, width: Positive,
                                       data: ptr T): Texture1D[T] =
   ## Creates a new 1D texture and initializes it with data stored at the
   ## given pointer. This procedure is **unsafe** as it deals with pointers.
   ## Prefer the ``openArray`` version instead.
 
-  result = win.newTexture1D[:T]()
+  result = window.newTexture1D[:T]()
   result.upload[:T](width, data)
 
 proc newTexture1D*[T: ColorPixelType](win: Window,
@@ -303,7 +325,7 @@ proc newTexture1D*[T: ColorPixelType](win: Window,
   ## The width of the texture is inferred from the data's length, which must not
   ## be zero.
 
-  result = win.newTexture1D[:T]()
+  result = window.newTexture1D[:T]()
   result.upload[:T](data)
 
 
@@ -393,36 +415,38 @@ proc upload*[T: ColorPixelType,
     texture.fHeight = image.height
   texture.subImage(vec2i(0, 0), image)
 
-proc newTexture2D*[T: ColorPixelType](win: Window): Texture2D[T] =
+proc newTexture2D*[T: ColorPixelType](window: Window): Texture2D[T] =
   ## Creates a new 2D texture. The texture does not contain any data; a data
   ## store must be allocated using ``upload`` before the texture is used.
 
-  var gl = win.IMPL_getGlContext()
+  window.IMPL_makeCurrent()
+  var gl = window.IMPL_getGlContext()
   textureInit(gl)
 
-proc newTexture2D*[T: ColorPixelType](win: Window, size: Vec2i,
+proc newTexture2D*[T: ColorPixelType](window: Window, size: Vec2i,
                                       data: ptr T): Texture2D[T] =
   ## Creates a new 2D texture and initializes it with data stored at the given
   ## pointer. This procedure is **unsafe** as it deals with pointers.
   ## Prefer the ``openArray`` and ``BinaryImageBuffer`` versions when possible.
 
-  result = win.newTexture2D[:T]()
+  result = window.newTexture2D[:T]()
   result.upload[:T](size, data)
 
-proc newTexture2D*[T: ColorPixelType](win: Window, size: Vec2i,
+proc newTexture2D*[T: ColorPixelType](window: Window, size: Vec2i,
                                       data: openArray[T]): Texture2D[T] =
   ## Creates a new 2D texture and initializes it with data stored in the given
   ## array.
 
-  result = win.newTexture2D[:T]()
+  result = window.newTexture2D[:T]()
   result.upload[:T](size, data)
 
-proc newTexture2D*[I: BinaryImageBuffer](win: Window, T: type[ColorPixelType],
+proc newTexture2D*[I: BinaryImageBuffer](window: Window,
+                                         T: type[ColorPixelType],
                                          image: I): Texture2D[T] =
   ## Creates a new 2D texture and initializes it with pixels stored in the given
   ## image.
 
-  result = win.newTexture2D[:T]()
+  result = window.newTexture2D[:T]()
   result.upload[:T, I](image)
 
 
@@ -485,29 +509,31 @@ proc upload*[T: ColorPixelType](texture: Texture3D[T], size: Vec3i,
   assert data.len == size.x * size.y * size.z
   texture.upload(size, data[0].unsafeAddr)
 
-proc newTexture3D*[T: ColorPixelType](win: Window): Texture3D[T] =
+proc newTexture3D*[T: ColorPixelType](window: Window): Texture3D[T] =
   ## Creates a new 3D texture without any data. A data store must be allocated
   ## using ``upload`` before the texture is used.
 
-  var gl = win.IMPL_getGlContext()
+
+  window.IMPL_makeCurrent()
+  var gl = window.IMPL_getGlContext()
   textureInit(gl)
 
-proc newTexture3D*[T: ColorPixelType](win: Window, size: Vec3i,
+proc newTexture3D*[T: ColorPixelType](window: Window, size: Vec3i,
                                       data: ptr T): Texture3D[T] =
   ## Creates a new 3D texture and initializes it with data stored at the given
   ## pointer. This procedure is **unsafe** as it deals with pointers.
   ## Prefer the ``openArray`` version instead.
 
-  result = win.newTexture3D[:T]()
+  result = window.newTexture3D[:T]()
   result.upload[:T](size, data)
 
-proc newTexture3D*[T: ColorPixelType](win: Window, size: Vec3i,
+proc newTexture3D*[T: ColorPixelType](window: Window, size: Vec3i,
                                       data: openArray[T]): Texture3D[T] =
   ## Creates a new 3D texture and initializes it with data stored in the given
   ## array. ``data.len`` must be equal to ``size.x * size.y * size.z``,
   ## otherwise an assertion is triggered.
 
-  result = win.newTexture3D[:T]()
+  result = window.newTexture3D[:T]()
   result.upload[:T](size, data)
 
 
@@ -538,6 +564,7 @@ proc sampler*[T: Texture](texture: T,
                      textureTarget: texture.target)
 
     var borderColor = borderColor
+    texture.window.IMPL_makeCurrent()
     texture.gl.samplerParam(result.id, GL_TEXTURE_MIN_FILTER,
                             GlInt(minFilter.toGlEnum))
     texture.gl.samplerParam(result.id, GL_TEXTURE_MAG_FILTER,

@@ -4,13 +4,15 @@ import glm/vec
 
 import drawparams
 import gl
+import pixeltypes
 import program_base
 import uniform
 
 type
-  Target* = ref object of RootObj
+  Target* = object of RootObj
+    ## Rendering target interface.
     useImpl*: proc (target: Target, gl: OpenGl)
-    gl*: OpenGl  ## do not use directly
+    gl*: OpenGl
 
   Drawable* = concept x
     x.draw(OpenGl)
@@ -23,10 +25,10 @@ type
 proc use(target: Target) =
   target.useImpl(target, target.gl)
 
-proc clearColor*(target: Target, col: Vec4f) =
+proc clearColor*(target: Target, color: Rgba32f) =
   ## Clear the target's color with a solid color.
   target.use()
-  target.gl.clearColor(col.r, col.g, col.b, col.a)
+  target.gl.clearColor(color.r, color.g, color.b, color.a)
 
 proc clearDepth*(target: Target, depth: float32) =
   ## Clear the target's depth buffer with a single value.
