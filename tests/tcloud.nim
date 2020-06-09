@@ -14,7 +14,7 @@ var agl = initAglet()
 agl.initWindow()
 
 const
-  VertexSource = """
+  VertexSource = glsl"""
     #version 330 core
 
     in vec3 position;
@@ -31,7 +31,7 @@ const
       fragTextureCoords = textureCoords;
     }
   """
-  FragmentSource = """
+  FragmentSource = glsl"""
     #version 330 core
 
     in vec3 fragTextureCoords;
@@ -93,7 +93,7 @@ const
   CameraRadius = 2.0
 
 var
-  lastMousePos: Vec2[float]
+  lastMousePos: Vec2f
   dragging = false
   rotationX = 0.0
   rotationY = 0.0
@@ -111,11 +111,11 @@ let
 while not win.closeRequested:
   var target = win.render()
 
-  target.clearColor(vec4f(0.0, 0.0, 0.0, 1.0))
+  target.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
   target.clearDepth(1.0)
 
   let
-    aspect = target.dimensions.x / target.dimensions.y
+    aspect = win.width / win.height
     projection = perspective(Fov.float32, aspect, 0.01, 100.0)
   target.draw(prog, mesh, uniforms {
     model: mat4f(),

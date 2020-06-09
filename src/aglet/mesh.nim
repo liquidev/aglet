@@ -300,6 +300,7 @@ proc newMesh*[V](window: Window, usage: MeshUsage,
     mesh.gl.deleteBuffer(mesh.vbo)
     if mesh.hasEbo:
       mesh.gl.deleteBuffer(mesh.ebo)
+  result.window = window
   result.gl = gl
   result.usage =
     case usage

@@ -5,8 +5,6 @@
 ## with ``IMPL_`` and should not be used by user code. The "prelude" file
 ## ``import aglet`` omits these procs.
 
-import std/options
-
 import glm/vec
 
 import gl
@@ -17,7 +15,6 @@ import target
 type
   AgletWindow = ref object of AgletSubmodule ## the window submodule's state
     current: Window
-    frame: Option[Frame]
 
   WindowHints* = object ## \
     ## window hints. For most hints, if a backend does not support them, they
@@ -73,6 +70,7 @@ type
 
   Frame* = object of Target
     window: Window
+    finished: bool
 
 proc winHints*(resizable = true, visible = true, decorated = true,
                focused = true, floating = false, maximized = false,
@@ -203,22 +201,18 @@ proc render*(window: Window): Frame =
   ## Only one frame may be rendered at a time. After rendering the frame, use
   ## ``finish`` to stop rendering to the frame.
 
-  assert window.agl.window.AgletWindow.frame.isNone,
-    "only one frame may be rendered at a time, call finish() to finalize " &
-    "the previous frame"
+  result = Frame(gl: window.gl, window: window, finished: false)
 
-  result = Frame(gl: window.gl, window: window)
-
-  result.useImpl = proc (target: Target, gl: OpenGl) =
+  result.useImpl = proc (target: Target, gl: OpenGl) {.nimcall.} =
+    assert not target.Frame.finished,
+      "cannot render to a frame that's already been finished"
+    let window = target.Frame.window
     window.IMPL_makeCurrent()
     gl.bindFramebuffer({ftRead, ftDraw}, 0)
     gl.viewport(0, 0, window.width.GlSizei, window.height.GlSizei)
 
-  window.agl.window.AgletWindow.frame = some(result)
-
 proc finish*(frame: Frame) =
   ## Finishes a frame blitting it onto the screen.
-  frame.window.agl.window.AgletWindow.frame = Frame.none
   frame.window.swapBuffersImpl(frame.window)
 
 proc glVersion*(window: Window): string =

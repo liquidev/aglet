@@ -2,18 +2,15 @@ import std/tables
 
 import gl
 import uniform
-import window
 
 type
   Program*[V] = ref object
-    window*: Window
     gl*: OpenGl  ## do not use these fields
     id*: GlUint
     uniformLocationCache*: Table[string, GlInt]
 
 proc IMPL_use*(program: Program) =
   ## **Implementation detail, do not use.**
-  program.window.IMPL_makeCurrent()
   program.gl.useProgram(program.id)
 
 proc IMPL_setUniform*(program: Program, name: string, value: Uniform) =

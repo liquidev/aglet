@@ -25,6 +25,7 @@ import glm/vec
 
 import aglet/[
   drawparams,
+  framebuffer,
   input,
   mesh,
   pixeltypes,
@@ -38,6 +39,7 @@ import aglet/[
 ]
 
 export drawparams except IMPL_apply
+export framebuffer
 export input
 export mesh except IMPL_draw
 export pixeltypes except internalFormat

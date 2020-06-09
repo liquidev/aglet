@@ -280,7 +280,7 @@ proc upload*[T: ColorPixelType](texture: Texture1D[T],
   assert data != nil
   assert width > 0
   texture.use()
-  if texture.fWidth != width:
+  if texture.width != width:
     texture.gl.data1D(width, T.internalFormat, T.format, T.dataType)
     texture.fWidth = width
   texture.subImage(0, width, data)
@@ -297,8 +297,9 @@ template textureInit(gl: OpenGl) =
   # bind createTexture, deleteTexture
 
   new(result) do (texture: typeof(result)):
-    texture.window.IMPL_makeCurrent()
+    IMPL_makeCurrent(texture.window)
     deleteTexture(texture.gl, texture.id)
+  result.window = window
   result.id = createTexture(gl)
   result.gl = gl
 
@@ -319,7 +320,7 @@ proc newTexture1D*[T: ColorPixelType](window: Window, width: Positive,
   result = window.newTexture1D[:T]()
   result.upload[:T](width, data)
 
-proc newTexture1D*[T: ColorPixelType](win: Window,
+proc newTexture1D*[T: ColorPixelType](window: Window,
                                       data: openArray[T]): Texture1D[T] =
   ## Creates a new 1D texture and initializes it with the given data.
   ## The width of the texture is inferred from the data's length, which must not
@@ -342,8 +343,8 @@ proc subImage*[T: ColorPixelType](texture: Texture2D[T], position, size: Vec2i,
 
   assert position.x >= 0 and position.y >= 0
   assert size.x > 0 and size.y > 0
-  assert position.x + size.x <= texture.fWidth and
-         position.y + size.y <= texture.fHeight,
+  assert position.x + size.x <= texture.width and
+         position.y + size.y <= texture.height,
     "pixels cannot be copied out of bounds"
   assert data != nil
   texture.use()
@@ -387,11 +388,10 @@ proc upload*[T: ColorPixelType](texture: Texture2D[T],
   assert data != nil
   assert size.x > 0 and size.y > 0
   texture.use()
-  if texture.fWidth != size.x or texture.fHeight != size.y:
+  if texture.width != size.x or texture.height != size.y:
     texture.gl.data2D(texture.target, size.x, size.y,
                       T.internalFormat, T.format, T.dataType)
-    texture.fWidth = size.x
-    texture.fHeight = size.y
+    texture.fSize = size
   texture.subImage(vec2i(0, 0), size, data)
 
 proc upload*[T: ColorPixelType](texture: Texture2D[T], size: Vec2i,
@@ -408,11 +408,10 @@ proc upload*[T: ColorPixelType,
 
   assert image.width > 0 and image.height > 0
   texture.use()
-  if texture.fWidth != image.width or texture.fHeight != image.height:
+  if texture.width != image.width or texture.height != image.height:
     texture.gl.data2D(texture.target, image.width, image.height,
                       T.internalFormat, T.format, GL_TUNSIGNED_BYTE)
-    texture.fWidth = image.width
-    texture.fHeight = image.height
+    texture.fSize = vec2i(image.width.int32, image.height.int32)
   texture.subImage(vec2i(0, 0), image)
 
 proc newTexture2D*[T: ColorPixelType](window: Window): Texture2D[T] =
@@ -460,9 +459,9 @@ proc subImage*[T: ColorPixelType](texture: Texture3D[T], position, size: Vec3i,
 
   assert position.x >= 0 and position.y >= 0 and position.z >= 0
   assert size.x > 0 and size.y > 0 and size.z > 0
-  assert position.x + size.x <= texture.fWidth and
-         position.y + size.y <= texture.fHeight and
-         position.z + size.z <= texture.fDepth,
+  assert position.x + size.x <= texture.width and
+         position.y + size.y <= texture.height and
+         position.z + size.z <= texture.depth,
     "pixels cannot be copied out of bounds"
   assert data != nil
   texture.use()
@@ -491,14 +490,12 @@ proc upload*[T: ColorPixelType](texture: Texture3D[T],
   assert data != nil
   assert size.x > 0 and size.y > 0 and size.z > 0
   texture.use()
-  if texture.fWidth != size.x or
-     texture.fHeight != size.y or
-     texture.fDepth != size.z:
+  if texture.width != size.x or
+     texture.height != size.y or
+     texture.depth != size.z:
     texture.gl.data3D(texture.target, size.x, size.y, size.z,
                       T.internalFormat, T.format, T.dataType)
-    texture.fWidth = size.x
-    texture.fHeight = size.y
-    texture.fDepth = size.z
+    texture.fSize = size
   texture.subImage(vec3i(0, 0, 0), size, data)
 
 proc upload*[T: ColorPixelType](texture: Texture3D[T], size: Vec3i,

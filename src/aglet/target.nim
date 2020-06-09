@@ -11,7 +11,7 @@ import uniform
 type
   Target* = object of RootObj
     ## Rendering target interface.
-    useImpl*: proc (target: Target, gl: OpenGl)
+    useImpl*: proc (target: Target, gl: OpenGl) {.nimcall.}
     gl*: OpenGl
 
   Drawable* = concept x
