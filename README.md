@@ -47,6 +47,15 @@ Code written using aglet is much shorter than the equivalent code written in
 libraries imported from C. It abstracts all the verbosity away to keep your
 codebase small and concise.
 
+### Idiomatic and error-free
+
+aglet takes advantage of Nim features such as `distinct` types to make your code
+less error-prone. For instance, it's not possible to attach a
+`Renderbuffer[Depth32f]` to a color-only framebuffer, because a
+`Renderbuffer[Depth32f]` does not implement a converter to `ColorSource`.
+Combine this with other small utility features, and aglet code is much less
+error-prone than the equivalent C code.
+
 ### It's free
 
 aglet is and will always be free. It's licensed under the MIT license, so you're
@@ -54,7 +63,34 @@ free to use it in commercial projects.
 
 ## Examples
 
-You can find code examples in the `tests/` directory.
+### Opening a window
+
+```nim
+import aglet
+import aglet/window/glfw  # we need a backend for windowing
+
+# initialize the library state
+var agl = initAglet()
+agl.initWindow()
+
+# create our window
+var win = agl.newWindowGlfw(800, 600, "window example",
+                            winHints(resizable = false))
+
+# begin the render loop
+while not win.closeRequested:
+
+  # render
+  var frame = win.render()
+  frame.clearColor(rgba(0.0, 0.0, 1.0, 1.0))
+  frame.finish()
+
+  # handle events
+  win.pollEvents do (event: InputEvent):
+    echo event
+```
+
+You can find more examples in the `tests/` directory.
 
 ## Roadmap
 
@@ -80,7 +116,7 @@ You can find code examples in the `tests/` directory.
     - [ ] Texture swizzle mask
 - [ ] Framebuffers
   - [ ] Renderbuffers
-  - [ ] `SimpleFramebuffer` (one color attachment, inherits from `Texture`)
+  - [ ] `SimpleFramebuffer` (one color attachment)
   - [ ] `MultiFramebuffer` (≥1 color attachment)
 
 Please report any extra features you'd like to see in the Issues tab!
