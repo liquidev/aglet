@@ -160,6 +160,9 @@ type
     glDrawElements: proc (mode: GlEnum, count: GlSizei, kind: GlEnum,
                           indices: pointer) {.cdecl.}
     glEnableVertexAttribArray: proc (index: GlUint) {.cdecl.}
+    glFramebufferRenderbuffer: proc (target, attachment: GlEnum,
+                                     renderbufferTarget: GlEnum,
+                                     renderbuffer: GlUint) {.cdecl.}
     glGenBuffers: proc (n: GlSizei, buffers: pointer) {.cdecl.}
     glGenFramebuffers: proc (n: GlSizei, framebuffers: pointer) {.cdecl.}
     glGenRenderbuffers: proc (n: GlSizei, renderbuffers: pointer) {.cdecl.}
@@ -797,6 +800,10 @@ proc deleteSampler*(gl: OpenGl, sampler: GlUint) =
 
 proc createFramebuffer*(gl: OpenGl): GlUint =
   gl.glGenFramebuffers(1, addr result)
+
+proc attachRenderbuffer*(gl: OpenGl, attachment: GlEnum, renderbuffer: GlUint) =
+  gl.glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment,
+                               GL_RENDERBUFFER, renderbuffer)
 
 proc deleteFramebuffer*(gl: OpenGl, framebuffer: GlUint) =
   var framebuffer = framebuffer

@@ -29,6 +29,7 @@ type
     gl: OpenGl
     id: GlUint
     fSize: Vec2i
+    fSamples: int
     fColor, fDepth, fStencil, fDepthStencil: FramebufferAttachment
 
   MultiFramebuffer* = ref object
@@ -83,6 +84,34 @@ proc newRenderbuffer*[T: RenderbufferPixelType](window: Window,
                                 samples.GlSizei, T.internalFormat)
   result.fSamples = samples
 
+proc implSource(renderbuffer: Renderbuffer): FramebufferSource =
+  # since all renderbuffers share the same procedure for attachment to
+  # framebuffers, we may as well do this
+  result.attachment = renderbuffer.FramebufferAttachment
+  result.size = renderbuffer.size
+  result.samples = renderbuffer.samples
+
+  result.attachToFramebuffer = proc (framebuffer: GlUint, attachment: GlEnum) =
+    renderbuffer.use()
+    renderbuffer.gl.attachRenderbuffer(attachment, renderbuffer.id)
+
+converter source*(rb: Renderbuffer[ColorPixelType]): ColorSource =
+  ## ``ColorSource`` implementation for color renderbuffers.
+  result = rb.implSource().ColorSource
+
+converter source*(rb: Renderbuffer[DepthPixelType]): DepthSource =
+  ## ``DepthSource`` implementation for depth renderbuffers.
+  result = rb.implSource().DepthSource
+
+converter source*(rb: Renderbuffer[StencilPixelType]): StencilSource =
+  ## ``StencilSource`` implementation for stencil renderbuffers.
+  result = rb.implSource().StencilSource
+
+converter source*(rb: Renderbuffer[DepthStencilPixelType]): DepthStencilSource =
+  ## ``DepthStencilSource`` implementation for combined depth/stencil
+  ## renderbuffers.
+  result = rb.implSource().DepthStencilSource
+
 
 # simple framebuffer
 
@@ -97,6 +126,14 @@ proc width*(simplefb: SimpleFramebuffer): int =
 proc height*(simplefb: SimpleFramebuffer): int =
   ## Returns the height of the framebuffer.
   simplefb.size.y
+
+proc multisampled*(simplefb: SimpleFramebuffer): bool =
+  ## Returns whether the framebuffer is multisampled.
+  simplefb.fSamples > 0
+
+proc samples*(simplefb: SimpleFramebuffer): int =
+  ## Returns the MSAA sample count of the framebuffer.
+  simplefb.fSamples
 
 proc color*(simplefb: SimpleFramebuffer): FramebufferAttachment =
   ## Returns the color attachment of this framebuffer.
@@ -121,21 +158,26 @@ proc use(simplefb: SimpleFramebuffer) =
   simplefb.window.IMPL_makeCurrent()
   simplefb.gl.bindFramebuffer({ftRead, ftDraw}, simplefb.id)
 
-template framebufferSource(T, field) =
+template framebufferSource(T, field, attachmentEnum) =
   proc attach(simplefb: SimpleFramebuffer, source: T) =
     let source = source.FramebufferSource
     simplefb.use()
-    source.attachToFramebuffer(simplefb.id)
+    source.attachToFramebuffer(simplefb.id, attachmentEnum)
     simplefb.field = source.attachment
     if simplefb.fSize == vec2i(0):
       simplefb.fSize = source.size
     else:
       assert source.size == simplefb.size, "all targets must have the same size"
+    if simplefb.fSamples == -1:
+      simplefb.fSamples = source.samples
+    else:
+      assert source.samples == simplefb.fSamples,
+        "all targets must have the same count of MSAA samples"
 
-framebufferSource ColorSource, fColor
-framebufferSource DepthSource, fDepth
-framebufferSource StencilSource, fStencil
-framebufferSource DepthStencilSource, fDepthStencil
+framebufferSource ColorSource, fColor, GL_COLOR_ATTACHMENT0
+framebufferSource DepthSource, fDepth, GL_DEPTH_ATTACHMENT
+framebufferSource StencilSource, fStencil, GL_STENCIL_ATTACHMENT
+framebufferSource DepthStencilSource, fDepthStencil, GL_DEPTH_STENCIL_ATTACHMENT
 
 template framebufferInit(gl) =
   new(result) do (simplefb: SimpleFramebuffer):
@@ -145,6 +187,7 @@ template framebufferInit(gl) =
   IMPL_makeCurrent(window)
   result.id = gl.createFramebuffer()
   result.gl = gl
+  result.fSamples = -1
 
 proc newFramebuffer*(window: Window,
                      color: ColorSource,
