@@ -81,17 +81,23 @@ proc implWindow(win: WindowGlfw) =
   win.swapBuffersImpl = proc (win: Window) =
     glfwSwapBuffers(wing.handle)
 
-  win.requestCloseImpl = proc (win: Window) =
-    glfwSetWindowShouldClose(wing.handle, GLFW_TRUE)
+  win.setCloseRequestedImpl = proc (win: Window, close: bool) =
+    glfwSetWindowShouldClose(wing.handle, close.cint)
 
   win.closeRequestedImpl = proc (win: Window): bool =
     result = glfwWindowShouldClose(wing.handle).bool
 
-  win.getDimensionsImpl = proc (win: Window, w, h: var int) =
+  win.getSizeImpl = proc (win: Window, w, h: var int) =
     var cw, ch: cint
     glfwGetWindowSize(wing.handle, addr cw, addr ch)
     w = cw.int
     h = ch.int
+
+  win.setSizeImpl = proc (win: Window, w, h: int) =
+    glfwSetWindowSize(wing.handle, w.cint, h.cint)
+
+  win.setTitleImpl = proc (win: Window, title: string) =
+    glfwSetWindowTitle(wing.handle, title)
 
 proc toModKeySet(bits: cint): set[ModKey] =
   if (bits and GLFW_MOD_SHIFT) != 0: result.incl(mkShift)
@@ -103,6 +109,46 @@ proc toModKeySet(bits: cint): set[ModKey] =
 
 proc eventHooks(win: WindowGlfw) =
   template wing: WindowGlfw = cast[WindowGlfw](glfwGetWindowUserPointer(win))
+
+  glfwSetWindowPosCallback(win.handle) do (win: ptr GLFWwindow,
+                                           x, y: cint) {.cdecl.}:
+    wing.processEvent(InputEvent(kind: iekWindowMove,
+                                 windowPos: vec2i(x, y)))
+
+  glfwSetWindowSizeCallback(win.handle) do (win: ptr GLFWwindow,
+                                            width, height: cint) {.cdecl.}:
+    wing.processEvent(InputEvent(kind: iekWindowResize,
+                                 size: vec2i(width, height)))
+
+  glfwSetWindowCloseCallback(win.handle) do (win: ptr GLFWwindow) {.cdecl.}:
+    wing.processEvent(InputEvent(kind: iekWindowClose))
+
+  glfwSetWindowRefreshCallback(win.handle) do (win: ptr GLFWwindow) {.cdecl.}:
+    wing.processEvent(InputEvent(kind: iekWindowRedraw))
+
+  glfwSetWindowFocusCallback(win.handle) do (win: ptr GLFWwindow,
+                                             focused: cint) {.cdecl.}:
+    wing.processEvent(InputEvent(kind: iekWindowFocus, focused: focused.bool))
+
+  glfwSetWindowIconifyCallback(win.handle) do (win: ptr GLFWwindow,
+                                               iconified: cint) {.cdecl.}:
+    wing.processEvent(InputEvent(kind: iekWindowIconify,
+                                 iconified: iconified.bool))
+
+  glfwSetWindowMaximizeCallback(win.handle) do (win: ptr GLFWwindow,
+                                                maximized: cint) {.cdecl.}:
+    wing.processEvent(InputEvent(kind: iekWindowMaximize,
+                                 maximized: maximized.bool))
+
+  glfwSetFramebufferSizeCallback(win.handle) do (win: ptr GLFWwindow,
+                                                 width, height: cint) {.cdecl.}:
+    wing.processEvent(InputEvent(kind: iekWindowFrameResize,
+                                 size: vec2i(width, height)))
+
+  glfwSetWindowContentScaleCallback(win.handle) do (win: ptr GLFWwindow,
+                                                    x, y: cfloat) {.cdecl.}:
+    wing.processEvent(InputEvent(kind: iekWindowScale,
+                                 scale: vec2f(x, y)))
 
   glfwSetKeyCallback(win.handle) do (win: ptr GLFWwindow, key, scancode, action,
                                      mods: cint) {.cdecl.}:
@@ -207,12 +253,14 @@ proc newWindowGlfw*(agl: Aglet, width, height: int, title: string,
   glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, hints.debugContext.cint)
 
   # create the actual window
-  result.handle = glfwCreateWindow(width.cint, height.cint, title, nil, nil)
+  result.handle = glfwCreateWindow(width.cint, height.cint, "", nil, nil)
   checkGlfwError()
 
   glfwSetWindowUserPointer(result.handle, cast[pointer](result))
 
   result.implWindow()
   result.eventHooks()
+
+  result.title = title
 
   result.IMPL_loadGl()

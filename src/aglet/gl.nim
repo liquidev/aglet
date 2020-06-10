@@ -163,6 +163,13 @@ type
     glFramebufferRenderbuffer: proc (target, attachment: GlEnum,
                                      renderbufferTarget: GlEnum,
                                      renderbuffer: GlUint) {.cdecl.}
+    glFramebufferTexture1D: proc (target, attachment, texTarget: GlEnum,
+                                  texture: GlUint, level: GlInt) {.cdecl.}
+    glFramebufferTexture2D: proc (target, attachment, texTarget: GlEnum,
+                                  texture: GlUint, level: GlInt) {.cdecl.}
+    glFramebufferTextureLayer: proc (target, attachment: GlEnum,
+                                     texture: GlUint,
+                                     level, layer: GlInt) {.cdecl.}
     glGenBuffers: proc (n: GlSizei, buffers: pointer) {.cdecl.}
     glGenFramebuffers: proc (n: GlSizei, framebuffers: pointer) {.cdecl.}
     glGenRenderbuffers: proc (n: GlSizei, renderbuffers: pointer) {.cdecl.}
@@ -201,16 +208,20 @@ type
     glTexImage2D: proc (target: GlEnum, level, internalFormat: GlInt,
                         width, height: GlSizei, border: GlInt,
                         format, kind: GlEnum, data: pointer) {.cdecl.}
-    glTexSubImage2D: proc (target: GlEnum, level, xoffset, yoffset: GlInt,
-                           width, height: GlSizei, format, typ: GlEnum,
-                           data: pointer) {.cdecl.}
     glTexImage2DMultisample: proc (target: GlEnum, samples: GlSizei,
                                    internalFormat: GlInt,
                                    width, height: GlSizei,
                                    fixedSampleLocations: GlBool) {.cdecl.}
+    glTexSubImage2D: proc (target: GlEnum, level, xoffset, yoffset: GlInt,
+                           width, height: GlSizei, format, typ: GlEnum,
+                           data: pointer) {.cdecl.}
     glTexImage3D: proc (target: GlEnum, level, internalFormat: GlInt,
                         width, height, depth: GlSizei, border: GlInt,
                         format, kind: GlEnum, data: pointer) {.cdecl.}
+    glTexImage3DMultisample: proc (target: GlEnum, samples: GlSizei,
+                                   internalFormat: GlInt,
+                                   width, height, depth: GlSizei,
+                                   fixedSampleLocations: GlBool) {.cdecl.}
     glTexSubImage3D: proc (target: GlEnum, level: GlInt,
                            xoffset, yoffset, zoffset: GlInt,
                            width, height, depth: GlSizei, format, typ: GlEnum,
@@ -421,18 +432,19 @@ proc bindBuffer*(gl: OpenGl, target: BufferTarget, buffer: GlUint) =
 
 proc bindFramebuffer*(gl: OpenGl, targets: set[FramebufferTarget],
                       buffer: GlUint) =
-  if ftRead in targets:
+  if targets == {ftRead, ftDraw}:
+    updateDiff gl.sFramebuffers, (buffer, buffer):
+      gl.glBindFramebuffer(GL_FRAMEBUFFER, buffer)
+  elif targets == {ftRead}:
     updateDiff gl.sFramebuffers.read, buffer:
       gl.glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer)
-      if gl.getError() == GL_INVALID_VALUE:
-        raise newException(ValueError,
-                           "framebuffer " & $buffer & " doesn't exist")
-  if ftDraw in targets:
+  elif targets == {ftDraw}:
     updateDiff gl.sFramebuffers.draw, buffer:
       gl.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer)
-      if gl.getError() == GL_INVALID_VALUE:
-        raise newException(ValueError,
-                           "framebuffer " & $buffer & " doesn't exist")
+
+  if gl.getError() == GL_INVALID_VALUE:
+    raise newException(ValueError,
+                       "framebuffer " & $buffer & " doesn't exist")
 
 proc bindRenderbuffer*(gl: OpenGl, renderbuffer: GlUint) =
   updateDiff gl.sRenderbuffer, renderbuffer:
@@ -748,11 +760,27 @@ proc data2D*(gl: OpenGl, target: TextureTarget, width, height: Positive,
                   width.GlSizei, height.GlSizei, border = 0,
                   format, typ, data = nil)
 
+proc data2DMS*(gl: OpenGl, width, height: Positive,
+               internalFormat: GlEnum, samples: Natural,
+               fixedSampleLocations: bool) =
+  gl.glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples.GlSizei,
+                             internalFormat.GlInt,
+                             width.GlSizei, height.GlSizei,
+                             fixedSampleLocations)
+
 proc data3D*(gl: OpenGl, target: TextureTarget, width, height, depth: Positive,
              internalFormat, format, typ: GlEnum) =
   gl.glTexImage3D(target.toGlEnum, level = 0, internalFormat.GlInt,
                   width.GlSizei, height.GlSizei, depth.GlSizei, border = 0,
                   format, typ, data = nil)
+
+proc data3DMS*(gl: OpenGl, width, height, depth: Positive,
+               internalFormat: GlEnum, samples: Natural,
+               fixedSampleLocations: bool) =
+  gl.glTexImage3DMultisample(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, samples.GlSizei,
+                             internalFormat.GlInt,
+                             width.GlSizei, height.GlSizei, depth.GlSizei,
+                             fixedSampleLocations)
 
 proc subImage1D*(gl: OpenGl, x: Natural, width: Positive,
                  format, typ: GlEnum, data: pointer) =
@@ -804,6 +832,21 @@ proc createFramebuffer*(gl: OpenGl): GlUint =
 proc attachRenderbuffer*(gl: OpenGl, attachment: GlEnum, renderbuffer: GlUint) =
   gl.glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment,
                                GL_RENDERBUFFER, renderbuffer)
+
+proc attachTexture1D*(gl: OpenGl, attachment: GlEnum, texTarget: TextureTarget,
+                      texture: GlUint, mipLevel: GlInt) =
+  gl.glFramebufferTexture1D(GL_FRAMEBUFFER, attachment, texTarget.toGlEnum,
+                            texture, mipLevel)
+
+proc attachTexture2D*(gl: OpenGl, attachment: GlEnum, texTarget: TextureTarget,
+                      texture: GlUint, mipLevel: GlInt) =
+  gl.glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, texTarget.toGlEnum,
+                            texture, mipLevel)
+
+proc attachTextureLayer*(gl: OpenGl, attachment: GlEnum, texture: GlUint,
+                         mipLevel, layer: GlInt) =
+  gl.glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment,
+                               texture, mipLevel, layer)
 
 proc deleteFramebuffer*(gl: OpenGl, framebuffer: GlUint) =
   var framebuffer = framebuffer

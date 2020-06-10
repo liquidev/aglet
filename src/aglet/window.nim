@@ -35,37 +35,50 @@ type
     agl*: Aglet
 
     # events
-    pollEventsImpl*: proc (win: Window, processEvent: InputProc) ## \
+    pollEventsImpl*: proc (win: Window, processEvent: InputProc)
       ## polls for incoming events and passes each one to ``processEvent``
     waitEventsImpl*: proc (win: Window, processEvent: InputProc,
-                           timeout: float) ## \
-      ## waits for incoming events and passes each one to ``processEvent`` \
+                           timeout: float)
+      ## waits for incoming events and passes each one to ``processEvent``
       ## stops waiting after the given timeout if it's not -1
-    pollMouseImpl*: proc (win: Window): Vec2f ## \
+    pollMouseImpl*: proc (win: Window): Vec2f
       ## polls the OS for the mouse cursor's position
 
     # context
-    makeCurrentImpl*: proc (win: Window) ## \
+    makeCurrentImpl*: proc (win: Window)
       ## makes the window's GL context current
-    getProcAddrImpl*: proc (name: string): pointer ## \
+    getProcAddrImpl*: proc (name: string): pointer
       ## returns an OpenGL procedure's address
-    setSwapIntervalImpl*: proc (win: Window, interval: int) ## \
-      ## sets the buffer swap interval (vsync). 0 means no vsync, 1 is the \
+    setSwapIntervalImpl*: proc (win: Window, interval: int)
+      ## sets the buffer swap interval (vsync). 0 means no vsync, 1 is the
       ## monitor's refresh rate, 2 is half the monitor's refresh rate, etc.
-    swapBuffersImpl*: proc (win: Window) ## \
+    swapBuffersImpl*: proc (win: Window)
       ## swaps the window's front and back buffers
 
     # window
-    requestCloseImpl*: proc (win: Window) ## \
-      ## requests that the window gets closed. This should set a "close \
+    setCloseRequestedImpl*: proc (win: Window, close: bool)
+      ## requests that the window gets closed. This should set or unset a "close
       ## requested" bit in the window
-    closeRequestedImpl*: proc (win: Window): bool ## \
+    closeRequestedImpl*: proc (win: Window): bool
       ## returns the "close requested" bit
-    getDimensionsImpl*: proc (win: Window, w, h: var int) ## \
+
+    # properties
+    getSizeImpl*: proc (win: Window, w, h: var int)
       ## stores the window's dimensions in w and h
+    setSizeImpl*: proc (win: Window, w, h: int)
+      ## sets the window's dimensions from w and h
+    getFramebufferSize*: proc (win: Window, w, h: var int)
+      ## gets the window's framebuffer size
+    getContentScale*: proc (win: Window, x, y: float)
+      ## gets the content scale of the window (for hi-dpi support)
+    setSizeLimits*: proc (win: Window, xmin, ymin, xmax, ymax: int)
+    setTitleImpl*: proc (win: Window, newTitle: string)
+      ## sets the window title
 
     keyStates: array[low(Key).int..high(Key).int, bool]
     mousePos: Vec2f
+    title: string
+
     gl: OpenGl
 
   Frame* = object of Target
@@ -138,7 +151,11 @@ proc requestClose*(window: Window) =
   ## Requests that the window gets closed. This may not *actually* close the
   ## window, it only sets a bit in the window's state, and the application
   ## determines whether the window actually closes.
-  window.requestCloseImpl(window)
+  window.setCloseRequestedImpl(window, true)
+
+proc rejectClose*(window: Window) =
+  ## Resets the close request bit.
+  window.setCloseRequestedImpl(window, false)
 
 proc closeRequested*(window: Window): bool =
   ## Returns whether a window close request has been made.
@@ -174,7 +191,7 @@ proc pollMouse*(window: Window): Vec2f =
 proc size*(window: Window): Vec2i =
   ## Returns the current size of the window as a vector.
   var x, y: int
-  window.getDimensionsImpl(window, x, y)
+  window.getSizeImpl(window, x, y)
   result = vec2i(x.int32, y.int32)
 
 proc width*(window: Window): int =
@@ -184,6 +201,15 @@ proc width*(window: Window): int =
 proc height*(window: Window): int =
   ## Returns the current height of the window.
   result = window.size.y
+
+proc title*(window: Window): string =
+  ## Returns the title of the window.
+  window.title
+
+proc `title=`*(window: Window, newTitle: string) =
+  ## Sets the title of the window.
+  window.title = newTitle
+  window.setTitleImpl(window, newTitle)
 
 proc IMPL_makeCurrent*(window: Window) =
   ## **Do not use this.**

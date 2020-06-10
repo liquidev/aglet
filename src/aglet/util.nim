@@ -9,7 +9,7 @@ import uniform
 type
   EmptyUniforms* = object  ## \
     ## special type that represents an empty uniform table
-  
+
   SomeTable*[K, V] = Table[K, V] | TableRef[K, V]
 
 const NoUniforms* = EmptyUniforms()
@@ -68,3 +68,5 @@ iterator getUniforms*(table: SomeTable[string, Uniform]): (string, Uniform) =
   ## Built-in helper for ``Table``s containing ``Uniform``s.
   for key, value in table:
     yield (key, value)
+
+

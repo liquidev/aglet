@@ -37,19 +37,42 @@ type
   MouseButton* = enum
     mb1 = 0, mb2, mb3, mb4, mb5, mb6, mb7, mb8
   InputEventKind* = enum
-    iekKeyPress      ## a key has been pressed
-    iekKeyRepeat     ## wm key repeat
-    iekKeyRelease    ## a key has been released
-    iekKeyChar       ## a character has been typed
-    iekMousePress    ## a mouse button has been pressed
-    iekMouseRelease  ## a mouse button has been released
-    iekMouseMove     ## the mouse cursor has been moved
-    iekMouseEnter    ## the mouse cursor entered the window
-    iekMouseLeave    ## the mouse cursor left the window
-    iekMouseScroll   ## the scroll wheel has been moved
-    iekFileDrop      ## files have been dropped onto the window
+    iekWindowMove         ## the window has been moved
+    iekWindowResize       ## the window has been resized
+    iekWindowClose        ## window close request
+    iekWindowRedraw       ## the window needs to be redrawn
+    iekWindowFocus        ## the window's focus has been changed
+    iekWindowIconify      ## the window has been (un)iconified
+    iekWindowMaximize     ## the window has been (un)maximized
+    iekWindowFrameResize  ## the window's framebuffer has been resized
+    iekWindowScale        ## the window's content scale has changed
+    iekKeyPress           ## a key has been pressed
+    iekKeyRepeat          ## wm key repeat
+    iekKeyRelease         ## a key has been released
+    iekKeyChar            ## a character has been typed
+    iekMousePress         ## a mouse button has been pressed
+    iekMouseRelease       ## a mouse button has been released
+    iekMouseMove          ## the mouse cursor has been moved
+    iekMouseEnter         ## the mouse cursor entered the window
+    iekMouseLeave         ## the mouse cursor left the window
+    iekMouseScroll        ## the scroll wheel has been moved
+    iekFileDrop           ## files have been dropped onto the window
   InputEvent* = object
     case kind*: InputEventKind
+    of iekWindowMove:
+      windowPos*: Vec2i
+    of iekWindowResize, iekWindowFrameResize:
+      size*: Vec2i
+    of iekWindowClose: discard
+    of iekWindowRedraw: discard
+    of iekWindowFocus:
+      focused*: bool
+    of iekWindowIconify:
+      iconified*: bool
+    of iekWindowMaximize:
+      maximized*: bool
+    of iekWindowScale:
+      scale*: Vec2f
     of iekKeyPress..iekKeyRelease:
       key*: Key            ## the pressed key
       scancode*: int

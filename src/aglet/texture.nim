@@ -2,7 +2,7 @@
 
 import std/tables
 
-import framebuffer_attachment
+import framebuffer
 import gl
 import pixeltypes
 import rect
@@ -56,6 +56,7 @@ type
     id: GlUint
     samplers: Table[SamplerParams, Sampler]
     dirty: bool
+    target: TextureTarget
 
   TextureArray = ref object of Texture
 
@@ -187,7 +188,7 @@ proc multisampled*(texture: Some2DTexture): bool =
   ## Returns whether the texture is multisampled.
   texture.fSamples > 0
 
-proc samples*(texture: Some2DTexture): bool =
+proc samples*(texture: Some2DTexture): int =
   ## Returns the amount of samples in a multisampled texture.
   ## Returns 0 if the texture is not multisampled.
   texture.fSamples
@@ -220,18 +221,6 @@ proc height*(texture: TextureCubeMap): int =
   ## Returns the height of each texture in the cubemap.
   texture.size.y
 
-proc target[T: Texture](texture: T): TextureTarget =
-  when T is Texture1D: ttTexture1D
-  elif T is Texture1DArray: ttTexture1DArray
-  elif T is Texture2D:
-    if texture.multisampled: ttTexture2DMultisample
-    else: ttTexture2D
-  elif T is Texture2DArray:
-    if texture.multisampled: ttTexture2DMultisampleArray
-    else: ttTexture2DArray
-  elif T is Texture3D: ttTexture3D
-  elif T is TextureCubeMap: ttTextureCubeMap
-
 proc use[T: Texture](texture: T) =
   texture.window.IMPL_makeCurrent()
   texture.gl.bindTexture(texture.target, texture.id)
@@ -247,6 +236,7 @@ proc allocate*[T: TexturePixelType](texture: Texture1D[T], width: Positive) =
 
   texture.use()
   texture.gl.data1D(width, T.internalFormat, T.format, T.dataType)
+  texture.fWidth = width
 
 proc subImage*[T: ColorPixelType](texture: Texture1D[T],
                                   x: int, width: Positive,
@@ -310,6 +300,7 @@ proc newTexture1D*[T: TexturePixelType](window: Window): Texture1D[T] =
   window.IMPL_makeCurrent()
   var gl = window.IMPL_getGlContext()
   textureInit(gl)
+  result.target = ttTexture1D
 
 proc newTexture1D*[T: ColorPixelType](window: Window, width: Positive,
                                       data: ptr T): Texture1D[T] =
@@ -329,8 +320,35 @@ proc newTexture1D*[T: ColorPixelType](window: Window,
   result = window.newTexture1D[:T]()
   result.upload[:T](data)
 
+proc newTexture1D*[T: TexturePixelType](window: Window,
+                                        width: Positive): Texture1D[T] =
+  ## Creates a new 1D texture and allocates a data store of the given width.
+  ## What the data store contains is undefined. This procedure is primarily
+  ## meant for usage with framebuffers, prefer the versions that accept
+  ## ``data``.
+
+  result = window.newTexture1D[:T]()
+  result.allocate[:T](width)
+
 
 # 2D
+
+proc allocate*[T: TexturePixelType](texture: Texture2D[T], size: Vec2i,
+                                    samples = 0.Natural) =
+  ## Allocates a data store for the given texture. If ``samples`` is not 0, the
+  ## texture will be multisampled.
+  ## What the data store contains after allocation is undefined.
+  ## This procedure is meant primarily for allocating framebuffer attachments.
+  ## Prefer ``upload`` if you need to upload data.
+
+  texture.use()
+  if samples > 0:
+    texture.gl.data2DMS(size.x, size.y, T.internalFormat, samples, true)
+  else:
+    texture.gl.data2D(texture.target, size.x, size.y,
+                      T.internalFormat, T.format, T.dataType)
+  texture.fSize = size
+  texture.fSamples = samples
 
 proc subImage*[T: ColorPixelType](texture: Texture2D[T], position, size: Vec2i,
                                   data: ptr T) =
@@ -421,6 +439,7 @@ proc newTexture2D*[T: ColorPixelType](window: Window): Texture2D[T] =
   window.IMPL_makeCurrent()
   var gl = window.IMPL_getGlContext()
   textureInit(gl)
+  result.target = ttTexture2D
 
 proc newTexture2D*[T: ColorPixelType](window: Window, size: Vec2i,
                                       data: ptr T): Texture2D[T] =
@@ -448,8 +467,33 @@ proc newTexture2D*[I: BinaryImageBuffer](window: Window,
   result = window.newTexture2D[:T]()
   result.upload[:T, I](image)
 
+proc newTexture2D*[T: TexturePixelType](window: Window,
+                                        size: Vec2i,
+                                        samples = 0.Natural): Texture2D[T] =
+  ## Creates a new 2D texture and allocates a data store of the given size.
+  ## If ``samples`` is greater than zero, the resulting texture will be
+  ## multisampled. What the data store contains is undefined. This procedure is
+  ## primarily meant for usage with framebuffers, prefer the versions
+  ## that accept ``data``.
+
+  result = window.newTexture2D[:T]()
+  result.allocate[:T](size, samples)
+  if samples > 0:
+    result.target = ttTexture2DMultisample
+
 
 # 3D
+
+proc allocate*[T: TexturePixelType](texture: Texture3D[T], size: Vec3i) =
+  ## Allocates a data store for the given texture.
+  ## What the data store contains after allocation is undefined.
+  ## This procedure is meant primarily for allocating framebuffer attachments.
+  ## Prefer ``upload`` if you need to upload data.
+
+  texture.use()
+  texture.gl.data3D(texture.target, size.x, size.y, size.z,
+                    T.internalFormat, T.format, T.dataType)
+  texture.fSize = size
 
 proc subImage*[T: ColorPixelType](texture: Texture3D[T], position, size: Vec3i,
                                   data: ptr T) =
@@ -514,6 +558,7 @@ proc newTexture3D*[T: ColorPixelType](window: Window): Texture3D[T] =
   window.IMPL_makeCurrent()
   var gl = window.IMPL_getGlContext()
   textureInit(gl)
+  result.target = ttTexture3D
 
 proc newTexture3D*[T: ColorPixelType](window: Window, size: Vec3i,
                                       data: ptr T): Texture3D[T] =
@@ -533,6 +578,16 @@ proc newTexture3D*[T: ColorPixelType](window: Window, size: Vec3i,
   result = window.newTexture3D[:T]()
   result.upload[:T](size, data)
 
+proc newTexture3D*[T: TexturePixelType](window: Window,
+                                        size: Vec3i): Texture3D[T] =
+  ## Creates a new 3D texture and allocates a data store of the given size.
+  ## What the data store contains is undefined. This procedure is primarily
+  ## meant for usage with framebuffers, prefer the versions that accept
+  ## ``data``.
+
+  result = window.newTexture3D[:T]()
+  result.allocate[:T](size)
+
 
 # sampler
 
@@ -540,17 +595,19 @@ proc sampler*[T: Texture](texture: T,
                           minFilter: TextureMinFilter = tfNearestMipmapLinear,
                           magFilter: TextureMagFilter = tfLinear,
                           wrapS, wrapT, wrapR = twRepeat,
-                          borderColor = vec4f(0.0, 0.0, 0.0, 0.0)): Sampler =
+                          borderColor = rgba(0.0, 0.0, 0.0, 0.0)): Sampler =
   ## Creates a sampler for the given texture, with the provided parameters.
   ## ``minFilter`` and ``magFilter`` specify the filtering used when sampling
   ## non-integer coordinates. ``wrap(S|T|R)`` specify the texture wrapping on
   ## the X, Y, and Z axes respectively. ``borderColor`` specifies the border
   ## color to be used when any of the ``wrap`` options is ``twClampToBorder``.
 
-  let params = SamplerParams (minFilter, magFilter,
-                              wrapS, wrapT, wrapR,
-                              (borderColor.r, borderColor.g, borderColor.b,
-                               borderColor.a))
+  let
+    borderColor = borderColor.Vec4f
+    params = SamplerParams (minFilter, magFilter,
+                            wrapS, wrapT, wrapR,
+                            (borderColor.r, borderColor.g, borderColor.b,
+                             borderColor.a))
 
   if params in texture.samplers:
     result = texture.samplers[params]
@@ -583,7 +640,53 @@ proc sampler*[T: Texture](texture: T,
     texture.dirty = false
 
 proc toUniform*(sampler: Sampler): Uniform =
+  ## Conversion proc that allows samplers to be used as uniforms.
+
   let usampler = USampler(textureTarget: sampler.textureTarget.uint8,
                           textureId: sampler.texture.id,
                           samplerId: sampler.id)
   result = Uniform(ty: utUSampler, valUSampler: usampler)
+
+
+# framebuffer support
+
+proc implSource(texture: Texture2D[ColorPixelType]): FramebufferSource =
+
+  result.attachment = texture.FramebufferAttachment
+  result.size = texture.size
+  result.samples = texture.samples
+
+  result.attachToFramebuffer = proc (framebuffer: GlUint, attachment: GlEnum) =
+    texture.gl.attachTexture2D(attachment, texture.target,
+                               texture.id, mipLevel = 0)
+
+converter source*(texture: Texture2D[ColorPixelType]): ColorSource =
+  ## ``ColorSource`` implementation for 2D textures.
+  result = texture.implSource().ColorSource
+
+converter source*(texture: Texture2D[DepthPixelType]): DepthSource =
+  ## ``DepthSource`` implementation for 2D textures.
+  result = texture.implSource().DepthSource
+
+proc toFramebuffer*(texture: Texture2D): SimpleFramebuffer =
+  ## Helper for easy framebuffer creation. This does not allow you to
+  ## attach depth and stencil buffers; for that, use
+  ## ``framebuffer.newFramebuffer``.
+  result = texture.window.newFramebuffer(texture.source)
+
+proc sampler*(simplefb: SimpleFramebuffer,
+              minFilter, magFilter: TextureMagFilter = tfLinear,
+              wrapS, wrapT, wrapR = twRepeat,
+              borderColor = rgba(0.0, 0.0, 0.0, 0.0)): Sampler =
+  ## Helper for easy *color texture* framebuffer sampling. Raises an assertion
+  ## if the framebuffer does not have a texture as its color attachment.
+  ## ``minFilter`` is intentionally a ``TextureMagFilter`` because right now
+  ## framebuffers don't support mipmapping.
+
+  assert simplefb.color of Texture,
+    "framebuffer's color attachment must be a texture for sampling"
+
+  let texture = simplefb.color.Texture
+  result = texture.sampler(minFilter, magFilter,
+                           wrapS, wrapT, wrapR,
+                           borderColor)

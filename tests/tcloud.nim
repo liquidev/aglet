@@ -9,12 +9,68 @@ type
   Vertex = object
     position: Vec3f
     textureCoords: Vec3f
+  Vertex2D = object
+    position: Vec2f
+    textureCoords: Vec2f
 
 var agl = initAglet()
 agl.initWindow()
 
 const
-  VertexSource = glsl"""
+  BlurVertex = glsl"""
+    #version 330 core
+
+    in vec2 position;
+    in vec2 textureCoords;
+
+    out vec2 fragTextureCoords;
+
+    void main(void) {
+      gl_Position = vec4(position, 0.0, 1.0);
+      fragTextureCoords = textureCoords;
+    }
+  """
+  BlurFragment = glsl"""
+    #version 330 core
+
+    in vec2 fragTextureCoords;
+
+    uniform sampler2D source;
+    uniform vec2 blurDirection;
+    uniform int blurSamples;
+    uniform vec2 windowSize;
+
+    out vec4 color;
+
+    vec4 pixel(vec2 position) {
+      vec2 normalized = position / windowSize;
+      normalized.y = 1.0 - normalized.y;
+      return texture(source, normalized);
+    }
+
+    float gaussian(float x) {
+      return pow(2.71828, -(x*x / 0.125));
+    }
+
+    void main(void) {
+      vec2 uv = fragTextureCoords * windowSize;
+
+      float start = -floor(float(blurSamples) / 2.0);
+      float end = start + float(blurSamples);
+      vec4 sum = vec4(0.0);
+      float total = 0.0;
+      for (float i = start; i <= end; ++i) {
+        vec2 offset = blurDirection * i;
+        float factor = gaussian(i / -start);
+        sum += pixel(uv + offset) * factor;
+        total += factor;
+      }
+      sum /= total;
+
+      color = sum;
+    }
+  """
+  VolumeVertex = glsl"""
     #version 330 core
 
     in vec3 position;
@@ -31,7 +87,7 @@ const
       fragTextureCoords = textureCoords;
     }
   """
-  FragmentSource = glsl"""
+  VolumeFragment = glsl"""
     #version 330 core
 
     in vec3 fragTextureCoords;
@@ -45,7 +101,7 @@ const
       if (intensity > 0.5) {
         discard;
       } else {
-        color = vec4(0.01);
+        color = vec4(vec3(0.01), 1.0);
       }
     }
   """
@@ -54,12 +110,29 @@ var
   win = agl.newWindowGlfw(800, 600, "tcloud",
                           winHints(resizable = false,
                                    msaaSamples = 1))
-  prog = win.newProgram[:Vertex](VertexSource, FragmentSource)
+  volumeProgram = win.newProgram[:Vertex](VolumeVertex, VolumeFragment)
+  blurProgram = win.newProgram[:Vertex](BlurVertex, BlurFragment)
+  blurBufferA, blurBufferB: SimpleFramebuffer
+  fullScreen = win.newMesh(
+    primitive = dpTriangles,
+    vertices = [
+      Vertex2D(position: vec2f(-1.0, -1.0), textureCoords: vec2f(0.0, 1.0)),
+      Vertex2D(position: vec2f( 1.0, -1.0), textureCoords: vec2f(1.0, 1.0)),
+      Vertex2D(position: vec2f(-1.0,  1.0), textureCoords: vec2f(0.0, 0.0)),
+      Vertex2D(position: vec2f( 1.0,  1.0), textureCoords: vec2f(1.0, 0.0)),
+    ],
+    indices = [uint8 0, 1, 2, 1, 2, 3],
+  )
+
+proc updateBlurBuffer() =
+  blurBufferA = win.newTexture2D[:Rgba8](win.size).toFramebuffer
+  blurBufferB = win.newTexture2D[:Rgba8](win.size).toFramebuffer
+updateBlurBuffer()
 
 const
   Density = 128
   TextureDensity = 16
-  Noise = 0.02
+  Noise = 0.05
   NoiseRange = -Noise..Noise
 
 var volumePoints: seq[Vertex]
@@ -105,19 +178,21 @@ const
 
 let
   additiveBlending = blendMode(blendAdd(bfOne, bfOne), blendAdd(bfOne, bfZero))
-  drawParams = defaultDrawParams().derive:
+  dpDefault = defaultDrawParams()
+  dpAdditiveBlend = defaultDrawParams().derive:
     blend additiveBlending
 
+win.swapInterval = 0
+
 while not win.closeRequested:
-  var target = win.render()
-
-  target.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
-  target.clearDepth(1.0)
-
+  var targetA = blurBufferA.render()
   let
     aspect = win.width / win.height
     projection = perspective(Fov.float32, aspect, 0.01, 100.0)
-  target.draw(prog, mesh, uniforms {
+
+  targetA.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
+  targetA.clearDepth(1.0)
+  targetA.draw(volumeProgram, mesh, uniforms {
     model: mat4f(),
     view: lookAt(eye = vec3f(0.0, 0.0, CameraRadius),
                  center = Origin,
@@ -130,9 +205,27 @@ while not win.closeRequested:
                             wrapS = twClampToEdge,
                             wrapT = twClampToEdge,
                             wrapR = twClampToEdge),
-  }, drawParams)
+  }, dpAdditiveBlend)
 
-  target.finish()
+  var targetB = blurBufferB.render()
+  targetB.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
+  targetB.draw(blurProgram, fullScreen, uniforms {
+    source: blurBufferA.sampler(),
+    blurDirection: vec2f(1.0, 0.0),
+    blurSamples: 31'i32,
+    windowSize: win.size.vec2f,
+  }, dpDefault)
+
+  var frame = win.render()
+  frame.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
+  frame.draw(blurProgram, fullScreen, uniforms {
+    source: blurBufferB.sampler(),
+    blurDirection: vec2f(0.0, 1.0),
+    blurSamples: 31'i32,
+    windowSize: win.size.vec2f,
+  }, dpDefault)
+
+  frame.finish()
 
   win.pollEvents do (event: InputEvent):
     if event.kind in {iekMousePress, iekMouseRelease}:
@@ -145,3 +238,5 @@ while not win.closeRequested:
       lastMousePos = event.mousePos
     elif event.kind == iekMouseScroll:
       zoom += event.scrollPos.y * 0.1
+    elif event.kind == iekWindowFrameResize:
+      updateBlurBuffer()
