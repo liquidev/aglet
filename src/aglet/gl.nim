@@ -158,8 +158,13 @@ type
     glDeleteVertexArrays: proc (n: GlSizei, arrays: pointer) {.cdecl.}
     glDisableVertexAttribArray: proc (index: GlUint) {.cdecl.}
     glDrawArrays: proc (mode: GlEnum, first: GlInt, count: GlSizei) {.cdecl.}
+    glDrawArraysInstanced: proc (mode: GlEnum, first: GlInt,
+                                 count, primCount: GlSizei) {.cdecl.}
     glDrawElements: proc (mode: GlEnum, count: GlSizei, kind: GlEnum,
                           indices: pointer) {.cdecl.}
+    glDrawElementsInstanced: proc (mode: GlEnum, count: GlSizei,
+                                   kind: GlEnum, indices: pointer,
+                                   primCount: GlSizei) {.cdecl.}
     glEnableVertexAttribArray: proc (index: GlUint) {.cdecl.}
     glFramebufferRenderbuffer: proc (target, attachment: GlEnum,
                                      renderbufferTarget: GlEnum,
@@ -872,6 +877,17 @@ proc deleteRenderbuffer*(gl: OpenGl, renderbuffer: GlUint) =
 proc drawArrays*(gl: OpenGl, primitive: GlEnum, start, count: int) =
   gl.glDrawArrays(primitive, start.GlInt, count.GlSizei)
 
+proc drawArraysInstanced*(gl: OpenGl, primitive: GlEnum,
+                          start, count, instanceCount: int) =
+  gl.glDrawArraysInstanced(primitive, start.GlInt, count.GlSizei,
+                           instanceCount.GlSizei)
+
 proc drawElements*(gl: OpenGl, primitive: GlEnum, start, count: int,
                    indexType: GlEnum) =
   gl.glDrawElements(primitive, count.GlInt, indexType, cast[pointer](start))
+
+proc drawElementsInstanced*(gl: OpenGl, primitive: GlEnum,
+                            start, count, instanceCount: int,
+                            indexType: GlEnum) =
+  gl.glDrawElementsInstanced(primitive, count.GlInt, indexType,
+                             cast[pointer](start), instanceCount.GlSizei)

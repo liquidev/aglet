@@ -3,6 +3,7 @@
 ## used through the constructor or ``uploadIndices``, so no memory is wasted.
 
 import std/macros
+import std/options
 
 import gl
 import window
@@ -28,6 +29,7 @@ type
   MeshSlice*[V] = object
     mesh: Mesh[V]
     range: Slice[Natural]
+    instanceCount: Option[Natural]
 
   MeshUsage* = enum
     muStream   ## mesh is initialized once and used a few times
@@ -271,16 +273,33 @@ proc `[]`*[V](mesh: Mesh[V], range: Slice[int]): MeshSlice[V] =
   assert range.b < mesh.vertexCount, "higher index out of range"
   result = MeshSlice[V](mesh: mesh, range: range.a.Natural..range.b.Natural)
 
+proc instanced*[V](slice: MeshSlice[V], instanceCount: Natural): MeshSlice[V] =
+  ## Returns a MeshSlice for use with instanced rendering. ``instanceCount``
+  ## specifies how many instances should be rendered.
+  result = slice
+  result.instanceCount = some(instanceCount)
+
 proc draw*(slice: MeshSlice, gl: OpenGl) =
   ## ``Drawable`` implementation for ``target.draw``, do not use directly.
   slice.mesh.use()
-  if slice.mesh.hasEbo:
-    gl.drawElements(slice.mesh.primitive.toGlEnum,
-                    slice.range.a, 1 + slice.range.b - slice.range.a,
-                    slice.mesh.eboType.toGlEnum)
+  if slice.instanceCount.isSome:
+    if slice.mesh.hasEbo:
+      gl.drawElementsInstanced(slice.mesh.primitive.toGlEnum,
+                               slice.range.a, 1 + slice.range.b - slice.range.a,
+                               slice.instanceCount.get,
+                               slice.mesh.eboType.toGlEnum)
+    else:
+      gl.drawArraysInstanced(slice.mesh.primitive.toGlEnum,
+                             slice.range.a, 1 + slice.range.b - slice.range.a,
+                             slice.instanceCount.get)
   else:
-    gl.drawArrays(slice.mesh.primitive.toGlEnum,
-                  slice.range.a, 1 + slice.range.b - slice.range.a)
+    if slice.mesh.hasEbo:
+      gl.drawElements(slice.mesh.primitive.toGlEnum,
+                      slice.range.a, 1 + slice.range.b - slice.range.a,
+                      slice.mesh.eboType.toGlEnum)
+    else:
+      gl.drawArrays(slice.mesh.primitive.toGlEnum,
+                    slice.range.a, 1 + slice.range.b - slice.range.a)
 
 converter allVertices*[V](mesh: Mesh[V]): MeshSlice[V] =
   ## Implicit converter to avoid having to use ``mesh[0..<mesh.vertexCount]``

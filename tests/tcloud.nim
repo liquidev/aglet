@@ -190,16 +190,27 @@ func sec(duration: Duration): float64 =
 
 win.swapInterval = 0
 
-var lastTime = getMonoTime()
+var
+  lastTime, lastTitleUpdate, lastFpsUpdate = getMonoTime()
+  fpsCounter, fps = 0
 while not win.closeRequested:
   let
     currentTime = getMonoTime()
     deltaTime = sec(currentTime - lastTime)
   lastTime = currentTime
-  win.title =
-    "tcloud — " &
-    formatFloat(deltaTime * 1000, ffDecimal, precision = 1) & " ms" &
-    " (" & $int(1 / deltaTime) & " fps)"
+  inc(fpsCounter)
+
+  if inSeconds(currentTime - lastFpsUpdate) >= 1:
+    fps = fpsCounter
+    fpsCounter = 0
+    lastFpsUpdate = getMonoTime()
+  if inMilliseconds(currentTime - lastTitleUpdate) >= 250:
+    let status =
+      formatFloat(deltaTime * 1000, ffDecimal, precision = 1) & " ms" &
+      " (" & $int(1 / deltaTime) & " \"fps\") · " & $fps & " fps"
+    win.title = "tcloud — " & status
+    echo status
+    lastTitleUpdate = getMonoTime()
 
   var targetA = blurBufferA.render()
   let
