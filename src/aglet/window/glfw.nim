@@ -9,7 +9,8 @@
 ## Apart from this, some procedures like ``swapInterval=`` will set the given
 ## state globally, which is probably not what you want.
 
-import unicode
+import std/options
+import std/unicode
 
 import glm/vec
 
@@ -87,17 +88,65 @@ proc implWindow(win: WindowGlfw) =
   win.closeRequestedImpl = proc (win: Window): bool =
     result = glfwWindowShouldClose(wing.handle).bool
 
+  win.iconifyImpl = proc (win: Window) = glfwIconifyWindow(wing.handle)
+  win.maximizeImpl = proc (win: Window) = glfwMaximizeWindow(wing.handle)
+  win.restoreImpl = proc (win: Window) = glfwRestoreWindow(wing.handle)
+  win.showImpl = proc (win: Window) = glfwShowWindow(wing.handle)
+  win.hideImpl = proc (win: Window) = glfwHideWindow(wing.handle)
+
+  win.iconifiedImpl = proc (win: Window): bool =
+    glfwGetWindowAttrib(wing.handle, GLFW_ICONIFIED).bool
+  win.maximizedImpl = proc (win: Window): bool =
+    glfwGetWindowAttrib(wing.handle, GLFW_MAXIMIZED).bool
+  win.visibleImpl = proc (win: Window): bool =
+    glfwGetWindowAttrib(wing.handle, GLFW_VISIBLE).bool
+
   win.getSizeImpl = proc (win: Window, w, h: var int) =
     var cw, ch: cint
     glfwGetWindowSize(wing.handle, addr cw, addr ch)
-    w = cw.int
-    h = ch.int
+    w = cw
+    h = ch
 
   win.setSizeImpl = proc (win: Window, w, h: int) =
     glfwSetWindowSize(wing.handle, w.cint, h.cint)
 
+  win.getFramebufferSizeImpl = proc (win: Window, w, h: var int) =
+    var cw, ch: cint
+    glfwGetFramebufferSize(wing.handle, addr cw, addr ch)
+    w = cw
+    h = ch
+
+  win.getContentScaleImpl = proc (win: Window, x, y: var float) =
+    var cx, cy: cfloat
+    glfwGetWindowContentScale(wing.handle, addr cx, addr cy)
+    x = cx
+    y = cy
+
+  win.setSizeLimitsImpl = proc (win: Window, min, max: Option[Vec2i]) =
+    let
+      xmin = if min.isSome: min.get.x else: GLFW_DONT_CARE
+      ymin = if min.isSome: min.get.y else: GLFW_DONT_CARE
+      xmax = if max.isSome: max.get.x else: GLFW_DONT_CARE
+      ymax = if max.isSome: max.get.y else: GLFW_DONT_CARE
+    glfwSetWindowSizeLimits(wing.handle, xmin, ymin, xmax, ymax)
+
+  win.setAspectRatioImpl = proc (win: Window, num, den: int) =
+    glfwSetWindowAspectRatio(wing.handle, num.cint, den.cint)
+
+  win.resetAspectRatioImpl = proc (win: Window) =
+    glfwSetWindowAspectRatio(wing.handle, GLFW_DONT_CARE, GLFW_DONT_CARE)
+
   win.setTitleImpl = proc (win: Window, title: string) =
     glfwSetWindowTitle(wing.handle, title)
+
+  win.setPositionImpl = proc (win: Window, x, y: int) =
+    glfwSetWindowPos(wing.handle, x.cint, y.cint)
+
+  win.getPositionImpl = proc (win: Window, x, y: var int) =
+    var cx, cy: cint
+    glfwGetWindowPos(wing.handle, addr cx, addr cy)
+    x = cx
+    y = cy
 
 proc toModKeySet(bits: cint): set[ModKey] =
   if (bits and GLFW_MOD_SHIFT) != 0: result.incl(mkShift)
@@ -239,7 +288,7 @@ proc newWindowGlfw*(agl: Aglet, width, height: int, title: string,
   glfwWindowHint(GLFW_SAMPLES, hints.msaaSamples.cint)
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API)
-  when not defined(aglGlfwUseNativeGl):
+  when not defined(windows) and not defined(aglGlfwUseNativeGl):
     # XXX: verify compatibility on older drivers/GPUs on linux
     # I've read that EGL is faster than GLX because it has less indirections,
     # but I'm not sure about the compatibility across different systems

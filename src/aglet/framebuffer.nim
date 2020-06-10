@@ -198,6 +198,22 @@ template framebufferInit(T) =
   result.gl = gl
   result.fSamples = -1
 
+template framebufferCheck =
+  result.use()
+  let status = framebufferStatus(gl)
+  if status != GL_FRAMEBUFFER_COMPLETE:
+    let statusCode =
+      case status
+      of GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: "incomplete attachment"
+      of GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: "missing attachment"
+      of GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: "incomplete draw buffer"
+      of GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: "incomplete layer targets"
+      of GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: "incomplete multisample"
+      of GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: "incomplete read buffer"
+      else: "error code: " & $status.int
+    raise newException(IOError, "aglet internal error: incomplete framebuffer" &
+                       " (" & statusCode & "). please report this")
+
 proc newFramebuffer*(window: Window,
                      color: ColorSource,
                      depth: DepthSource,
@@ -214,6 +230,8 @@ proc newFramebuffer*(window: Window,
   result.attach(depth)
   result.attach(stencil)
 
+  framebufferCheck()
+
 proc newFramebuffer*(window: Window,
                      color: ColorSource,
                      depth: DepthSource): SimpleFramebuffer =
@@ -227,6 +245,8 @@ proc newFramebuffer*(window: Window,
   result.attach(color)
   result.attach(depth)
 
+  framebufferCheck()
+
 proc newFramebuffer*(window: Window,
                      color: ColorSource,
                      stencil: StencilSource): SimpleFramebuffer =
@@ -239,6 +259,8 @@ proc newFramebuffer*(window: Window,
 
   result.attach(color)
   result.attach(stencil)
+
+  framebufferCheck()
 
 proc newFramebuffer*(window: Window,
                      color: ColorSource,
@@ -254,6 +276,8 @@ proc newFramebuffer*(window: Window,
   result.attach(color)
   result.attach(depthStencil)
 
+  framebufferCheck()
+
 proc newFramebuffer*(window: Window, color: ColorSource): SimpleFramebuffer =
   ## Creates a new simple framebuffer with a color attachment only.
   ## All attachments must have the same size and sample count, otherwise an
@@ -263,6 +287,8 @@ proc newFramebuffer*(window: Window, color: ColorSource): SimpleFramebuffer =
   framebufferInit(SimpleFramebuffer)
 
   result.attach(color)
+
+  framebufferCheck()
 
 
 # multi framebuffer
@@ -335,6 +361,8 @@ proc newFramebuffer*(window: Window,
   result.attach(depth)
   result.attach(stencil)
 
+  framebufferCheck()
+
 proc newFramebuffer*(window: Window,
                      color: openArray[ColorSource],
                      depth: DepthSource): MultiFramebuffer =
@@ -348,6 +376,8 @@ proc newFramebuffer*(window: Window,
   result.attach(color)
   result.attach(depth)
 
+  framebufferCheck()
+
 proc newFramebuffer*(window: Window,
                      color: openArray[ColorSource],
                      stencil: StencilSource): MultiFramebuffer =
@@ -360,6 +390,8 @@ proc newFramebuffer*(window: Window,
 
   result.attach(color)
   result.attach(stencil)
+
+  framebufferCheck()
 
 proc newFramebuffer*(window: Window,
                      color: openArray[ColorSource],
@@ -375,6 +407,8 @@ proc newFramebuffer*(window: Window,
   result.attach(color)
   result.attach(depthStencil)
 
+  framebufferCheck()
+
 proc newFramebuffer*(window: Window,
                      color: openArray[ColorSource]): MultiFramebuffer =
   ## Creates a new multi framebuffer with color attachments only.
@@ -385,6 +419,8 @@ proc newFramebuffer*(window: Window,
   framebufferInit(MultiFramebuffer)
 
   result.attach(color)
+
+  framebufferCheck()
 
 
 # rendering

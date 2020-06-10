@@ -1,4 +1,7 @@
-import random
+import std/monotimes
+import std/random
+import std/strutils
+import std/times
 
 import aglet
 import aglet/window/glfw
@@ -182,9 +185,22 @@ let
   dpAdditiveBlend = defaultDrawParams().derive:
     blend additiveBlending
 
+func sec(duration: Duration): float64 =
+  duration.inNanoseconds.float64 * 1e-9
+
 win.swapInterval = 0
 
+var lastTime = getMonoTime()
 while not win.closeRequested:
+  let
+    currentTime = getMonoTime()
+    deltaTime = sec(currentTime - lastTime)
+  lastTime = currentTime
+  win.title =
+    "tcloud — " &
+    formatFloat(deltaTime * 1000, ffDecimal, precision = 1) & " ms" &
+    " (" & $int(1 / deltaTime) & " fps)"
+
   var targetA = blurBufferA.render()
   let
     aspect = win.width / win.height
@@ -207,12 +223,14 @@ while not win.closeRequested:
                             wrapR = twClampToEdge),
   }, dpAdditiveBlend)
 
+  let blurStrength = zoom * 41.0
+
   var targetB = blurBufferB.render()
   targetB.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
   targetB.draw(blurProgram, fullScreen, uniforms {
     source: blurBufferA.sampler(),
     blurDirection: vec2f(1.0, 0.0),
-    blurSamples: 31'i32,
+    blurSamples: blurStrength.int32,
     windowSize: win.size.vec2f,
   }, dpDefault)
 
@@ -221,7 +239,7 @@ while not win.closeRequested:
   frame.draw(blurProgram, fullScreen, uniforms {
     source: blurBufferB.sampler(),
     blurDirection: vec2f(0.0, 1.0),
-    blurSamples: 31'i32,
+    blurSamples: blurStrength.int32,
     windowSize: win.size.vec2f,
   }, dpDefault)
 

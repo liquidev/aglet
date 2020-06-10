@@ -93,7 +93,7 @@ type
     sStencilOps: array[Facing, tuple[sfail, dpfail, dppass: GlEnum]]
     sTextureUnit: int
     sTextureUnitBindings: seq[array[TextureTarget, GlUint]]
-    sVertexArray: GlUint
+    sVertexArray: VertexArray
     sViewport: tuple[x, y: GlInt, w, h: GlSizei]
 
     uniformTextureUnit: int
@@ -144,6 +144,7 @@ type
                         usage: GlEnum) {.cdecl.}
     glBufferSubData: proc (target: GlEnum, offset: GlIntptr, size: GlSizeiptr,
                            data: pointer) {.cdecl.}
+    glCheckFramebufferStatus: proc (target: GlEnum): GlEnum {.cdecl.}
     glCompileShader: proc (shader: GlUint) {.cdecl.}
     glCreateProgram: proc (): GlUint {.cdecl.}
     glCreateShader: proc (shaderType: GlEnum): GlUint {.cdecl.}
@@ -427,6 +428,8 @@ proc clearStencil*(gl: OpenGl, stencil: GlInt) =
 proc bindBuffer*(gl: OpenGl, target: BufferTarget, buffer: GlUint) =
   updateDiff gl.sBuffers[target], buffer:
     gl.glBindBuffer(target.toGlEnum, buffer)
+    if gl.sVertexArray.id != 0:
+      gl.sVertexArray.buffers[target] = buffer
     if gl.getError() == GL_INVALID_VALUE:
       raise newException(ValueError, "buffer " & $buffer & " doesn't exist")
 
@@ -477,9 +480,9 @@ proc bindVertexArray*(gl: OpenGl, vao: VertexArray) =
   var changed = false
   for target in BufferTarget:
     changed = changed or updateDiff(gl.sBuffers[target], vao.buffers[target])
-  if changed or gl.sVertexArray != vao.id:
+  if changed or gl.sVertexArray.id != vao.id:
     gl.glBindVertexArray(vao.id)
-    gl.sVertexArray = vao.id
+    gl.sVertexArray = vao
     if gl.getError() == GL_INVALID_VALUE:
       raise newException(ValueError,
                          "vertex array " & $vao.id & " doesn't exist")
@@ -700,7 +703,6 @@ proc deleteBuffer*(gl: OpenGl, buffer: GlUint) =
   gl.glDeleteBuffers(1, addr buffer)
 
 proc createVertexArray*(gl: OpenGl): VertexArray =
-  result.buffers = gl.sBuffers
   gl.glGenVertexArrays(1, addr result.id)
 
 proc toGlEnum(T: typedesc): GlEnum =
@@ -847,6 +849,9 @@ proc attachTextureLayer*(gl: OpenGl, attachment: GlEnum, texture: GlUint,
                          mipLevel, layer: GlInt) =
   gl.glFramebufferTextureLayer(GL_FRAMEBUFFER, attachment,
                                texture, mipLevel, layer)
+
+proc framebufferStatus*(gl: OpenGl): GlEnum =
+  result = gl.glCheckFramebufferStatus(GL_FRAMEBUFFER)
 
 proc deleteFramebuffer*(gl: OpenGl, framebuffer: GlUint) =
   var framebuffer = framebuffer

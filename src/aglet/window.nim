@@ -5,6 +5,8 @@
 ## with ``IMPL_`` and should not be used by user code. The "prelude" file
 ## ``import aglet`` omits these procs.
 
+import std/options
+
 import glm/vec
 
 import gl
@@ -55,29 +57,45 @@ type
     swapBuffersImpl*: proc (win: Window)
       ## swaps the window's front and back buffers
 
-    # window
+    # actions
     setCloseRequestedImpl*: proc (win: Window, close: bool)
       ## requests that the window gets closed. This should set or unset a "close
       ## requested" bit in the window
     closeRequestedImpl*: proc (win: Window): bool
       ## returns the "close requested" bit
+    iconifyImpl*: proc (win: Window)
+    iconifiedImpl*: proc (win: Window): bool
+    maximizeImpl*: proc (win: Window)
+    maximizedImpl*: proc (win: Window): bool
+    restoreImpl*: proc (win: Window)
+    showImpl*: proc (win: Window)
+    hideImpl*: proc (win: Window)
+    visibleImpl*: proc (win: Window): bool
 
     # properties
     getSizeImpl*: proc (win: Window, w, h: var int)
       ## stores the window's dimensions in w and h
     setSizeImpl*: proc (win: Window, w, h: int)
       ## sets the window's dimensions from w and h
-    getFramebufferSize*: proc (win: Window, w, h: var int)
+    getFramebufferSizeImpl*: proc (win: Window, w, h: var int)
       ## gets the window's framebuffer size
-    getContentScale*: proc (win: Window, x, y: float)
+    getContentScaleImpl*: proc (win: Window, x, y: var float)
       ## gets the content scale of the window (for hi-dpi support)
-    setSizeLimits*: proc (win: Window, xmin, ymin, xmax, ymax: int)
+    setSizeLimitsImpl*: proc (win: Window, min, max: Option[Vec2i])
+      ## sets min/max size limits
+    setAspectRatioImpl*: proc (win: Window, num, den: int)
+      ## sets the window's forced aspect ratio
+    resetAspectRatioImpl*: proc (win: Window)
+      ## disables the window's aspect ratio limit
     setTitleImpl*: proc (win: Window, newTitle: string)
       ## sets the window title
+    setPositionImpl*: proc (win: Window, x, y: int)
+      ## sets the window's position
+    getPositionImpl*: proc (win: Window, x, y: var int)
+      ## gets the window's position
 
     keyStates: array[low(Key).int..high(Key).int, bool]
     mousePos: Vec2f
-    title: string
 
     gl: OpenGl
 
@@ -188,8 +206,18 @@ proc pollMouse*(window: Window): Vec2f =
   ## returns the current position regardless of the window's focus.
   result = window.pollMouseImpl(window)
 
+proc position*(window: Window): Vec2i =
+  ## Returns the window's current position *in screen coordinates* as a vector.
+  var x, y: int
+  window.getPositionImpl(window, x, y)
+  result = vec2i(x.int32, y.int32)
+
+proc `position=`*(window: Window, newPosition: Vec2i) =
+  ## Sets the window's position *in screen coordinates*.
+  window.setPositionImpl(window, newPosition.x, newPosition.y)
+
 proc size*(window: Window): Vec2i =
-  ## Returns the current size of the window as a vector.
+  ## Returns the current size of the window *in screen coordinates* as a vector.
   var x, y: int
   window.getSizeImpl(window, x, y)
   result = vec2i(x.int32, y.int32)
@@ -202,13 +230,72 @@ proc height*(window: Window): int =
   ## Returns the current height of the window.
   result = window.size.y
 
-proc title*(window: Window): string =
-  ## Returns the title of the window.
-  window.title
+proc framebufferSize*(window: Window): Vec2i =
+  ## Returns the size of the window *in pixels* as a vector.
+  var x, y: int
+  window.getFramebufferSizeImpl(window, x, y)
+  result = vec2i(x.int32, y.int32)
+
+proc framebufferWidth*(window: Window): int =
+  ## Returns the window's width in pixels.
+  result = window.framebufferSize.x
+
+proc framebufferHeight*(window: Window): int =
+  ## Returns the window's height in pixels.
+  result = window.framebufferSize.y
+
+proc contentScale*(window: Window): Vec2f =
+  ## Returns the content scale of the window.
+  var x, y: float
+  window.getContentScaleImpl(window, x, y)
+  result = vec2f(x, y)
+
+proc limitSize*(window: Window, min, max: Option[Vec2i]) =
+  ## Limits the size of the window. This resets the aspect ration limitation.
+  window.resetAspectRatioImpl(window)
+  window.setSizeLimitsImpl(window, min, max)
+
+proc constrainAspect*(window: Window, num, den: int) =
+  ## Constrains the window's aspect ratio to ``num/den``, where ``num`` is the
+  ## width, and ``den`` is the height. This resets the size limitation.
+  window.setSizeLimitsImpl(window, Vec2i.none, Vec2i.none)
+  window.setAspectRatioImpl(window, num, den)
+
+proc unconstrainAspect*(window: Window) =
+  ## Resets the aspect ratio contraint.
+  window.resetAspectRatioImpl(window)
+
+proc iconify*(window: Window) =
+  ## Iconifies the window.
+  window.iconifyImpl(window)
+
+proc iconified*(window: Window): bool =
+  ## Returns whether the window is iconified or not.
+  result = window.iconifiedImpl(window)
+
+proc maximize*(window: Window) =
+  ## Maximizes the window.
+  window.maximizeImpl(window)
+
+proc maximized*(window: Window): bool =
+  ## Returns whether the window is maximized or not.
+  result = window.maximizedImpl(window)
+
+proc restore*(window: Window) =
+  ## Restores the window.
+  window.restoreImpl(window)
+
+proc `visible=`*(window: Window, visible: bool) =
+  ## Sets whether the window is visible or not.
+  if visible: window.showImpl(window)
+  else: window.hideImpl(window)
+
+proc visible*(window: Window): bool =
+  ## Returns whether the window is visible or not.
+  result = window.visibleImpl(window)
 
 proc `title=`*(window: Window, newTitle: string) =
   ## Sets the title of the window.
-  window.title = newTitle
   window.setTitleImpl(window, newTitle)
 
 proc IMPL_makeCurrent*(window: Window) =

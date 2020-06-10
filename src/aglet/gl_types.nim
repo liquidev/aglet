@@ -33,3 +33,5 @@ type
   GlUshort* = uint16
   GlVdpauSurfaceNv* = int32
   GlVoid* = pointer
+
+proc `==`*(a, b: GlEnum): bool {.borrow.}
