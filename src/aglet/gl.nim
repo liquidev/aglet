@@ -882,12 +882,21 @@ proc drawArraysInstanced*(gl: OpenGl, primitive: GlEnum,
   gl.glDrawArraysInstanced(primitive, start.GlInt, count.GlSizei,
                            instanceCount.GlSizei)
 
+proc indexTypeSize(indexType: GlEnum): int =
+  case indexType
+  of GL_TUNSIGNED_BYTE: result = 1
+  of GL_TUNSIGNED_SHORT: result = 2
+  of GL_TUNSIGNED_INT: result = 4
+  else: assert false, "unreachable code"
+
 proc drawElements*(gl: OpenGl, primitive: GlEnum, start, count: int,
                    indexType: GlEnum) =
-  gl.glDrawElements(primitive, count.GlInt, indexType, cast[pointer](start))
+  gl.glDrawElements(primitive, count.GlInt, indexType,
+                    cast[pointer](start * indexTypeSize(indexType)))
 
 proc drawElementsInstanced*(gl: OpenGl, primitive: GlEnum,
                             start, count, instanceCount: int,
                             indexType: GlEnum) =
   gl.glDrawElementsInstanced(primitive, count.GlInt, indexType,
-                             cast[pointer](start), instanceCount.GlSizei)
+                             cast[pointer](start * indexTypeSize(indexType)),
+                             instanceCount.GlSizei)
