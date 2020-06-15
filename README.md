@@ -103,7 +103,7 @@ You can find more examples in the `tests/` directory.
   - [x] Vertex buffer
   - [x] Element (index) buffer
   - [x] Buffer slicing
-  - [ ] Instancing
+  - [x] Instancing
 - [x] Shaders and programs
 - [ ] Textures
   - Types
@@ -114,10 +114,10 @@ You can find more examples in the `tests/` directory.
     - [x] Texture units
     - [x] Sampler objects
     - [ ] Texture swizzle mask
-- [ ] Framebuffers
-  - [ ] Renderbuffers
-  - [ ] `SimpleFramebuffer` (one color attachment)
-  - [ ] `MultiFramebuffer` (≥1 color attachment)
+- [x] Framebuffers
+  - [x] Renderbuffers
+  - [x] `SimpleFramebuffer` (one color attachment)
+  - [x] `MultiFramebuffer` (≥1 color attachment)
 
 Please report any extra features you'd like to see in the Issues tab!
 
