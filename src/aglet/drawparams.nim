@@ -449,11 +449,11 @@ macro derive*(params: DrawParams, body: untyped): untyped =
     let
       cool = defaultDrawParams().derive:
         multisample on
-        depthTest on
+        depthTest
       lame = block:
         var p = defaultDrawParams()
         p.multisample on
-        p.depthTest on
+        p.depthTest
         p.finish
         p
     assert cool == lame
