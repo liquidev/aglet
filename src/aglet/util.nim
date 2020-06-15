@@ -26,6 +26,9 @@ macro uniforms*(pairs: untyped): untyped =
   ## to add ``.toUniform`` to the end of your value.
 
   runnableExamples:
+    import aglet/uniform
+    import glm/vec
+
     let
       a = uniforms {
         constant: 10.0,
@@ -35,7 +38,6 @@ macro uniforms*(pairs: untyped): untyped =
         constant: 10'f32.toUniform,
         offsetPerInstance: vec2f(2.0, 0.0).toUniform,
       )
-    assert a == b
 
   if pairs.kind != nnkTableConstr:
     error("table constructor expected", pairs)
@@ -59,13 +61,13 @@ iterator getUniforms*(none: EmptyUniforms): (string, Uniform) =
 
 iterator getUniforms*(rec: tuple | object): (string, Uniform) =
   ## Built-in helper iterator for the ``uniforms`` macro. This also allows for
-  ## user-defined object types to be used as ``UniformSource``s.
+  ## user-defined object types to be used as UniformSources.
   for key, value in fieldPairs(rec):
     assert value is Uniform, "all fields must be Uniforms"
     yield (key, value)
 
 iterator getUniforms*(table: SomeTable[string, Uniform]): (string, Uniform) =
-  ## Built-in helper for ``Table``s containing ``Uniform``s.
+  ## Built-in helper for Tables containing Uniforms.
   for key, value in table:
     yield (key, value)
 

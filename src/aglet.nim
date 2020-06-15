@@ -7,6 +7,9 @@
 ## - ``program`` – shader program creation
 ## - ``uniform`` – dynamic GLSL uniform wrapper type
 ## - ``target`` – generic surface for drawing
+## - ``pixeltypes`` – pixel storage types
+## - ``texture`` – textures
+## - ``framebuffer`` – framebuffer and renderbuffer objects
 ## - ``drawparams`` – drawing parameters and OpenGL features
 ## - ``window`` – abstract window interface
 ## - ``input`` – input events
