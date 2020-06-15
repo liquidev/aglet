@@ -2,6 +2,7 @@
 
 import std/tables
 
+import enums
 import framebuffer
 import gl
 import pixeltypes
@@ -16,17 +17,8 @@ type
   TexturePixelType* = ColorPixelType | DepthPixelType | DepthStencilPixelType
     ## Pixel formats supported by textures.
 
-  TextureFilter* = enum
-    ## Texture filtering mode.
-    tfNearest
-    tfLinear
-    tfNearestMipmapNearest
-    tfNearestMipmapLinear
-    tfLinearMipmapNearest
-    tfLinearMipmapLinear
-
-  TextureMinFilter* = TextureFilter
-  TextureMagFilter* = range[tfNearest..tfLinear]
+  TextureMinFilter* = FilteringMode
+  TextureMagFilter* = range[fmNearest..fmLinear]
 
   TextureWrap* = enum
     ## Texture wrapping mode.
@@ -101,16 +93,16 @@ type
 # utilities
 
 const
-  tfMipmapped = {tfNearestMipmapNearest..tfLinearMipmapLinear}
+  fmMipmapped = {fmNearestMipmapNearest..fmLinearMipmapLinear}
 
-proc toGlEnum(filter: TextureFilter): GlEnum =
+proc toGlEnum(filter: FilteringMode): GlEnum =
   case filter
-  of tfNearest: GL_NEAREST
-  of tfLinear: GL_LINEAR
-  of tfNearestMipmapNearest: GL_NEAREST_MIPMAP_NEAREST
-  of tfNearestMipmapLinear: GL_NEAREST_MIPMAP_LINEAR
-  of tfLinearMipmapNearest: GL_LINEAR_MIPMAP_NEAREST
-  of tfLinearMipmapLinear: GL_LINEAR_MIPMAP_LINEAR
+  of fmNearest: GL_NEAREST
+  of fmLinear: GL_LINEAR
+  of fmNearestMipmapNearest: GL_NEAREST_MIPMAP_NEAREST
+  of fmNearestMipmapLinear: GL_NEAREST_MIPMAP_LINEAR
+  of fmLinearMipmapNearest: GL_LINEAR_MIPMAP_NEAREST
+  of fmLinearMipmapLinear: GL_LINEAR_MIPMAP_LINEAR
 
 proc toGlEnum(wrap: TextureWrap): GlEnum =
   case wrap
@@ -592,8 +584,8 @@ proc newTexture3D*[T: TexturePixelType](window: Window,
 # sampler
 
 proc sampler*[T: Texture](texture: T,
-                          minFilter: TextureMinFilter = tfNearestMipmapLinear,
-                          magFilter: TextureMagFilter = tfLinear,
+                          minFilter: TextureMinFilter = fmNearestMipmapLinear,
+                          magFilter: TextureMagFilter = fmLinear,
                           wrapS, wrapT, wrapR = twRepeat,
                           borderColor = rgba(0.0, 0.0, 0.0, 0.0)): Sampler =
   ## Creates a sampler for the given texture, with the provided parameters.
@@ -634,7 +626,7 @@ proc sampler*[T: Texture](texture: T,
 
     texture.samplers[params] = result
 
-  if minFilter in tfMipmapped and texture.dirty:
+  if minFilter in fmMipmapped and texture.dirty:
     texture.use()
     texture.gl.genMipmaps(texture.target)
     texture.dirty = false
@@ -675,7 +667,7 @@ proc toFramebuffer*(texture: Texture2D): SimpleFramebuffer =
   result = texture.window.newFramebuffer(texture.source)
 
 proc sampler*(simplefb: SimpleFramebuffer,
-              minFilter, magFilter: TextureMagFilter = tfLinear,
+              minFilter, magFilter: TextureMagFilter = fmLinear,
               wrapS, wrapT, wrapR = twRepeat,
               borderColor = rgba(0.0, 0.0, 0.0, 0.0)): Sampler =
   ## Helper for easy *color texture* framebuffer sampling. Raises an assertion

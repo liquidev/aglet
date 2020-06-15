@@ -28,3 +28,12 @@ type
     hvDontCare  ## don't care, the driver can do what it wants
     hvFastest   ## prefer faster outcome
     hvNicest    ## prefer nicer outcome
+
+  FilteringMode* = enum
+    ## Pixel filtering (interpolation) mode.
+    fmNearest
+    fmLinear
+    fmNearestMipmapNearest
+    fmNearestMipmapLinear
+    fmLinearMipmapNearest
+    fmLinearMipmapLinear

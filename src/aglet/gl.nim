@@ -140,6 +140,9 @@ type
     # commands
     glAttachShader: proc (program, shader: GlUint) {.cdecl.}
     glBindAttribLocation: proc (program, index: GlUint, name: cstring) {.cdecl.}
+    glBlitFramebuffer: proc (srcX0, srcY0, srcX1, srcY1: GlInt,
+                             destX0, destY0, destX1, destY1: GlInt,
+                             mask: GlBitfield, filter: GlEnum) {.cdecl.}
     glBufferData: proc (target: GlEnum, size: GlSizeiptr, data: pointer,
                         usage: GlEnum) {.cdecl.}
     glBufferSubData: proc (target: GlEnum, offset: GlIntptr, size: GlSizeiptr,
@@ -857,6 +860,13 @@ proc attachTextureLayer*(gl: OpenGl, attachment: GlEnum, texture: GlUint,
 
 proc framebufferStatus*(gl: OpenGl): GlEnum =
   result = gl.glCheckFramebufferStatus(GL_FRAMEBUFFER)
+
+proc blitFramebuffer*(gl: OpenGl, srcX0, srcY0, srcX1, srcY1: GlInt,
+                      destX0, destY0, destX1, destY1: GlInt,
+                      mask: GlBitfield, filter: GlEnum) =
+  gl.glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1,
+                       destX0, destY0, destX1, destY1,
+                       mask, filter)
 
 proc deleteFramebuffer*(gl: OpenGl, framebuffer: GlUint) =
   var framebuffer = framebuffer

@@ -1,8 +1,10 @@
 ## Framebuffers and renderbuffers for rendering to textures.
 
+import enums
 import framebuffer_attachment
 import gl
 import pixeltypes
+import rect
 import target
 import window
 
@@ -42,6 +44,13 @@ type
 
   FramebufferTarget* = object of Target
     framebuffer: BaseFramebuffer
+
+  BufferBit* = enum
+    bbColor
+    bbDepth
+    bbStencil
+
+  BlitFilter* = range[fmNearest..fmLinear]
 
 # renderbuffer
 
@@ -139,6 +148,39 @@ proc multisampled*(framebuffer: BaseFramebuffer): bool =
 proc samples*(framebuffer: BaseFramebuffer): int =
   ## Returns the MSAA sample count of the framebuffer.
   framebuffer.fSamples
+
+proc blit*(source, dest: BaseFramebuffer, sourceArea, destArea: Recti,
+           buffers: set[BufferBit], filter: BlitFilter) =
+  ## Blits an area from one framebuffer to another.
+  ## ``sourceArea`` and ``destArea`` specify the area from which to copy, and
+  ## the area to copy the pixels to. ## ``buffers`` specifies which buffers to
+  ## copy, and ``filter`` specifies the filtering mode.
+  ## Both framebuffers must have the same parent window, attempting to use
+  ## framebuffers created with different windows is an error.
+  assert source.window == dest.window,
+    "both framebuffers must be owned by the same window"
+  source.window.IMPL_makeCurrent()
+  source.gl.bindFramebuffer({ftRead}, source.id)
+  source.gl.bindFramebuffer({ftDraw}, dest.id)
+
+  var bitmask = 0
+  if bbColor in buffers: bitmask = bitmask or GL_COLOR_BUFFER_BIT.int
+  if bbDepth in buffers: bitmask = bitmask or GL_DEPTH_BUFFER_BIT.int
+  if bbStencil in buffers: bitmask = bitmask or GL_STENCIL_BUFFER_BIT.int
+
+  assert not (card(buffers * {bbDepth, bbStencil}) > 0 and filter != fmNearest),
+    "filter must be fmNearest if blitting depth and/or stencil buffers"
+
+  let filter =
+    case filter
+    of fmLinear: GL_LINEAR
+    of fmNearest: GL_NEAREST
+
+  source.gl.blitFramebuffer(sourceArea.left, sourceArea.top,
+                            sourceArea.right, sourceArea.bottom,
+                            destArea.left, destArea.top,
+                            destArea.right, destArea.bottom,
+                            bitmask.GlBitfield, filter)
 
 proc use(framebuffer: BaseFramebuffer) =
   framebuffer.window.IMPL_makeCurrent()
