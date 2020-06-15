@@ -1,4 +1,4 @@
-## Draw parameters, used for draw() in the ``rarget`` module.
+## Draw parameters, used for draw() in the ``target`` module.
 
 import std/hashes
 import std/macros
@@ -432,6 +432,8 @@ proc finish*(params) =
   ## previously used draw parameters and the current ones are fast). If this
   ## procedure is not called, things will most likely break when using multiple
   ## sets of draw parameters.
+  ## You don't need to call this procedure if you're using the ``derive`` macro
+  ## (which you should).
   params.hash = hashData(addr params, sizeof(params))
 
 proc `==`*(a, b: DrawParams): bool =
