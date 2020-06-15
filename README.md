@@ -2,6 +2,8 @@
 
 A safe, high-level core OpenGL 3.3+ context manager and wrapper for Nim.
 
+[Documentation](https://liquid600pgm.github.io/aglet/)
+
 ## Features
 
 ### No state machine
