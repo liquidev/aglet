@@ -45,24 +45,21 @@ type
   Rgba32f* = distinct Vec4[float32]
     ## 32-bit float red/green/blue/alpha color values.
 
-  Depth16* = object
+  Depth16* = uint16
     ## 16-bit depth values.
-    ## This type, and all the other similar types (``Depth*``, ``Stencil*``,
-    ## ``Depth*Stencil8``) are special meta-types for describing texture data,
-    ## and are not usable in normal programs.
   Depth24* = object
     ## 24-bit depth values.
-  Depth32* = object
+  Depth32* = uint32
     ## 32-bit depth values.
-  Depth32f* = object
+  Depth32f* = float32
     ## 32-bit float depth values.
   Stencil1* = object
     ## 1-bit stencil values.
   Stencil4* = object
     ## 4-bit stencil values.
-  Stencil8* = object
+  Stencil8* = uint8
     ## 8-bit stencil values.
-  Stencil16* = object
+  Stencil16* = uint16
     ## 16-bit stencil values.
   Depth24Stencil8* = object
     ## Combined 24-bit depth value with 8-bit stencil value.

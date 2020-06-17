@@ -42,8 +42,8 @@ proc unmap*(buffer: PixelBuffer) =
 
 proc ensureSize*(buffer: PixelBuffer, size: Natural) =
   ## Ensures that the pixel buffer has the given amount of bytes of storage.
-  ## This unmaps the data store from virtual memory if the size does not match,
-  ## so be careful!
+  ## This unmaps the data store from virtual memory if the size does not match
+  ## the size of the currently allocated store, so be careful!
 
   if buffer.size != size:
     buffer.use:
