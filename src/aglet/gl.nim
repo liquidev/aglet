@@ -24,7 +24,7 @@ type
   FramebufferTarget* = enum
     ftRead, ftDraw
   BufferTarget* = enum
-    btArray, btElementArray
+    btArray, btElementArray, btPixelPack
   TextureTarget* = enum
     ttTexture1D, ttTexture1DArray
     ttTexture2D, ttTexture2DMultisample, ttTexture2DArray,
@@ -199,6 +199,7 @@ type
     glGetIntegerv: proc (pname: GlEnum, params: pointer) {.cdecl.}
     glGetUniformLocation: proc (program: GlUint, name: cstring): GlInt {.cdecl.}
     glLinkProgram: proc (program: GlUint) {.cdecl.}
+    glMapBuffer: proc (target, access: GlEnum): pointer {.cdecl.}
     glRenderbufferStorageMultisample: proc (target: GlEnum, samples: GlSizei,
                                             internalFormat: GlEnum,
                                             width, height: GlSizei) {.cdecl.}
@@ -242,6 +243,7 @@ type
       glUniformMatrix2x3fv, glUniformMatrix3x2fv,
       glUniformMatrix2x4fv, glUniformMatrix4x2fv,
       glUniformMatrix3x4fv, glUniformMatrix4x3fv: UniformMatrixProc
+    glUnmapBuffer: proc (target: GlEnum) {.cdecl.}
     glVertexAttribPointer: proc (index: GlUint, size: GlInt, typ: GlEnum,
                                  normalized: bool, stride: GlSizei,
                                  point: pointer) {.cdecl.}
@@ -344,6 +346,7 @@ proc toGlEnum(target: BufferTarget): GlEnum =
   case target
   of btArray: GL_ARRAY_BUFFER
   of btElementArray: GL_ELEMENT_ARRAY_BUFFER
+  of btPixelPack: GL_PIXEL_PACK_BUFFER
 
 proc toGlEnum(target: TextureTarget): GlEnum =
   case target
@@ -386,6 +389,9 @@ proc toGlEnum*(facing: Facing): GlEnum =
   case facing
   of facingBack: GL_BACK
   of facingFront: GL_FRONT
+
+proc toGlEnum*(mode: AccessMode): GlEnum =
+  discard
 
 proc newGl*(): OpenGl =
   new(result)
@@ -705,6 +711,12 @@ proc bufferSubData*(gl: OpenGl, target: BufferTarget,
                     where: Slice[int], data: pointer) =
   gl.glBufferSubData(target.toGlEnum, where.a.GlIntptr,
                      GlSizeiptr(where.b - where.a), data)
+
+proc mapBuffer*(gl: OpenGl, target: BufferTarget, access: GlEnum): pointer =
+  result = gl.glMapBuffer(target.toGlEnum, access)
+
+proc unmapBuffer*(gl: OpenGl, target: BufferTarget) =
+  gl.glUnmapBuffer(target.toGlEnum)
 
 proc deleteBuffer*(gl: OpenGl, buffer: GlUint) =
   var buffer = buffer
