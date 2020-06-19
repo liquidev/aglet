@@ -33,6 +33,7 @@ import aglet/[
   mesh,
   pixeltypes,
   program,
+  rect,
   state,
   target,
   texture,
@@ -45,8 +46,9 @@ export drawparams except IMPL_apply
 export framebuffer
 export input
 export mesh except IMPL_draw
-export pixeltypes except internalFormat
+export pixeltypes except internalFormat, dataType
 export program except IMPL_use, IMPL_setUniform
+export rect
 export state
 export target
 export texture except internalFormat, dataType

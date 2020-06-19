@@ -6,22 +6,30 @@ import window
 
 type
   PixelBuffer* = ref object
-    win: Window
+    window: Window
     gl: OpenGl
     id: GlUint
     size*: Natural  ## the data store's size in bytes
     data*: pointer  ## the data store mapped to process memory
 
-template use*(buffer: PixelBuffer, body: untyped): untyped =
-  ## Use the pixel buffer for the lifetime of the block.
+template packUse*(buffer: PixelBuffer, body: untyped): untyped =
+  ## Use the pixel buffer for packing for the lifetime of the block.
   ## This is implemented differently from the other modules, because pixel
   ## buffers should always be unbound after you're finished with them.
   ## Otherwise it might mess up synchronous pixel read operations.
 
-  buffer.win.IMPL_makeCurrent()
-  buffer.gl.bindBuffer(btPixelPack, buffer.id)
+  IMPL_makeCurrent(buffer.window)
+  bindBuffer(buffer.gl, btPixelPack, buffer.id)
   body
-  buffer.gl.bindBuffer(btPixelPack, 0)
+  bindBuffer(buffer.gl, btPixelPack, 0)
+
+template unpackUse*(buffer: PixelBuffer, body: untyped): untyped =
+  ## Use the pixel buffer for unpacking for the lifetime of the block.
+
+  IMPL_makeCurrent(buffer.window)
+  bindBuffer(buffer.gl, btPixelUnpack, buffer.id)
+  body
+  bindBuffer(buffer.gl, btPixelUnpack, 0)
 
 proc map*(buffer: PixelBuffer, access: AccessMode) =
   ## Maps the pixel buffer to the process's virtual memory and sets the ``data``
@@ -29,15 +37,16 @@ proc map*(buffer: PixelBuffer, access: AccessMode) =
   ## This field can then be cast to `ptr UncheckedArray[T]``, where T is your
   ## pixel type.
 
-  buffer.use:
-    buffer.data = buffer.gl.mapBuffer(btPixelPack, access.toGlEnum)
+  if buffer.data == nil:
+    buffer.unpackUse:
+      buffer.data = buffer.gl.mapBuffer(btPixelUnpack, access.toGlEnum)
 
 proc unmap*(buffer: PixelBuffer) =
   ## Unmaps the pixel buffer's data store from virtual memory.
 
   if buffer.data != nil:
-    buffer.use:
-      buffer.gl.unmapBuffer(btPixelPack)
+    buffer.unpackUse:
+      buffer.gl.unmapBuffer(btPixelUnpack)
     buffer.data = nil
 
 proc ensureSize*(buffer: PixelBuffer, size: Natural) =
@@ -46,7 +55,7 @@ proc ensureSize*(buffer: PixelBuffer, size: Natural) =
   ## the size of the currently allocated store, so be careful!
 
   if buffer.size != size:
-    buffer.use:
+    buffer.packUse:
       # I'm not sure about the usage of GL_DYNAMIC_READ here, a different usage
       # hint may be better depending on the pixel buffer is used but
       # GL_DYNAMIC_READ is generic enough especially because we're reusing the
@@ -62,6 +71,6 @@ proc newPixelBuffer*(window: Window): PixelBuffer =
   new(result) do (buffer: PixelBuffer):
     buffer.gl.deleteBuffer(buffer.id)
   let gl = window.IMPL_getGlContext()
-  result.win = window
+  result.window = window
   result.gl = gl
   result.id = gl.createBuffer()

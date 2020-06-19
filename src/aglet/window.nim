@@ -112,6 +112,17 @@ type
     window: Window
     finished: bool
 
+proc IMPL_makeCurrent*(window: Window) =
+  ## **Do not use this.**
+  ## Makes a window's context current. You should not use this in normal code.
+  ## This is left as part of the public API, but it's an implementation detail
+  ## left in because of global state.
+
+  # avoid unnecessary state changes
+  if window.agl.window.AgletWindow.current != window:
+    window.agl.window.AgletWindow.current = window
+    window.makeCurrentImpl(window)
+
 proc winHints*(resizable = true, visible = true, decorated = true,
                focused = true, floating = false, maximized = false,
                transparent = false, scaleToDpi = false,
@@ -161,6 +172,7 @@ proc pollAsyncCallbacks*(window: Window) =
   ## This is called implicitly by ``pollEvents`` and ``waitEvents``, so usually
   ## you don't need to call this.
 
+  window.IMPL_makeCurrent()
   for callback in window.asyncCallbacks:
     let running = callback()
     if not running:
@@ -327,17 +339,6 @@ proc visible*(window: Window): bool =
 proc `title=`*(window: Window, newTitle: string) =
   ## Sets the title of the window.
   window.setTitleImpl(window, newTitle)
-
-proc IMPL_makeCurrent*(window: Window) =
-  ## **Do not use this.**
-  ## Makes a window's context current. You should not use this in normal code.
-  ## This is left as part of the public API, but it's an implementation detail
-  ## left in because of global state.
-
-  # avoid unnecessary state changes
-  if window.agl.window.AgletWindow.current != window:
-    window.agl.window.AgletWindow.current = window
-    window.makeCurrentImpl(window)
 
 proc render*(window: Window): Frame =
   ## Starts rendering a single frame of animation.

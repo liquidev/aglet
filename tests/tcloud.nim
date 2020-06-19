@@ -7,6 +7,7 @@ import aglet
 import aglet/window/glfw
 import glm/mat_transform
 import glm/noise
+from nimPNG import savePng32
 
 type
   Vertex = object
@@ -113,6 +114,7 @@ var
   win = agl.newWindowGlfw(800, 600, "tcloud",
                           winHints(resizable = false,
                                    msaaSamples = 1))
+  defaultFb = win.defaultFramebuffer
   volumeProgram = win.newProgram[:Vertex](VolumeVertex, VolumeFragment)
   blurProgram = win.newProgram[:Vertex](BlurVertex, BlurFragment)
   blurBufferA, blurBufferB: SimpleFramebuffer
@@ -131,6 +133,21 @@ proc updateBlurBuffer() =
   blurBufferA = win.newTexture2D[:Rgba8](win.size).toFramebuffer
   blurBufferB = win.newTexture2D[:Rgba8](win.size).toFramebuffer
 updateBlurBuffer()
+
+proc saveScreenshot(data: ptr UncheckedArray[Rgba8], len: Natural) =
+  var counter {.global.} = 0
+
+  echo "data retrieved, inverting Y axis"
+  var pngData = newString(len * sizeof(Rgba8))
+  let pitch = win.width * sizeof(Rgba8)
+  for y in 0..<win.height:
+    copyMem(pngData[y * win.width * sizeof(Rgba8)].addr,
+            data[(win.height - y) * win.width].addr,
+            pitch)
+  let filename = "tcloud_" & $counter & ".png"
+  echo "data downloaded, saving screenshot to ", filename
+  echo "status: ", savePng32(filename, pngData, win.width, win.height)
+  inc(counter)
 
 const
   Density = 128
@@ -228,7 +245,7 @@ while not win.closeRequested:
       .rotateY(rotationY)
       .scale(zoom),
     projection: projection,
-    ?volume: volume.sampler(magFilter = tfLinear,
+    ?volume: volume.sampler(magFilter = fmLinear,
                             wrapS = twClampToEdge,
                             wrapT = twClampToEdge,
                             wrapR = twClampToEdge),
@@ -257,15 +274,23 @@ while not win.closeRequested:
   frame.finish()
 
   win.pollEvents do (event: InputEvent):
-    if event.kind in {iekMousePress, iekMouseRelease}:
+    case event.kind
+    of iekMousePress, iekMouseRelease:
       dragging = event.kind == iekMousePress
-    elif event.kind == iekMouseMove:
+    of iekMouseMove:
       if dragging:
         let delta = event.mousePos - lastMousePos
         rotationX += delta.y / 100
         rotationY += delta.x / 100
       lastMousePos = event.mousePos
-    elif event.kind == iekMouseScroll:
+    of iekMouseScroll:
       zoom += event.scrollPos.y * 0.1
-    elif event.kind == iekWindowFrameResize:
+    of iekWindowFrameResize:
       updateBlurBuffer()
+    of iekKeyPress:
+      case event.key
+      of keyS:
+        echo "taking async screenshot…"
+        defaultFb.download(rect(vec2i(0), win.size), saveScreenshot)
+      else: discard
+    else: discard

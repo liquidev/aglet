@@ -86,6 +86,10 @@ type
     ColorPixelType | DepthPixelType | StencilPixelType | DepthStencilPixelType
     ## Any valid pixel format.
 
+  ClientPixelType* = concept type T
+    ## Concept that denotes any type that can be represented on the client side.
+    T is AnyPixelType and T isnot object
+
 
 # color constructors
 # I hate repetitive code like this but afaik there's no better way to do this
@@ -207,6 +211,13 @@ colorFieldsRgba Rgba16, uint16
 colorFieldsRgba Rgba32, uint32
 colorFieldsRgba Rgba32f, float32
 
+proc channels*(T: type[ColorPixelType]): range[1..4] =
+  ## Returns the number of channels a given color pixel type holds.
+  when T is Red8 | Red16 | Red32 | Red32f: 1
+  when T is Rg8 | Rg16 | Rg32 | Rg32f: 2
+  when T is Rgb8 | Rgb16 | Rgb32 | Rgb32f: 3
+  when T is Rgba8 | Rgba16 | Rgba32 | Rgba32f: 4
+
 proc internalFormat*(T: type[AnyPixelType]): GlEnum =
   ## Implementation detail, do not use.
   when T is Red8: GL_R8
@@ -236,9 +247,23 @@ proc internalFormat*(T: type[AnyPixelType]): GlEnum =
   elif T is Depth24Stencil8: GL_DEPTH24_STENCIL8
   elif T is Depth32fStencil8: GL_DEPTH32F_STENCIL8
 
-proc channels*(T: type[ColorPixelType]): range[1..4] =
-  ## Returns the number of channels a given color pixel type holds.
-  when T is Red8 | Red16 | Red32 | Red32f: 1
-  when T is Rg8 | Rg16 | Rg32 | Rg32f: 2
-  when T is Rgb8 | Rgb16 | Rgb32 | Rgb32f: 3
-  when T is Rgba8 | Rgba16 | Rgba32 | Rgba32f: 4
+proc dataType*(T: type[ClientPixelType]): GlEnum =
+  ## Implementation detail, do not use.
+  when T is Red8 | Rg8 | Rgb8 | Rgba8 | Stencil8:
+    GL_TUNSIGNED_BYTE
+  elif T is Red16 | Rg16 | Rgb16 | Rgba16 | Depth16 | Stencil16:
+    GL_TUNSIGNED_SHORT
+  elif T is Red32 | Rg32 | Rgb32 | Rgba32 | Depth32:
+    GL_TUNSIGNED_INT
+  elif T is Red32f | Rg32f | Rgb32f | Rgba32f | Depth32f:
+    GL_TFLOAT
+
+proc format*(T: type[AnyPixelType]): GlEnum =
+  ## Implementation detail, do not use.
+  when T is Red8 | Red16 | Red32 | Red32f: GL_RED
+  elif T is Rg8 | Rg16 | Rg32 | Rg32f: GL_RG
+  elif T is Rgb8 | Rgb16 | Rgb32 | Rgb32f: GL_RGB
+  elif T is Rgba8 | Rgba16 | Rgba32 | Rgba32f: GL_RGBA
+  elif T is Depth16 | Depth24 | Depth32 | Depth32f: GL_DEPTH_COMPONENT
+  elif T is Stencil1 | Stencil4 | Stencil8 | Stencil16: GL_STENCIL_INDEX
+  elif T is Depth24Stencil8 | Depth32fStencil8: GL_DEPTH_STENCIL

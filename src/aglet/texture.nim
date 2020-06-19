@@ -111,13 +111,6 @@ proc toGlEnum(wrap: TextureWrap): GlEnum =
   of twClampToEdge: GL_CLAMP_TO_EDGE
   of twClampToBorder: GL_CLAMP_TO_BORDER
 
-proc format(T: type[TexturePixelType]): GlEnum =
-  when T is Red8 | Red16 | Red32 | Red32f: GL_RED
-  elif T is Rg8 | Rg16 | Rg32 | Rg32f: GL_RG
-  elif T is Rgb8 | Rgb16 | Rgb32 | Rgb32f: GL_RGB
-  elif T is Rgba8 | Rgba16 | Rgba32 | Rgba32f: GL_RGBA
-  elif T is Depth16 | Depth24 | Depth32: GL_DEPTH_COMPONENT
-
 proc dataType(T: type[AnyPixelType]): GlEnum =
   when T is Red8 | Rg8 | Rgb8 | Rgba8 | Depth24: GL_TUNSIGNED_BYTE
   elif T is Red16 | Rg16 | Rgb16 | Rgba16 |
