@@ -195,12 +195,15 @@ proc use(framebuffer: BaseFramebuffer) =
   framebuffer.window.IMPL_makeCurrent()
   framebuffer.gl.bindFramebuffer({ftRead, ftDraw}, framebuffer.id)
 
+proc sizeInBytes[T: ClientPixelType](framebuffer: BaseFramebuffer): int =
+  result = framebuffer.width * framebuffer.height * sizeof(T)
+
 proc ensurePixelBuffer[T: ClientPixelType](framebuffer: BaseFramebuffer): int =
   assert framebuffer.width > 0 and framebuffer.height > 0,
     "framebuffer must have a valid attachment for pixel downloading"
   if framebuffer.pixelBuffer == nil:
     framebuffer.pixelBuffer = framebuffer.window.newPixelBuffer()
-  result = framebuffer.width * framebuffer.height * sizeof(T)
+  result = framebuffer.sizeInBytes[:T]()
   framebuffer.pixelBuffer.ensureSize(result)
 
 proc download*[T: ClientPixelType](framebuffer: BaseFramebuffer, area: Recti,
@@ -246,14 +249,31 @@ proc download*[T: ClientPixelType](framebuffer: BaseFramebuffer, area: Recti,
 proc download*[T: ClientPixelType](framebuffer: BaseFramebuffer, area: Recti,
                                    callback: proc (data: seq[T])) =
   ## Version of ``download`` that yields a seq. This seq contains an
-  ## owned *copy* of the data stored in the framebuffer, so it's safe to copy
-  ## this to somewhere else outside of the callback.
+  ## *owned* copy of the data stored in the framebuffer, so it's safe to assign
+  ## it to somewhere else outside of the callback.
 
   framebuffer.download(area) do (data: ptr UncheckedArray[T], len: Natural):
     var dataSeq: seq[T]
     dataSeq.setLen(len)
     copyMem(dataSeq[0].addr, data[0].addr, len * sizeof(T))
     callback(dataSeq)
+
+proc downloadSync*[T: ClientPixelType](framebuffer: BaseFramebuffer,
+                                       area: Recti): seq[T] =
+  ## *Synchronously* download pixels off the graphics card from the given area,
+  ## in the given format.
+  ##
+  ## This procedure is **synchronous**, so the results are available
+  ## immediately. However, it forces a synchronization between the CPU and
+  ## the GPU. This can negatively impact performance if it is called frequently.
+  ## Prefer the asynchronous versions whenever possible.
+
+  framebuffer.use()
+  let dataSize = framebuffer.sizeInBytes[:T]()
+  result.setLen(dataSize div sizeof(T))
+  framebuffer.gl.readPixels(area.x, area.y,
+                            GlSizei(area.width), GlSizei(area.height),
+                            T.format, T.dataType, addr result[0])
 
 template framebufferInit(T) =
   new(result) do (fb: T):
@@ -268,7 +288,7 @@ template framebufferInit(T) =
 
 # default framebuffer
 
-method size*(defaultfb: DefaultFramebuffer): Vec2i=
+method size*(defaultfb: DefaultFramebuffer): Vec2i =
   ## Returns the size of the framebuffer as a vector.
   defaultfb.window.size
 
