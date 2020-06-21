@@ -7,7 +7,7 @@ import aglet
 import aglet/window/glfw
 import glm/mat_transform
 import glm/noise
-from nimPNG import savePng32
+from nimPNG import savePNG32
 
 type
   Vertex = object
@@ -138,11 +138,11 @@ proc saveScreenshot(data: ptr UncheckedArray[Rgba8], len: Natural) =
   var counter {.global.} = 0
 
   echo "data retrieved, inverting Y axis"
-  var pngData = newString(len * sizeof(Rgba8))
+  var pngData = newSeq[uint8](len * sizeof(Rgba8))
   let pitch = win.width * sizeof(Rgba8)
   for y in 0..<win.height:
     copyMem(pngData[y * win.width * sizeof(Rgba8)].addr,
-            data[(win.height - y) * win.width].addr,
+            data[(win.height - y - 1) * win.width].addr,
             pitch)
   let filename = "tcloud_" & $counter & ".png"
   echo "data downloaded, saving screenshot to ", filename

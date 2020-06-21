@@ -204,6 +204,8 @@ type
                          params: pointer) {.cdecl.}
     glGetString: proc (name: GlEnum): cstring {.cdecl.}
     glGetIntegerv: proc (pname: GlEnum, params: pointer) {.cdecl.}
+    glGetTexImage: proc (target: GlEnum, level: GlInt,
+                         format, typ: GlEnum, image: pointer) {.cdecl.}
     glGetUniformLocation: proc (program: GlUint, name: cstring): GlInt {.cdecl.}
     glLinkProgram: proc (program: GlUint) {.cdecl.}
     glMapBuffer: proc (target, access: GlEnum): pointer {.cdecl.}
@@ -252,7 +254,7 @@ type
       glUniformMatrix2x3fv, glUniformMatrix3x2fv,
       glUniformMatrix2x4fv, glUniformMatrix4x2fv,
       glUniformMatrix3x4fv, glUniformMatrix4x3fv: UniformMatrixProc
-    glUnmapBuffer: proc (target: GlEnum) {.cdecl.}
+    glUnmapBuffer: proc (target: GlEnum): GlBool {.cdecl.}
     glVertexAttribPointer: proc (index: GlUint, size: GlInt, typ: GlEnum,
                                  normalized: bool, stride: GlSizei,
                                  point: pointer) {.cdecl.}
@@ -733,7 +735,8 @@ proc mapBuffer*(gl: OpenGl, target: BufferTarget, access: GlEnum): pointer =
   result = gl.glMapBuffer(target.toGlEnum, access)
 
 proc unmapBuffer*(gl: OpenGl, target: BufferTarget) =
-  gl.glUnmapBuffer(target.toGlEnum)
+  # XXX: unmapping the buffer can generate errors! check this at some point
+  discard gl.glUnmapBuffer(target.toGlEnum)
 
 proc deleteBuffer*(gl: OpenGl, buffer: GlUint) =
   var buffer = buffer
@@ -843,6 +846,10 @@ proc subImage3D*(gl: OpenGl, target: TextureTarget,
                      x.GlInt, y.GlInt, z.GlInt,
                      width.GlSizei, height.GlSizei, depth.GlSizei,
                      format, typ, data)
+
+proc getImage*(gl: OpenGl, target: TextureTarget, level: GlInt,
+               format, typ: GlEnum, dest: pointer) =
+  gl.glGetTexImage(target.toGlEnum, level, format, typ, dest)
 
 proc genMipmaps*(gl: OpenGl, target: TextureTarget) =
   gl.glGenerateMipmap(target.toGlEnum)
