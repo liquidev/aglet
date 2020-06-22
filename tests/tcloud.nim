@@ -144,13 +144,30 @@ proc saveScreenshot(data: ptr UncheckedArray[Rgba8], len: Natural) =
     copyMem(pngData[y * win.width * sizeof(Rgba8)].addr,
             data[(win.height - y - 1) * win.width].addr,
             pitch)
-  let filename = "tcloud_" & $counter & ".png"
+  let filename = "tcloud_fbshot_" & $counter & ".png"
   echo "data downloaded, saving screenshot to ", filename
   echo "status: ", savePng32(filename, pngData, win.width, win.height)
   inc(counter)
 
+proc saveColorScreenshot(framebuffer: SimpleFramebuffer) =
+  let texture = framebuffer.color.Texture2D[:Rgba8]
+  texture.download do (data: ptr UncheckedArray[Rgba8], len: Natural):
+    var counter {.global.} = 0
+    echo "data retrieved, inverting Y axis"
+    var pngData = newSeq[uint8](len * sizeof(Rgba8))
+    let pitch = framebuffer.width * sizeof(Rgba8)
+    for y in 0..<framebuffer.height:
+      copyMem(pngData[y * framebuffer.width * sizeof(Rgba8)].addr,
+              data[(framebuffer.height - y - 1) * framebuffer.width].addr,
+              pitch)
+    let filename = "tcloud_colorshot" & $counter & ".png"
+    echo "data downloaded, saving screenshot to ", filename
+    echo "status: ", savePng32(filename, pngData,
+                               framebuffer.width, framebuffer.height)
+    inc(counter)
+
 const
-  Density = 128
+  Density = 96
   TextureDensity = 16
   Noise = 0.05
   NoiseRange = -Noise..Noise
@@ -292,5 +309,11 @@ while not win.closeRequested:
       of keyS:
         echo "taking async screenshot…"
         defaultFb.download(rect(vec2i(0), win.size), saveScreenshot)
+      of key1, key2:
+        echo "taking screenshot of buffer ", int(event.key) - int(key1)
+        let buffer =
+          if event.key == key1: blurBufferA
+          else: blurBufferB
+        saveColorScreenshot(buffer)
       else: discard
     else: discard

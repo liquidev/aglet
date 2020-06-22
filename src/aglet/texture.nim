@@ -292,41 +292,44 @@ proc upload*[T: ColorPixelType](texture: Texture1D[T], data: openArray[T]) =
   texture.upload(data.len, data[0].unsafeAddr)
 
 template asyncTextureDownloadImpl(texture: Texture) =
-  texture.use()
+  # gotta love generics + templates
+  # you can't use dot calls because the compiler has a stroke
+  use(texture)
   if texture.pixelBuffer == nil:
-    texture.pixelBuffer = texture.window.newPixelBuffer()
+    texture.pixelBuffer = newPixelBuffer(texture.window)
+    ensureSize(texture.pixelBuffer, sizeInBytes(texture))
   let dataSize = sizeInBytes(texture)
-  texture.pixelBuffer.packUse:
-    texture.gl.getImage(texture.target, mipLevel.GlInt,
-                        T.format, T.dataType, nil)
-  let fence = texture.gl.createFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE)
-  texture.window.startAsync do -> bool:
-    let status = texture.gl.pollSyncStatus(fence, timeout = 0)
+  packUse(texture.pixelBuffer):
+    getImage(texture.gl, texture.target, GlInt(mipLevel),
+             format(T), dataType(T), nil)
+  let fence = createFenceSync(texture.gl, GL_SYNC_GPU_COMMANDS_COMPLETE)
+  startAsync(texture.window) do -> bool:
+    let status = pollSyncStatus(texture.gl, fence, timeout = 0)
     # conversion because generics are quirky
-    result = status.int notin
-             [GL_ALREADY_SIGNALED.int, GL_CONDITION_SATISFIED.int]
+    result = int(status) notin
+      [int(GL_ALREADY_SIGNALED), int(GL_CONDITION_SATISFIED)]
     if not result:
       # XXX: same as framebuffer.nim: is mapping and unmapping fast enough?
-      texture.pixelBuffer.map({amRead})
+      map(texture.pixelBuffer, {amRead})
       callback(cast[ptr UncheckedArray[T]](texture.pixelBuffer.data),
                dataSize div sizeof(T))
-      texture.pixelBuffer.unmap()
-      texture.gl.deleteSync(fence)
+      unmap(texture.pixelBuffer)
+      deleteSync(texture.gl, fence)
 
 template asyncTextureSeqDownloadImpl(texture: Texture) =
-  texture.download(mipLevel = mipLevel) do (data: ptr UncheckedArray[T],
-                                            len: Natural):
-    var dataSeq: seq[T]
-    dataSeq.setLen(len)
-    copyMem(dataSeq[0].addr, data[0].addr, len * sizeof(T))
-    callback(dataSeq)
+  download(texture, proc (data: ptr UncheckedArray[T], len: Natural) =
+      var dataSeq: seq[T]
+      setLen(dataSeq, len)
+      copyMem(dataSeq[0].addr, data[0].addr, len * sizeof(T))
+      callback(dataSeq),
+    mipLevel)
 
 template syncTextureDownloadImpl(texture: Texture) =
-  texture.use()
+  use(texture)
   let dataSize = sizeInBytes(texture)
-  result.setLen(dataSize div sizeof(T))
-  texture.gl.getImage(texture.target, mipLevel.GlInt,
-                      T.format, T.dataType, addr result[0])
+  setLen(result, dataSize div sizeof(T))
+  getImage(texture.gl, texture.target, GlInt(mipLevel),
+           format(T), dataType(T), addr result[0])
 
 proc download*[T: DownloadPixelType](texture: Texture1D[T],
                                      callback:
