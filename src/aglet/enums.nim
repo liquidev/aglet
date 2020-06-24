@@ -37,3 +37,10 @@ type
     fmNearestMipmapLinear
     fmLinearMipmapNearest
     fmLinearMipmapLinear
+
+  AccessModeBit* = enum
+    ## Memory access modes.
+    amRead
+    amWrite
+
+  AccessMode* = set[AccessModeBit]

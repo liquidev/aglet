@@ -1,11 +1,12 @@
 ## Abstract window interface. This is implemented by the different backends,
 ## which can be found under ``aglet/window/*``.
 ##
-## This module contains some leaked implementation details; these are prefixed
-## with ``IMPL_`` and should not be used by user code. The "prelude" file
-## ``import aglet`` omits these procs.
+## This also implements an dispatcher for async events in the library. The one
+## built into Nim isn't really built for soft realtime usage (like games), so
+## the one implemented in aglet is as simple and lightweight as it can get.
 
 import std/options
+import std/sets
 
 import glm/vec
 
@@ -15,12 +16,13 @@ import state
 import target
 
 type
-  AgletWindow = ref object of AgletSubmodule ## the window submodule's state
+  AgletWindow = ref object of AgletSubmodule
+    ## The window submodule's state.
     current: Window
 
-  WindowHints* = object ## \
-    ## window hints. For most hints, if a backend does not support them, they
-    ## should be ignored
+  WindowHints* = object ##
+    ## Window hints. For most hints, if a backend does not support them, they
+    ## should be ignored.
     resizable*, visible*, decorated*, focused*, floating*, maximized*,
       transparent*, scaleToDpi*: bool
     colorBits*: tuple[red, green, blue, alpha: int]
@@ -29,6 +31,10 @@ type
     msaaSamples*: int
     glVersion*: tuple[major, minor: int]
     debugContext*: bool
+
+  AsyncCallback* = proc (): bool {.closure.}
+    ## Callback for async polling. The value returned signals whether the
+    ## callback should fire on the next ``pollEvents`` or ``waitEvents``.
 
   Window* = ref object of RootObj
     ## A backend-independent window. This also contains the OpenGL context, so
@@ -97,11 +103,25 @@ type
     keyStates: array[low(Key).int..high(Key).int, bool]
     mousePos: Vec2f
 
+    asyncCallbacks: HashSet[AsyncCallback]
+      # ↑ this is a hash set for performance reasons (O(1) deletion)
+
     gl: OpenGl
 
   Frame* = object of Target
     window: Window
     finished: bool
+
+proc IMPL_makeCurrent*(window: Window) =
+  ## **Do not use this.**
+  ## Makes a window's context current. You should not use this in normal code.
+  ## This is left as part of the public API, but it's an implementation detail
+  ## left in because of global state.
+
+  # avoid unnecessary state changes
+  if window.agl.window.AgletWindow.current != window:
+    window.agl.window.AgletWindow.current = window
+    window.makeCurrentImpl(window)
 
 proc winHints*(resizable = true, visible = true, decorated = true,
                focused = true, floating = false, maximized = false,
@@ -140,9 +160,28 @@ proc winHints*(resizable = true, visible = true, decorated = true,
 
 const DefaultWindowHints* = winHints()
 
+proc startAsync*(window: Window, callback: AsyncCallback) =
+  ## Adds a procedure to the dispatcher loop. This procedure is fired on the
+  ## next ``pollAsyncCallbacks`` call. If it returns ``false``, it is removed
+  ## from the dispatched procedures; otherwise, it will run on the next async
+  ## tick.
+  window.asyncCallbacks.incl(callback)
+
+proc pollAsyncCallbacks*(window: Window) =
+  ## Run all active async callbacks registered through ``startAsync``.
+  ## This is called implicitly by ``pollEvents`` and ``waitEvents``, so usually
+  ## you don't need to call this.
+
+  window.IMPL_makeCurrent()
+  for callback in window.asyncCallbacks:
+    let running = callback()
+    if not running:
+      window.asyncCallbacks.excl(callback)
+
 proc interceptEvents(window: Window, userCallback: InputProc): InputProc =
   ## Wrap the user callback in some special stuff aglet needs to do for key
   ## polling etc. to work.
+
   result = proc (ev: InputEvent) =
     if ev.kind in {iekKeyPress, iekKeyRelease}:
       window.keyStates[ev.key.int] = ev.kind == iekKeyPress
@@ -154,7 +193,8 @@ proc interceptEvents(window: Window, userCallback: InputProc): InputProc =
 
 proc pollEvents*(window: Window, processEvent: InputProc) =
   ## Poll for incoming events from the given window. ``processEvent`` will be
-  ## called for each incoming event.
+  ## called for each incoming event. This also dispatches all async callbacks.
+  window.pollAsyncCallbacks()
   window.pollEventsImpl(window, window.interceptEvents(processEvent))
 
 proc waitEvents*(window: Window, processEvent: InputProc,
@@ -162,7 +202,9 @@ proc waitEvents*(window: Window, processEvent: InputProc,
   ## Wait for incoming events from the given window. ``processEvent`` will be
   ## called for each incoming event. If ``timeout`` is specified, the procedure
   ## will only wait for the specified amount of seconds, and then continue
-  ## execution.
+  ## execution. This also dispatches all async callbacks *before* the wait
+  ## period.
+  window.pollAsyncCallbacks()
   window.waitEventsImpl(window, window.interceptEvents(processEvent), timeout)
 
 proc requestClose*(window: Window) =
@@ -297,17 +339,6 @@ proc visible*(window: Window): bool =
 proc `title=`*(window: Window, newTitle: string) =
   ## Sets the title of the window.
   window.setTitleImpl(window, newTitle)
-
-proc IMPL_makeCurrent*(window: Window) =
-  ## **Do not use this.**
-  ## Makes a window's context current. You should not use this in normal code.
-  ## This is left as part of the public API, but it's an implementation detail
-  ## left in because of global state.
-
-  # avoid unnecessary state changes
-  if window.agl.window.AgletWindow.current != window:
-    window.agl.window.AgletWindow.current = window
-    window.makeCurrentImpl(window)
 
 proc render*(window: Window): Frame =
   ## Starts rendering a single frame of animation.

@@ -25,6 +25,7 @@ type
     ftRead, ftDraw
   BufferTarget* = enum
     btArray, btElementArray
+    btPixelPack, btPixelUnpack
   TextureTarget* = enum
     ttTexture1D, ttTexture1DArray
     ttTexture2D, ttTexture2DMultisample, ttTexture2DArray,
@@ -97,7 +98,9 @@ type
     sViewport: tuple[x, y: GlInt, w, h: GlSizei]
 
     uniformTextureUnit: int
-    currentDrawParamsHash*: Hash  # opt used by IMPL_apply in drawparams.nim
+    currentDrawParamsHash*: Hash  # optimization used by IMPL_apply
+                                  # in drawparams.nim
+    defaultFramebufferSamples*: int
 
     # state functions
     glActiveTexture: proc (texture: GlEnum) {.cdecl.}
@@ -148,6 +151,8 @@ type
     glBufferSubData: proc (target: GlEnum, offset: GlIntptr, size: GlSizeiptr,
                            data: pointer) {.cdecl.}
     glCheckFramebufferStatus: proc (target: GlEnum): GlEnum {.cdecl.}
+    glClientWaitSync: proc (sync: GlSync, flags: GlBitfield,
+                            timeout: GlUint64): GlEnum {.cdecl.}
     glCompileShader: proc (shader: GlUint) {.cdecl.}
     glCreateProgram: proc (): GlUint {.cdecl.}
     glCreateShader: proc (shaderType: GlEnum): GlUint {.cdecl.}
@@ -157,6 +162,7 @@ type
     glDeleteProgram: proc (program: GlUint) {.cdecl.}
     glDeleteSamplers: proc (n: GlSizei, samplers: pointer) {.cdecl.}
     glDeleteShader: proc (shader: GlUint) {.cdecl.}
+    glDeleteSync: proc (sync: GlSync) {.cdecl.}
     glDeleteTextures: proc (n: GlSizei, textures: pointer) {.cdecl.}
     glDeleteVertexArrays: proc (n: GlSizei, arrays: pointer) {.cdecl.}
     glDisableVertexAttribArray: proc (index: GlUint) {.cdecl.}
@@ -169,6 +175,7 @@ type
                                    kind: GlEnum, indices: pointer,
                                    primCount: GlSizei) {.cdecl.}
     glEnableVertexAttribArray: proc (index: GlUint) {.cdecl.}
+    glFenceSync: proc (condition: GlEnum, flags: GlBitfield): GlSync {.cdecl.}
     glFramebufferRenderbuffer: proc (target, attachment: GlEnum,
                                      renderbufferTarget: GlEnum,
                                      renderbuffer: GlUint) {.cdecl.}
@@ -197,8 +204,13 @@ type
                          params: pointer) {.cdecl.}
     glGetString: proc (name: GlEnum): cstring {.cdecl.}
     glGetIntegerv: proc (pname: GlEnum, params: pointer) {.cdecl.}
+    glGetTexImage: proc (target: GlEnum, level: GlInt,
+                         format, typ: GlEnum, image: pointer) {.cdecl.}
     glGetUniformLocation: proc (program: GlUint, name: cstring): GlInt {.cdecl.}
     glLinkProgram: proc (program: GlUint) {.cdecl.}
+    glMapBuffer: proc (target, access: GlEnum): pointer {.cdecl.}
+    glReadPixels: proc (x, y: GlInt, width, height: GlSizei,
+                        format, typ: GlEnum, data: pointer) {.cdecl.}
     glRenderbufferStorageMultisample: proc (target: GlEnum, samples: GlSizei,
                                             internalFormat: GlEnum,
                                             width, height: GlSizei) {.cdecl.}
@@ -242,6 +254,7 @@ type
       glUniformMatrix2x3fv, glUniformMatrix3x2fv,
       glUniformMatrix2x4fv, glUniformMatrix4x2fv,
       glUniformMatrix3x4fv, glUniformMatrix4x3fv: UniformMatrixProc
+    glUnmapBuffer: proc (target: GlEnum): GlBool {.cdecl.}
     glVertexAttribPointer: proc (index: GlUint, size: GlInt, typ: GlEnum,
                                  normalized: bool, stride: GlSizei,
                                  point: pointer) {.cdecl.}
@@ -299,12 +312,16 @@ when not defined(js):
                          "minimum required OpenGL version is 3.3, got " &
                          gl.version.splitWhitespace(1)[0])
     # query capabilities
-    var textureUnitCount: GlInt
+    var
+      textureUnitCount: GlInt
+      defaultFramebufferSamples: GlInt
     gl.getInt(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, addr textureUnitCount)
+    gl.getInt(GL_SAMPLES, addr defaultFramebufferSamples)
 
     # update internal state accordingly
     gl.sSamplerBindings.setLen(textureUnitCount)
     gl.sTextureUnitBindings.setLen(textureUnitCount)
+    gl.defaultFramebufferSamples = defaultFramebufferSamples
 
     # apply some default settings because OpenGL is weird
     gl.glPixelStorei(GL_PACK_ALIGNMENT, 1)
@@ -344,6 +361,8 @@ proc toGlEnum(target: BufferTarget): GlEnum =
   case target
   of btArray: GL_ARRAY_BUFFER
   of btElementArray: GL_ELEMENT_ARRAY_BUFFER
+  of btPixelPack: GL_PIXEL_PACK_BUFFER
+  of btPixelUnpack: GL_PIXEL_UNPACK_BUFFER
 
 proc toGlEnum(target: TextureTarget): GlEnum =
   case target
@@ -386,6 +405,12 @@ proc toGlEnum*(facing: Facing): GlEnum =
   case facing
   of facingBack: GL_BACK
   of facingFront: GL_FRONT
+
+proc toGlEnum*(mode: AccessMode): GlEnum =
+  assert card(mode) > 0
+  if mode == {amRead}: result = GL_READ_ONLY
+  elif mode == {amWrite}: result = GL_WRITE_ONLY
+  elif mode == {amRead, amWrite}: result = GL_READ_WRITE
 
 proc newGl*(): OpenGl =
   new(result)
@@ -706,6 +731,13 @@ proc bufferSubData*(gl: OpenGl, target: BufferTarget,
   gl.glBufferSubData(target.toGlEnum, where.a.GlIntptr,
                      GlSizeiptr(where.b - where.a), data)
 
+proc mapBuffer*(gl: OpenGl, target: BufferTarget, access: GlEnum): pointer =
+  result = gl.glMapBuffer(target.toGlEnum, access)
+
+proc unmapBuffer*(gl: OpenGl, target: BufferTarget) =
+  # XXX: unmapping the buffer can generate errors! check this at some point
+  discard gl.glUnmapBuffer(target.toGlEnum)
+
 proc deleteBuffer*(gl: OpenGl, buffer: GlUint) =
   var buffer = buffer
   gl.glDeleteBuffers(1, addr buffer)
@@ -815,6 +847,10 @@ proc subImage3D*(gl: OpenGl, target: TextureTarget,
                      width.GlSizei, height.GlSizei, depth.GlSizei,
                      format, typ, data)
 
+proc getImage*(gl: OpenGl, target: TextureTarget, level: GlInt,
+               format, typ: GlEnum, dest: pointer) =
+  gl.glGetTexImage(target.toGlEnum, level, format, typ, dest)
+
 proc genMipmaps*(gl: OpenGl, target: TextureTarget) =
   gl.glGenerateMipmap(target.toGlEnum)
 
@@ -884,6 +920,15 @@ proc deleteRenderbuffer*(gl: OpenGl, renderbuffer: GlUint) =
   var renderbuffer = renderbuffer
   gl.glDeleteRenderbuffers(1, addr renderbuffer)
 
+proc createFenceSync*(gl: OpenGl, condition: GlEnum): GlSync =
+  result = gl.glFenceSync(condition, 0)
+
+proc pollSyncStatus*(gl: OpenGl, sync: GlSync, timeout: GlUint64): GlEnum =
+  result = gl.glClientWaitSync(sync, 0, timeout)
+
+proc deleteSync*(gl: OpenGl, sync: GlSync) =
+  gl.glDeleteSync(sync)
+
 proc drawArrays*(gl: OpenGl, primitive: GlEnum, start, count: int) =
   gl.glDrawArrays(primitive, start.GlInt, count.GlSizei)
 
@@ -910,3 +955,7 @@ proc drawElementsInstanced*(gl: OpenGl, primitive: GlEnum,
   gl.glDrawElementsInstanced(primitive, count.GlInt, indexType,
                              cast[pointer](start * indexTypeSize(indexType)),
                              instanceCount.GlSizei)
+
+proc readPixels*(gl: OpenGl, x, y: GlInt, width, height: GlSizei,
+                 format, typ: GlEnum, data: pointer) =
+  gl.glReadPixels(x, y, width, height, format, typ, data)
