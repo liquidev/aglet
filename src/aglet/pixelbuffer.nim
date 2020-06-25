@@ -34,7 +34,7 @@ template unpackUse*(buffer: PixelBuffer, body: untyped): untyped =
 proc map*(buffer: PixelBuffer, access: AccessMode) =
   ## Maps the pixel buffer to the process's virtual memory and sets the ``data``
   ## field to a pointer to its first element.
-  ## This field can then be cast to `ptr UncheckedArray[T]``, where T is your
+  ## This field can then be cast to ``ptr UncheckedArray[T]``, where T is your
   ## pixel type.
 
   if buffer.data == nil:

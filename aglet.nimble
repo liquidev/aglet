@@ -27,7 +27,7 @@ task buildDocs, "rebuilds documentation to the docs/ folder for GitHub Pages":
   selfExec "doc " &
     "--project --index:on -o:docs/ " &
     "--git.url:https://github.com/liquid600pgm/aglet " &
-    "--git.commit:0.1.0 " &
+    "--git.commit:" & version & " " &
     "src/aglet.nim"
 
   echo "-- creating index.html"
