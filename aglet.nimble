@@ -10,8 +10,8 @@ srcDir        = "src"
 # Dependencies
 
 requires "nim >= 1.0.6"
-requires "nimterop >= 0.4.4"
 requires "glm >= 1.1.1"
+requires "https://github.com/nimgl/glfw >= 3.3.4"
 
 
 # Tasks

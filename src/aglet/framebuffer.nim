@@ -70,7 +70,7 @@ proc multisampled*(renderbuffer: Renderbuffer): bool =
   ## Returns whether the renderbuffer is multisampled.
   renderbuffer.fSamples > 0
 
-proc samples*(renderbuffer: Renderbuffer): bool =
+proc samples*(renderbuffer: Renderbuffer): int =
   ## Returns the number of MSAA samples for the renderbuffer, or 0 if the
   ## renderbuffer does not have MSAA enabled.
   renderbuffer.fSamples
@@ -89,12 +89,14 @@ proc newRenderbuffer*[T: RenderbufferPixelType](window: Window,
 
   window.IMPL_makeCurrent()
   var gl = window.IMPL_getGlContext()
+  result.window = window
   result.id = gl.createRenderbuffer()
   result.gl = gl
 
   result.use()
-  result.gl.renderbufferStorage(size.x.GlSizei, size.y.GlSizei,
-                                samples.GlSizei, T.internalFormat)
+  result.gl.renderbufferStorage(GlSizei(size.x), GlSizei(size.y),
+                                GlSizei(samples), T.internalFormat)
+  result.fSize = size
   result.fSamples = samples
 
 proc implSource(renderbuffer: Renderbuffer): FramebufferSource =

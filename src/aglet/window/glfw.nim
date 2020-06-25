@@ -13,9 +13,9 @@ import std/options
 import std/unicode
 
 import glm/vec
+import pkg/glfw
 
 import ../input
-import ../lib/glfw3
 import ../state
 import ../window
 
@@ -35,7 +35,7 @@ type
   GlfwWindowError* = object of CatchableError
     code: GlfwErrorCode
   WindowGlfw* = ref object of Window
-    handle: ptr GLFWwindow
+    handle: GLFWWindow
     processEvent: InputProc
 
 proc checkGlfwError() =
@@ -64,12 +64,12 @@ proc implWindow(win: WindowGlfw) =
     glfwWaitEvents()
 
   win.pollMouseImpl = proc (win: Window): Vec2f =
-    var x, y: cdouble
-    glfwGetCursorPos(wing.handle, addr x, addr y)
+    var x, y: float64
+    wing.handle.getCursorPos(addr x, addr y)
     result = vec2f(x, y)
 
   win.makeCurrentImpl = proc (win: Window) =
-    glfwMakeContextCurrent(wing.handle)
+    wing.handle.makeContextCurrent()
 
   win.getProcAddrImpl = proc (name: string): pointer =
     win.IMPL_makeCurrent()
@@ -80,45 +80,45 @@ proc implWindow(win: WindowGlfw) =
     glfwSwapInterval(interval.cint)
 
   win.swapBuffersImpl = proc (win: Window) =
-    glfwSwapBuffers(wing.handle)
+    wing.handle.swapBuffers()
 
   win.setCloseRequestedImpl = proc (win: Window, close: bool) =
-    glfwSetWindowShouldClose(wing.handle, close.cint)
+    wing.handle.setWindowShouldClose(close)
 
   win.closeRequestedImpl = proc (win: Window): bool =
-    result = glfwWindowShouldClose(wing.handle).bool
+    result = windowShouldClose(wing.handle)
 
-  win.iconifyImpl = proc (win: Window) = glfwIconifyWindow(wing.handle)
-  win.maximizeImpl = proc (win: Window) = glfwMaximizeWindow(wing.handle)
-  win.restoreImpl = proc (win: Window) = glfwRestoreWindow(wing.handle)
-  win.showImpl = proc (win: Window) = glfwShowWindow(wing.handle)
-  win.hideImpl = proc (win: Window) = glfwHideWindow(wing.handle)
+  win.iconifyImpl = proc (win: Window) = iconifyWindow(wing.handle)
+  win.maximizeImpl = proc (win: Window) = maximizeWindow(wing.handle)
+  win.restoreImpl = proc (win: Window) = restoreWindow(wing.handle)
+  win.showImpl = proc (win: Window) = showWindow(wing.handle)
+  win.hideImpl = proc (win: Window) = hideWindow(wing.handle)
 
   win.iconifiedImpl = proc (win: Window): bool =
-    glfwGetWindowAttrib(wing.handle, GLFW_ICONIFIED).bool
+    getWindowAttrib(wing.handle, GLFW_ICONIFIED).bool
   win.maximizedImpl = proc (win: Window): bool =
-    glfwGetWindowAttrib(wing.handle, GLFW_MAXIMIZED).bool
+    getWindowAttrib(wing.handle, GLFW_MAXIMIZED).bool
   win.visibleImpl = proc (win: Window): bool =
-    glfwGetWindowAttrib(wing.handle, GLFW_VISIBLE).bool
+    getWindowAttrib(wing.handle, GLFW_VISIBLE).bool
 
   win.getSizeImpl = proc (win: Window, w, h: var int) =
     var cw, ch: cint
-    glfwGetWindowSize(wing.handle, addr cw, addr ch)
+    getWindowSize(wing.handle, addr cw, addr ch)
     w = cw
     h = ch
 
   win.setSizeImpl = proc (win: Window, w, h: int) =
-    glfwSetWindowSize(wing.handle, w.cint, h.cint)
+    setWindowSize(wing.handle, w.cint, h.cint)
 
   win.getFramebufferSizeImpl = proc (win: Window, w, h: var int) =
     var cw, ch: cint
-    glfwGetFramebufferSize(wing.handle, addr cw, addr ch)
+    getFramebufferSize(wing.handle, addr cw, addr ch)
     w = cw
     h = ch
 
   win.getContentScaleImpl = proc (win: Window, x, y: var float) =
     var cx, cy: cfloat
-    glfwGetWindowContentScale(wing.handle, addr cx, addr cy)
+    getWindowContentScale(wing.handle, addr cx, addr cy)
     x = cx
     y = cy
 
@@ -128,23 +128,23 @@ proc implWindow(win: WindowGlfw) =
       ymin = if min.isSome: min.get.y else: GLFW_DONT_CARE
       xmax = if max.isSome: max.get.x else: GLFW_DONT_CARE
       ymax = if max.isSome: max.get.y else: GLFW_DONT_CARE
-    glfwSetWindowSizeLimits(wing.handle, xmin, ymin, xmax, ymax)
+    setWindowSizeLimits(wing.handle, xmin, ymin, xmax, ymax)
 
   win.setAspectRatioImpl = proc (win: Window, num, den: int) =
-    glfwSetWindowAspectRatio(wing.handle, num.cint, den.cint)
+    setWindowAspectRatio(wing.handle, num.cint, den.cint)
 
   win.resetAspectRatioImpl = proc (win: Window) =
-    glfwSetWindowAspectRatio(wing.handle, GLFW_DONT_CARE, GLFW_DONT_CARE)
+    setWindowAspectRatio(wing.handle, GLFW_DONT_CARE, GLFW_DONT_CARE)
 
   win.setTitleImpl = proc (win: Window, title: string) =
-    glfwSetWindowTitle(wing.handle, title)
+    setWindowTitle(wing.handle, title)
 
   win.setPositionImpl = proc (win: Window, x, y: int) =
-    glfwSetWindowPos(wing.handle, x.cint, y.cint)
+    setWindowPos(wing.handle, x.cint, y.cint)
 
   win.getPositionImpl = proc (win: Window, x, y: var int) =
     var cx, cy: cint
-    glfwGetWindowPos(wing.handle, addr cx, addr cy)
+    getWindowPos(wing.handle, addr cx, addr cy)
     x = cx
     y = cy
 
@@ -157,49 +157,50 @@ proc toModKeySet(bits: cint): set[ModKey] =
   if (bits and GLFW_MOD_NUM_LOCK) != 0: result.incl(mkNumLock)
 
 proc eventHooks(win: WindowGlfw) =
-  template wing: WindowGlfw = cast[WindowGlfw](glfwGetWindowUserPointer(win))
+  template wing: WindowGlfw = cast[WindowGlfw](win.getWindowUserPointer)
 
-  glfwSetWindowPosCallback(win.handle) do (win: ptr GLFWwindow,
-                                           x, y: cint) {.cdecl.}:
+  discard setWindowPosCallback(win.handle) do (win: GLFWWindow,
+                                               x, y: int32) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekWindowMove,
                                  windowPos: vec2i(x, y)))
 
-  glfwSetWindowSizeCallback(win.handle) do (win: ptr GLFWwindow,
-                                            width, height: cint) {.cdecl.}:
+  discard setWindowSizeCallback(win.handle) do (win: GLFWWindow,
+                                                width, height: int32) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekWindowResize,
                                  size: vec2i(width, height)))
 
-  glfwSetWindowCloseCallback(win.handle) do (win: ptr GLFWwindow) {.cdecl.}:
+  discard setWindowCloseCallback(win.handle) do (win: GLFWWindow) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekWindowClose))
 
-  glfwSetWindowRefreshCallback(win.handle) do (win: ptr GLFWwindow) {.cdecl.}:
+  discard setWindowRefreshCallback(win.handle) do (win: GLFWWindow) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekWindowRedraw))
 
-  glfwSetWindowFocusCallback(win.handle) do (win: ptr GLFWwindow,
-                                             focused: cint) {.cdecl.}:
+  discard setWindowFocusCallback(win.handle) do (win: GLFWWindow,
+                                                 focused: bool) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekWindowFocus, focused: focused.bool))
 
-  glfwSetWindowIconifyCallback(win.handle) do (win: ptr GLFWwindow,
-                                               iconified: cint) {.cdecl.}:
+  discard setWindowIconifyCallback(win.handle) do (win: GLFWWindow,
+                                                   iconified: bool) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekWindowIconify,
                                  iconified: iconified.bool))
 
-  glfwSetWindowMaximizeCallback(win.handle) do (win: ptr GLFWwindow,
-                                                maximized: cint) {.cdecl.}:
+  discard setWindowMaximizeCallback(win.handle) do (win: GLFWWindow,
+                                                    maximized: cint) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekWindowMaximize,
                                  maximized: maximized.bool))
 
-  glfwSetFramebufferSizeCallback(win.handle) do (win: ptr GLFWwindow,
-                                                 width, height: cint) {.cdecl.}:
+  discard setFramebufferSizeCallback(win.handle) do (win: GLFWWindow,
+                                                     width: int32,
+                                                     height: int32) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekWindowFrameResize,
                                  size: vec2i(width, height)))
 
-  glfwSetWindowContentScaleCallback(win.handle) do (win: ptr GLFWwindow,
-                                                    x, y: cfloat) {.cdecl.}:
+  discard setWindowContentScaleCallback(win.handle) do (win: GLFWWindow,
+                                                        x, y: cfloat) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekWindowScale,
                                  scale: vec2f(x, y)))
 
-  glfwSetKeyCallback(win.handle) do (win: ptr GLFWwindow, key, scancode, action,
+  discard setKeyCallback(win.handle) do (win: GLFWWindow, key, scancode, action,
                                      mods: cint) {.cdecl.}:
     let kind =
       case action
@@ -212,11 +213,11 @@ proc eventHooks(win: WindowGlfw) =
     event.kMods = mods.toModKeySet
     wing.processEvent(event)
 
-  glfwSetCharCallback(win.handle) do (win: ptr GLFWwindow,
+  discard setCharCallback(win.handle) do (win: GLFWwindow,
                                       codepoint: cuint) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekKeyChar, rune: codepoint.Rune))
 
-  glfwSetMouseButtonCallback(win.handle) do (win: ptr GLFWwindow,
+  discard setMouseButtonCallback(win.handle) do (win: GLFWwindow,
                                              button, action,
                                              mods: cint) {.cdecl.}:
     let kind =
@@ -227,26 +228,26 @@ proc eventHooks(win: WindowGlfw) =
     event.bMods = mods.toModKeySet
     wing.processEvent(event)
 
-  glfwSetCursorPosCallback(win.handle) do (win: ptr GLFWwindow,
+  discard setCursorPosCallback(win.handle) do (win: GLFWwindow,
                                            x, y: cdouble) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekMouseMove,
                                  mousePos: vec2f(x, y)))
 
-  glfwSetCursorEnterCallback(win.handle) do (win: ptr GLFWwindow,
-                                             entered: cint) {.cdecl.}:
+  discard setCursorEnterCallback(win.handle) do (win: GLFWwindow,
+                                                 entered: bool) {.cdecl.}:
     let kind =
       if entered.bool: iekMouseEnter
       else: iekMouseLeave
     wing.processEvent(InputEvent(kind: kind))
 
-  glfwSetScrollCallback(win.handle) do (win: ptr GLFWwindow,
-                                        x, y: cdouble) {.cdecl.}:
+  discard setScrollCallback(win.handle) do (win: GLFWwindow,
+                                            x, y: cdouble) {.cdecl.}:
     wing.processEvent(InputEvent(kind: iekMouseScroll,
                                  scrollPos: vec2f(x, y)))
 
-  glfwSetDropCallback(win.handle) do (win: ptr GLFWwindow,
-                                      count: cint,
-                                      paths: cstringArray) {.cdecl.}:
+  discard setDropCallback(win.handle) do (win: GLFWwindow,
+                                          count: cint,
+                                          paths: cstringArray) {.cdecl.}:
     let spaths = cstringArrayToSeq(paths, count.Natural)
     wing.processEvent(InputEvent(kind: iekFileDrop,
                                  filePaths: spaths))
@@ -263,7 +264,7 @@ proc newWindowGlfw*(agl: Aglet, width, height: int, title: string,
 
   # destroy the window in the finalizer
   new(result) do (win: WindowGlfw):
-    glfwDestroyWindow(win.handle)
+    destroyWindow(win.handle)
 
   # makeCurrent has to work, of course
   result.agl = agl
@@ -305,7 +306,7 @@ proc newWindowGlfw*(agl: Aglet, width, height: int, title: string,
   result.handle = glfwCreateWindow(width.cint, height.cint, "", nil, nil)
   checkGlfwError()
 
-  glfwSetWindowUserPointer(result.handle, cast[pointer](result))
+  setWindowUserPointer(result.handle, cast[pointer](result))
 
   result.implWindow()
   result.eventHooks()
