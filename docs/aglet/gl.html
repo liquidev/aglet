@@ -111,7 +111,7 @@ function main() {
   ftRead, ftDraw"><wbr />Framebuffer<wbr />Target<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#BufferTarget"
     title="BufferTarget = enum
-  btArray, btElementArray"><wbr />Buffer<wbr />Target<span class="attachedType"></span></a></li>
+  btArray, btElementArray, btPixelPack, btPixelUnpack"><wbr />Buffer<wbr />Target<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#TextureTarget"
     title="TextureTarget = enum
   ttTexture1D, ttTexture1DArray, ttTexture2D, ttTexture2DMultisample,
@@ -163,6 +163,7 @@ function main() {
   sViewport: tuple[x, y: GlInt, w, h: GlSizei]
   uniformTextureUnit: int
   currentDrawParamsHash*: Hash
+  defaultFramebufferSamples*: int
   glActiveTexture: proc (texture: GlEnum) {.cdecl.}
   glBindBuffer: proc (target: GlEnum; buffer: GlUint) {.cdecl.}
   glBindFramebuffer: proc (target: GlEnum; framebuffer: GlUint) {.cdecl.}
@@ -208,6 +209,8 @@ function main() {
   glBufferSubData: proc (target: GlEnum; offset: GlIntptr; size: GlSizeiptr;
                        data: pointer) {.cdecl.}
   glCheckFramebufferStatus: proc (target: GlEnum): GlEnum {.cdecl.}
+  glClientWaitSync: proc (sync: GlSync; flags: GlBitfield; timeout: GlUint64): GlEnum {.
+      cdecl.}
   glCompileShader: proc (shader: GlUint) {.cdecl.}
   glCreateProgram: proc (): GlUint {.cdecl.}
   glCreateShader: proc (shaderType: GlEnum): GlUint {.cdecl.}
@@ -217,6 +220,7 @@ function main() {
   glDeleteProgram: proc (program: GlUint) {.cdecl.}
   glDeleteSamplers: proc (n: GlSizei; samplers: pointer) {.cdecl.}
   glDeleteShader: proc (shader: GlUint) {.cdecl.}
+  glDeleteSync: proc (sync: GlSync) {.cdecl.}
   glDeleteTextures: proc (n: GlSizei; textures: pointer) {.cdecl.}
   glDeleteVertexArrays: proc (n: GlSizei; arrays: pointer) {.cdecl.}
   glDisableVertexAttribArray: proc (index: GlUint) {.cdecl.}
@@ -228,6 +232,7 @@ function main() {
   glDrawElementsInstanced: proc (mode: GlEnum; count: GlSizei; kind: GlEnum;
                                indices: pointer; primCount: GlSizei) {.cdecl.}
   glEnableVertexAttribArray: proc (index: GlUint) {.cdecl.}
+  glFenceSync: proc (condition: GlEnum; flags: GlBitfield): GlSync {.cdecl.}
   glFramebufferRenderbuffer: proc (target, attachment: GlEnum;
                                  renderbufferTarget: GlEnum; renderbuffer: GlUint) {.
       cdecl.}
@@ -253,8 +258,13 @@ function main() {
   glGetShaderiv: proc (shader: GlUint; pname: GlEnum; params: pointer) {.cdecl.}
   glGetString: proc (name: GlEnum): cstring {.cdecl.}
   glGetIntegerv: proc (pname: GlEnum; params: pointer) {.cdecl.}
+  glGetTexImage: proc (target: GlEnum; level: GlInt; format, typ: GlEnum; image: pointer) {.
+      cdecl.}
   glGetUniformLocation: proc (program: GlUint; name: cstring): GlInt {.cdecl.}
   glLinkProgram: proc (program: GlUint) {.cdecl.}
+  glMapBuffer: proc (target, access: GlEnum): pointer {.cdecl.}
+  glReadPixels: proc (x, y: GlInt; width, height: GlSizei; format, typ: GlEnum;
+                    data: pointer) {.cdecl.}
   glRenderbufferStorageMultisample: proc (target: GlEnum; samples: GlSizei;
                                         internalFormat: GlEnum;
                                         width, height: GlSizei) {.cdecl.}
@@ -292,6 +302,7 @@ function main() {
   glUniformMatrix2fv, glUniformMatrix3fv, glUniformMatrix4fv, glUniformMatrix2x3fv,
   glUniformMatrix3x2fv, glUniformMatrix2x4fv, glUniformMatrix4x2fv,
   glUniformMatrix3x4fv, glUniformMatrix4x3fv: UniformMatrixProc
+  glUnmapBuffer: proc (target: GlEnum): GlBool {.cdecl.}
   glVertexAttribPointer: proc (index: GlUint; size: GlInt; typ: GlEnum;
                              normalized: bool; stride: GlSizei; point: pointer) {.
       cdecl.}
@@ -309,6 +320,8 @@ function main() {
     title="toGlEnum(hint: Hint): GlEnum"><wbr />to<wbr />Gl<wbr />Enum<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#toGlEnum%2CFacing"
     title="toGlEnum(facing: Facing): GlEnum"><wbr />to<wbr />Gl<wbr />Enum<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#toGlEnum%2CAccessMode"
+    title="toGlEnum(mode: AccessMode): GlEnum"><wbr />to<wbr />Gl<wbr />Enum<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#newGl"
     title="newGl(): OpenGl"><wbr />new<wbr />Gl<span class="attachedType">OpenGl</span></a></li>
   <li><a class="reference" href="#viewport%2COpenGl%2CGlInt%2CGlInt%2CGlSizei%2CGlSizei"
@@ -400,6 +413,10 @@ function main() {
     title="bufferData(gl: OpenGl; target: BufferTarget; size: int; data: pointer; usage: GlEnum)"><wbr />buffer<wbr />Data<span class="attachedType">OpenGl</span></a></li>
   <li><a class="reference" href="#bufferSubData%2COpenGl%2CBufferTarget%2CSlice%5Bint%5D%2Cpointer"
     title="bufferSubData(gl: OpenGl; target: BufferTarget; where: Slice[int]; data: pointer)"><wbr />buffer<wbr />Sub<wbr />Data<span class="attachedType">OpenGl</span></a></li>
+  <li><a class="reference" href="#mapBuffer%2COpenGl%2CBufferTarget%2CGlEnum"
+    title="mapBuffer(gl: OpenGl; target: BufferTarget; access: GlEnum): pointer"><wbr />map<wbr />Buffer<span class="attachedType">OpenGl</span></a></li>
+  <li><a class="reference" href="#unmapBuffer%2COpenGl%2CBufferTarget"
+    title="unmapBuffer(gl: OpenGl; target: BufferTarget)"><wbr />unmap<wbr />Buffer<span class="attachedType">OpenGl</span></a></li>
   <li><a class="reference" href="#deleteBuffer%2COpenGl%2CGlUint"
     title="deleteBuffer(gl: OpenGl; buffer: GlUint)"><wbr />delete<wbr />Buffer<span class="attachedType">OpenGl</span></a></li>
   <li><a class="reference" href="#createVertexArray%2COpenGl"
@@ -436,6 +453,9 @@ function main() {
   <li><a class="reference" href="#subImage3D%2COpenGl%2CTextureTarget%2CNatural%2CNatural%2CNatural%2CPositive%2CPositive%2CPositive%2CGlEnum%2CGlEnum%2Cpointer"
     title="subImage3D(gl: OpenGl; target: TextureTarget; x, y, z: Natural;
            width, height, depth: Positive; format, typ: GlEnum; data: pointer)"><wbr />sub<wbr />Image3D<span class="attachedType">OpenGl</span></a></li>
+  <li><a class="reference" href="#getImage%2COpenGl%2CTextureTarget%2CGlInt%2CGlEnum%2CGlEnum%2Cpointer"
+    title="getImage(gl: OpenGl; target: TextureTarget; level: GlInt; format, typ: GlEnum;
+         dest: pointer)"><wbr />get<wbr />Image<span class="attachedType">OpenGl</span></a></li>
   <li><a class="reference" href="#genMipmaps%2COpenGl%2CTextureTarget"
     title="genMipmaps(gl: OpenGl; target: TextureTarget)"><wbr />gen<wbr />Mipmaps<span class="attachedType">OpenGl</span></a></li>
   <li><a class="reference" href="#deleteTexture%2COpenGl%2CGlUint"
@@ -475,6 +495,12 @@ function main() {
                     internalFormat: GlEnum)"><wbr />renderbuffer<wbr />Storage<span class="attachedType">OpenGl</span></a></li>
   <li><a class="reference" href="#deleteRenderbuffer%2COpenGl%2CGlUint"
     title="deleteRenderbuffer(gl: OpenGl; renderbuffer: GlUint)"><wbr />delete<wbr />Renderbuffer<span class="attachedType">OpenGl</span></a></li>
+  <li><a class="reference" href="#createFenceSync%2COpenGl%2CGlEnum"
+    title="createFenceSync(gl: OpenGl; condition: GlEnum): GlSync"><wbr />create<wbr />Fence<wbr />Sync<span class="attachedType">OpenGl</span></a></li>
+  <li><a class="reference" href="#pollSyncStatus%2COpenGl%2CGlSync%2CGlUint64"
+    title="pollSyncStatus(gl: OpenGl; sync: GlSync; timeout: GlUint64): GlEnum"><wbr />poll<wbr />Sync<wbr />Status<span class="attachedType">OpenGl</span></a></li>
+  <li><a class="reference" href="#deleteSync%2COpenGl%2CGlSync"
+    title="deleteSync(gl: OpenGl; sync: GlSync)"><wbr />delete<wbr />Sync<span class="attachedType">OpenGl</span></a></li>
   <li><a class="reference" href="#drawArrays%2COpenGl%2CGlEnum%2Cint%2Cint"
     title="drawArrays(gl: OpenGl; primitive: GlEnum; start, count: int)"><wbr />draw<wbr />Arrays<span class="attachedType">OpenGl</span></a></li>
   <li><a class="reference" href="#drawArraysInstanced%2COpenGl%2CGlEnum%2Cint%2Cint%2Cint"
@@ -484,6 +510,9 @@ function main() {
   <li><a class="reference" href="#drawElementsInstanced%2COpenGl%2CGlEnum%2Cint%2Cint%2Cint%2CGlEnum"
     title="drawElementsInstanced(gl: OpenGl; primitive: GlEnum;
                       start, count, instanceCount: int; indexType: GlEnum)"><wbr />draw<wbr />Elements<wbr />Instanced<span class="attachedType">OpenGl</span></a></li>
+  <li><a class="reference" href="#readPixels%2COpenGl%2CGlInt%2CGlInt%2CGlSizei%2CGlSizei%2CGlEnum%2CGlEnum%2Cpointer"
+    title="readPixels(gl: OpenGl; x, y: GlInt; width, height: GlSizei; format, typ: GlEnum;
+           data: pointer)"><wbr />read<wbr />Pixels<span class="attachedType">OpenGl</span></a></li>
 
   </ul>
 </li>
@@ -523,7 +552,7 @@ class="link-seesrc" target="_blank">Source</a>
 </dd>
 <a id="BufferTarget"></a>
 <dt><pre><a href="gl.html#BufferTarget"><span class="Identifier">BufferTarget</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
-  <span class="Identifier">btArray</span><span class="Other">,</span> <span class="Identifier">btElementArray</span></pre></dt>
+  <span class="Identifier">btArray</span><span class="Other">,</span> <span class="Identifier">btElementArray</span><span class="Other">,</span> <span class="Identifier">btPixelPack</span><span class="Other">,</span> <span class="Identifier">btPixelUnpack</span></pre></dt>
 <dd>
 
 
@@ -543,9 +572,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L28"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L29"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L28" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L29" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="OpenGlFeature"></a>
@@ -557,9 +586,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L37"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L38"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L37" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L38" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="VertexArray"></a>
@@ -571,9 +600,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L52"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L53"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L52" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L53" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="OpenGl"></a>
@@ -612,6 +641,7 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">sViewport</span><span class="Other">:</span> <span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">x</span><span class="Other">,</span> <span class="Identifier">y</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">,</span> <span class="Identifier">w</span><span class="Other">,</span> <span class="Identifier">h</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">]</span>
   <span class="Identifier">uniformTextureUnit</span><span class="Other">:</span> <span class="Identifier">int</span>
   <span class="Identifier">currentDrawParamsHash</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">Hash</span>
+  <span class="Identifier">defaultFramebufferSamples</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">int</span>
   <span class="Identifier">glActiveTexture</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">texture</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glBindBuffer</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">target</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">buffer</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glBindFramebuffer</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">target</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">framebuffer</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
@@ -657,6 +687,8 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">glBufferSubData</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">target</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">offset</span><span class="Other">:</span> <a href="gl_types.html#GlIntptr"><span class="Identifier">GlIntptr</span></a><span class="Other">;</span> <span class="Identifier">size</span><span class="Other">:</span> <a href="gl_types.html#GlSizeiptr"><span class="Identifier">GlSizeiptr</span></a><span class="Other">;</span>
                        <span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glCheckFramebufferStatus</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">target</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">glClientWaitSync</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">sync</span><span class="Other">:</span> <a href="gl_types.html#GlSync"><span class="Identifier">GlSync</span></a><span class="Other">;</span> <span class="Identifier">flags</span><span class="Other">:</span> <a href="gl_types.html#GlBitfield"><span class="Identifier">GlBitfield</span></a><span class="Other">;</span> <span class="Identifier">timeout</span><span class="Other">:</span> <a href="gl_types.html#GlUint64"><span class="Identifier">GlUint64</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+      <span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glCompileShader</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">shader</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glCreateProgram</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glCreateShader</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">shaderType</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
@@ -666,6 +698,7 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">glDeleteProgram</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">program</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glDeleteSamplers</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">n</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">;</span> <span class="Identifier">samplers</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glDeleteShader</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">shader</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">glDeleteSync</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">sync</span><span class="Other">:</span> <a href="gl_types.html#GlSync"><span class="Identifier">GlSync</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glDeleteTextures</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">n</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">;</span> <span class="Identifier">textures</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glDeleteVertexArrays</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">n</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">;</span> <span class="Identifier">arrays</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glDisableVertexAttribArray</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">index</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
@@ -677,6 +710,7 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">glDrawElementsInstanced</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">mode</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">count</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">;</span> <span class="Identifier">kind</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span>
                                <span class="Identifier">indices</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">;</span> <span class="Identifier">primCount</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glEnableVertexAttribArray</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">index</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">glFenceSync</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">condition</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">flags</span><span class="Other">:</span> <a href="gl_types.html#GlBitfield"><span class="Identifier">GlBitfield</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlSync"><span class="Identifier">GlSync</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glFramebufferRenderbuffer</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">target</span><span class="Other">,</span> <span class="Identifier">attachment</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span>
                                  <span class="Identifier">renderbufferTarget</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">renderbuffer</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
       <span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
@@ -702,8 +736,13 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">glGetShaderiv</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">shader</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">pname</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">params</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glGetString</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">name</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">cstring</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glGetIntegerv</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">pname</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">params</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">glGetTexImage</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">target</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">level</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span> <span class="Identifier">format</span><span class="Other">,</span> <span class="Identifier">typ</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">image</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+      <span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glGetUniformLocation</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">program</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">cstring</span><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glLinkProgram</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">program</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">glMapBuffer</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">target</span><span class="Other">,</span> <span class="Identifier">access</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">pointer</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
+  <span class="Identifier">glReadPixels</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">x</span><span class="Other">,</span> <span class="Identifier">y</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span> <span class="Identifier">width</span><span class="Other">,</span> <span class="Identifier">height</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">;</span> <span class="Identifier">format</span><span class="Other">,</span> <span class="Identifier">typ</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span>
+                    <span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glRenderbufferStorageMultisample</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">target</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">samples</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">;</span>
                                         <span class="Identifier">internalFormat</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span>
                                         <span class="Identifier">width</span><span class="Other">,</span> <span class="Identifier">height</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
@@ -741,6 +780,7 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Identifier">glUniformMatrix2fv</span><span class="Other">,</span> <span class="Identifier">glUniformMatrix3fv</span><span class="Other">,</span> <span class="Identifier">glUniformMatrix4fv</span><span class="Other">,</span> <span class="Identifier">glUniformMatrix2x3fv</span><span class="Other">,</span>
   <span class="Identifier">glUniformMatrix3x2fv</span><span class="Other">,</span> <span class="Identifier">glUniformMatrix2x4fv</span><span class="Other">,</span> <span class="Identifier">glUniformMatrix4x2fv</span><span class="Other">,</span>
   <span class="Identifier">glUniformMatrix3x4fv</span><span class="Other">,</span> <span class="Identifier">glUniformMatrix4x3fv</span><span class="Other">:</span> <span class="Identifier">UniformMatrixProc</span>
+  <span class="Identifier">glUnmapBuffer</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">target</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlBool"><span class="Identifier">GlBool</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
   <span class="Identifier">glVertexAttribPointer</span><span class="Other">:</span> <span class="Keyword">proc</span> <span class="Other">(</span><span class="Identifier">index</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">size</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span> <span class="Identifier">typ</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span>
                              <span class="Identifier">normalized</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">;</span> <span class="Identifier">stride</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">;</span> <span class="Identifier">point</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
       <span class="Identifier">cdecl</span></span><span class="Other">.}</span></span>
@@ -751,9 +791,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 The OpenGL API and state. This object is quite a behemoth, but that's also what OpenGL is.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L61"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L62"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L61" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L62" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -768,9 +808,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Loads OpenGL procs to the given GL instance. aglet uses a custom loader because as far as I could tell, glad doesn't support loading procs to an object. This unfortunately means that the code will need to list each and every one of the GL procs it uses, but it's a good opportunity to use some macro magic so it's not that bad.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L257"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L270"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L257" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L270" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="toGlEnum,Hint"></a>
@@ -779,9 +819,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L379"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L398"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L379" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L398" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="toGlEnum,Facing"></a>
@@ -790,9 +830,20 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L385"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L404"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L385" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L404" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="toGlEnum,AccessMode"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#toGlEnum%2CAccessMode"><span class="Identifier">toGlEnum</span></a><span class="Other">(</span><span class="Identifier">mode</span><span class="Other">:</span> <a href="enums.html#AccessMode"><span class="Identifier">AccessMode</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L409"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L409" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newGl"></a>
@@ -801,9 +852,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L390"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L415"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L390" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L415" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="viewport,OpenGl,GlInt,GlInt,GlSizei,GlSizei"></a>
@@ -813,9 +864,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L410"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L435"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L410" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L435" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="feature,OpenGl,OpenGlFeature,bool"></a>
@@ -825,9 +876,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L416"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L441"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L416" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L441" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="clearColor,OpenGl,GlClampf,GlClampf,GlClampf,GlClampf"></a>
@@ -837,9 +888,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L421"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L446"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L421" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L446" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="clearDepth,OpenGl,GlClampd"></a>
@@ -848,9 +899,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L426"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L451"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L426" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L451" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="clearStencil,OpenGl,GlInt"></a>
@@ -859,9 +910,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L431"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L456"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L431" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L456" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="bindBuffer,OpenGl,BufferTarget,GlUint"></a>
@@ -871,9 +922,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L436"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L461"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L436" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L461" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="bindFramebuffer,OpenGl,set[FramebufferTarget],GlUint"></a>
@@ -883,9 +934,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L444"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L469"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L444" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L469" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="bindRenderbuffer,OpenGl,GlUint"></a>
@@ -895,9 +946,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L460"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L485"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L460" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L485" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="bindSampler,OpenGl,int,GlUint"></a>
@@ -907,9 +958,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L464"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L489"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L464" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L489" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="textureUnit=,OpenGl,int"></a>
@@ -919,9 +970,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L473"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L498"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L473" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L498" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="bindTexture,OpenGl,TextureTarget,GlUint"></a>
@@ -931,9 +982,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L483"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L508"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L483" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L508" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="bindVertexArray,OpenGl,VertexArray"></a>
@@ -943,9 +994,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L487"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L512"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L487" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L512" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="blendColor,OpenGl,GlClampf,GlClampf,GlClampf,GlClampf"></a>
@@ -955,9 +1006,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L498"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L523"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L498" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L523" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="blendEquation,OpenGl,GlEnum,GlEnum"></a>
@@ -967,9 +1018,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L502"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L527"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L502" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L527" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="blendFunc,OpenGl,GlEnum,GlEnum,GlEnum,GlEnum"></a>
@@ -979,9 +1030,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L506"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L531"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L506" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L531" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="colorMask,OpenGl,GlBool,GlBool,GlBool,GlBool"></a>
@@ -991,9 +1042,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L510"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L535"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L510" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L535" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="cullFace,OpenGl,GlEnum"></a>
@@ -1002,9 +1053,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L514"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L539"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L514" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L539" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="depthFunc,OpenGl,GlEnum"></a>
@@ -1013,9 +1064,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L518"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L543"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L518" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L543" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="depthMask,OpenGl,bool"></a>
@@ -1024,9 +1075,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L522"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L547"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L522" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L547" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="frontFace,OpenGl,GlEnum"></a>
@@ -1035,9 +1086,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L526"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L551"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L526" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L551" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="hint,OpenGl,Hint,GlEnum"></a>
@@ -1046,9 +1097,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L530"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L555"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L530" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L555" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="logicOp,OpenGl,GlEnum"></a>
@@ -1057,84 +1108,13 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L534"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L559"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L534" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L559" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="lineWidth,OpenGl,GlFloat"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#lineWidth%2COpenGl%2CGlFloat"><span class="Identifier">lineWidth</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">width</span><span class="Other">:</span> <a href="gl_types.html#GlFloat"><span class="Identifier">GlFloat</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L538"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L538" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="pointSize,OpenGl,GlFloat"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#pointSize%2COpenGl%2CGlFloat"><span class="Identifier">pointSize</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">size</span><span class="Other">:</span> <a href="gl_types.html#GlFloat"><span class="Identifier">GlFloat</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L542"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L542" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="polygonMode,OpenGl,Facing,GlEnum"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#polygonMode%2COpenGl%2CFacing%2CGlEnum"><span class="Identifier">polygonMode</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">facing</span><span class="Other">:</span> <a href="enums.html#Facing"><span class="Identifier">Facing</span></a><span class="Other">;</span> <span class="Identifier">mode</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L546"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L546" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="primitiveRestartIndex,OpenGl,GlUint"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#primitiveRestartIndex%2COpenGl%2CGlUint"><span class="Identifier">primitiveRestartIndex</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">index</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L550"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L550" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="scissor,OpenGl,GlInt,GlInt,GlSizei,GlSizei"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#scissor%2COpenGl%2CGlInt%2CGlInt%2CGlSizei%2CGlSizei"><span class="Identifier">scissor</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">x</span><span class="Other">,</span> <span class="Identifier">y</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span> <span class="Identifier">width</span><span class="Other">,</span> <span class="Identifier">height</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L554"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L554" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="stencilFunc,OpenGl,Facing,GlEnum,GlInt,GlUint"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#stencilFunc%2COpenGl%2CFacing%2CGlEnum%2CGlInt%2CGlUint"><span class="Identifier">stencilFunc</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">facing</span><span class="Other">:</span> <a href="enums.html#Facing"><span class="Identifier">Facing</span></a><span class="Other">;</span> <span class="Identifier">fn</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">reference</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span> <span class="Identifier">mask</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L558"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L558" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="stencilMask,OpenGl,Facing,GlUint"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#stencilMask%2COpenGl%2CFacing%2CGlUint"><span class="Identifier">stencilMask</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">facing</span><span class="Other">:</span> <a href="enums.html#Facing"><span class="Identifier">Facing</span></a><span class="Other">;</span> <span class="Identifier">mask</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1144,9 +1124,8 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L563" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="stencilOp,OpenGl,Facing,GlEnum,GlEnum,GlEnum"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#stencilOp%2COpenGl%2CFacing%2CGlEnum%2CGlEnum%2CGlEnum"><span class="Identifier">stencilOp</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">facing</span><span class="Other">:</span> <a href="enums.html#Facing"><span class="Identifier">Facing</span></a><span class="Other">;</span> <span class="Identifier">sfail</span><span class="Other">,</span> <span class="Identifier">dpfail</span><span class="Other">,</span> <span class="Identifier">dppass</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="pointSize,OpenGl,GlFloat"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#pointSize%2COpenGl%2CGlFloat"><span class="Identifier">pointSize</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">size</span><span class="Other">:</span> <a href="gl_types.html#GlFloat"><span class="Identifier">GlFloat</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1156,21 +1135,33 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L567" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="useProgram,OpenGl,GlUint"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#useProgram%2COpenGl%2CGlUint"><span class="Identifier">useProgram</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">program</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+<a id="polygonMode,OpenGl,Facing,GlEnum"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#polygonMode%2COpenGl%2CFacing%2CGlEnum"><span class="Identifier">polygonMode</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">facing</span><span class="Other">:</span> <a href="enums.html#Facing"><span class="Identifier">Facing</span></a><span class="Other">;</span> <span class="Identifier">mode</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L572"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L571"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L572" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L571" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="createShader,OpenGl,GlEnum,string,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#createShader%2COpenGl%2CGlEnum%2Cstring%2Cstring"><span class="Identifier">createShader</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">shaderType</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">source</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">outError</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span>
-    <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="primitiveRestartIndex,OpenGl,GlUint"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#primitiveRestartIndex%2COpenGl%2CGlUint"><span class="Identifier">primitiveRestartIndex</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">index</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L575"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L575" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="scissor,OpenGl,GlInt,GlInt,GlSizei,GlSizei"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#scissor%2COpenGl%2CGlInt%2CGlInt%2CGlSizei%2CGlSizei"><span class="Identifier">scissor</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">x</span><span class="Other">,</span> <span class="Identifier">y</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span> <span class="Identifier">width</span><span class="Other">,</span> <span class="Identifier">height</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1180,56 +1171,68 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L579" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+<a id="stencilFunc,OpenGl,Facing,GlEnum,GlInt,GlUint"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#stencilFunc%2COpenGl%2CFacing%2CGlEnum%2CGlInt%2CGlUint"><span class="Identifier">stencilFunc</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">facing</span><span class="Other">:</span> <a href="enums.html#Facing"><span class="Identifier">Facing</span></a><span class="Other">;</span> <span class="Identifier">fn</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">reference</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span> <span class="Identifier">mask</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L583"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L583" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="stencilMask,OpenGl,Facing,GlUint"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#stencilMask%2COpenGl%2CFacing%2CGlUint"><span class="Identifier">stencilMask</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">facing</span><span class="Other">:</span> <a href="enums.html#Facing"><span class="Identifier">Facing</span></a><span class="Other">;</span> <span class="Identifier">mask</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L588"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L588" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="stencilOp,OpenGl,Facing,GlEnum,GlEnum,GlEnum"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#stencilOp%2COpenGl%2CFacing%2CGlEnum%2CGlEnum%2CGlEnum"><span class="Identifier">stencilOp</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">facing</span><span class="Other">:</span> <a href="enums.html#Facing"><span class="Identifier">Facing</span></a><span class="Other">;</span> <span class="Identifier">sfail</span><span class="Other">,</span> <span class="Identifier">dpfail</span><span class="Other">,</span> <span class="Identifier">dppass</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L592"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L592" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="useProgram,OpenGl,GlUint"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#useProgram%2COpenGl%2CGlUint"><span class="Identifier">useProgram</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">program</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L597"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L597" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="createShader,OpenGl,GlEnum,string,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#createShader%2COpenGl%2CGlEnum%2Cstring%2Cstring"><span class="Identifier">createShader</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">shaderType</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">source</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">outError</span><span class="Other">:</span> <span class="Keyword">var</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span>
+    <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L604"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L604" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 <a id="createProgram,OpenGl"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#createProgram%2COpenGl"><span class="Identifier">createProgram</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L606"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L606" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="attachShader,OpenGl,GlUint,GlUint"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#attachShader%2COpenGl%2CGlUint%2CGlUint"><span class="Identifier">attachShader</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">program</span><span class="Other">,</span> <span class="Identifier">shader</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L609"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L609" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="bindAttribLocation,OpenGl,GlUint,Natural,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#bindAttribLocation%2COpenGl%2CGlUint%2CNatural%2Cstring"><span class="Identifier">bindAttribLocation</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">program</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">index</span><span class="Other">:</span> <span class="Identifier">Natural</span><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L612"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L612" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="linkProgram,OpenGl,GlUint"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#linkProgram%2COpenGl%2CGlUint"><span class="Identifier">linkProgram</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">program</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L616"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L616" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="getUniformLocation,OpenGl,GlUint,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#getUniformLocation%2COpenGl%2CGlUint%2Cstring"><span class="Identifier">getUniformLocation</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">program</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1239,8 +1242,9 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L631" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="resetTextureUnitCounter,OpenGl"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#resetTextureUnitCounter%2COpenGl"><span class="Identifier">resetTextureUnitCounter</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="attachShader,OpenGl,GlUint,GlUint"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#attachShader%2COpenGl%2CGlUint%2CGlUint"><span class="Identifier">attachShader</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">program</span><span class="Other">,</span> <span class="Identifier">shader</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1250,6 +1254,53 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L634" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+<a id="bindAttribLocation,OpenGl,GlUint,Natural,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#bindAttribLocation%2COpenGl%2CGlUint%2CNatural%2Cstring"><span class="Identifier">bindAttribLocation</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">program</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">index</span><span class="Other">:</span> <span class="Identifier">Natural</span><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L637"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L637" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="linkProgram,OpenGl,GlUint"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#linkProgram%2COpenGl%2CGlUint"><span class="Identifier">linkProgram</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">program</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L641"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L641" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="getUniformLocation,OpenGl,GlUint,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#getUniformLocation%2COpenGl%2CGlUint%2Cstring"><span class="Identifier">getUniformLocation</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">program</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">name</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L656"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L656" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="resetTextureUnitCounter,OpenGl"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#resetTextureUnitCounter%2COpenGl"><span class="Identifier">resetTextureUnitCounter</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L659"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L659" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 <a id="uniform,OpenGl,GlInt,Uniform"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#uniform%2COpenGl%2CGlInt%2CUniform"><span class="Identifier">uniform</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">loc</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span> <span class="Identifier">u</span><span class="Other">:</span> <a href="uniform.html#Uniform"><span class="Identifier">Uniform</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
@@ -1257,9 +1308,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L687"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L712"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L687" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L712" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteShader,OpenGl,GlUint"></a>
@@ -1268,9 +1319,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L691"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L716"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L691" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L716" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteProgram,OpenGl,GlUint"></a>
@@ -1280,9 +1331,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L694"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L719"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L694" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L719" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createBuffer,OpenGl"></a>
@@ -1291,9 +1342,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L697"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L722"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L697" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L722" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="bufferData,OpenGl,BufferTarget,int,pointer,GlEnum"></a>
@@ -1303,9 +1354,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L700"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L725"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L700" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L725" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="bufferSubData,OpenGl,BufferTarget,Slice[int],pointer"></a>
@@ -1315,9 +1366,33 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L704"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L729"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L704" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L729" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="mapBuffer,OpenGl,BufferTarget,GlEnum"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#mapBuffer%2COpenGl%2CBufferTarget%2CGlEnum"><span class="Identifier">mapBuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">target</span><span class="Other">:</span> <a href="gl.html#BufferTarget"><span class="Identifier">BufferTarget</span></a><span class="Other">;</span> <span class="Identifier">access</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">pointer</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L734"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L734" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="unmapBuffer,OpenGl,BufferTarget"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#unmapBuffer%2COpenGl%2CBufferTarget"><span class="Identifier">unmapBuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">target</span><span class="Other">:</span> <a href="gl.html#BufferTarget"><span class="Identifier">BufferTarget</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L737"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L737" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteBuffer,OpenGl,GlUint"></a>
@@ -1326,9 +1401,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L709"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L741"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L709" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L741" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createVertexArray,OpenGl"></a>
@@ -1338,9 +1413,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L713"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L745"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L713" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L745" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="vertexAttrib,OpenGl,int,int,int"></a>
@@ -1349,9 +1424,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L724"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L756"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L724" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L756" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="enableVertexAttrib,OpenGl,int"></a>
@@ -1361,9 +1436,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L748"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L780"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L748" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L780" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="disableVertexAttrib,OpenGl,int"></a>
@@ -1373,9 +1448,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L751"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L783"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L751" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L783" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteVertexArray,OpenGl,VertexArray"></a>
@@ -1385,9 +1460,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L754"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L786"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L754" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L786" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createTexture,OpenGl"></a>
@@ -1396,9 +1471,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L758"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L790"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L758" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L790" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="data1D,OpenGl,Positive,GlEnum,GlEnum,GlEnum"></a>
@@ -1408,9 +1483,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L761"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L793"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L761" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L793" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="data2D,OpenGl,TextureTarget,Positive,Positive,GlEnum,GlEnum,GlEnum"></a>
@@ -1421,9 +1496,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L765"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L797"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L765" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L797" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="data2DMS,OpenGl,Positive,Positive,GlEnum,Natural,bool"></a>
@@ -1434,9 +1509,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L773"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L805"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L773" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L805" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="data3D,OpenGl,TextureTarget,Positive,Positive,Positive,GlEnum,GlEnum,GlEnum"></a>
@@ -1447,9 +1522,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L781"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L813"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L781" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L813" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="data3DMS,OpenGl,Positive,Positive,Positive,GlEnum,Natural,bool"></a>
@@ -1460,9 +1535,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L787"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L819"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L787" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L819" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="subImage1D,OpenGl,Natural,Positive,GlEnum,GlEnum,pointer"></a>
@@ -1472,9 +1547,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L795"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L827"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L795" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L827" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="subImage2D,OpenGl,TextureTarget,Natural,Natural,Positive,Positive,GlEnum,GlEnum,pointer"></a>
@@ -1485,9 +1560,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L800"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L832"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L800" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L832" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="subImage3D,OpenGl,TextureTarget,Natural,Natural,Natural,Positive,Positive,Positive,GlEnum,GlEnum,pointer"></a>
@@ -1498,9 +1573,21 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L809"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L841"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L809" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L841" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="getImage,OpenGl,TextureTarget,GlInt,GlEnum,GlEnum,pointer"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#getImage%2COpenGl%2CTextureTarget%2CGlInt%2CGlEnum%2CGlEnum%2Cpointer"><span class="Identifier">getImage</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">target</span><span class="Other">:</span> <a href="gl.html#TextureTarget"><span class="Identifier">TextureTarget</span></a><span class="Other">;</span> <span class="Identifier">level</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span> <span class="Identifier">format</span><span class="Other">,</span> <span class="Identifier">typ</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span>
+             <span class="Identifier">dest</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L850"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L850" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="genMipmaps,OpenGl,TextureTarget"></a>
@@ -1510,9 +1597,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L818"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L854"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L818" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L854" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="deleteTexture,OpenGl,GlUint"></a>
@@ -1522,122 +1609,13 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L821"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L857"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L821" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L857" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="createSampler,OpenGl"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#createSampler%2COpenGl"><span class="Identifier">createSampler</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L825"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L825" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="samplerParam,OpenGl,GlUint,GlEnum,GlInt"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#samplerParam%2COpenGl%2CGlUint%2CGlEnum%2CGlInt"><span class="Identifier">samplerParam</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">sampler</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">param</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">value</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L828"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L828" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="samplerParam,OpenGl,GlUint,GlEnum,ptr.GlFloat"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#samplerParam%2COpenGl%2CGlUint%2CGlEnum%2Cptr.GlFloat"><span class="Identifier">samplerParam</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">sampler</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">param</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">value</span><span class="Other">:</span> <span class="Keyword">ptr</span> <a href="gl_types.html#GlFloat"><span class="Identifier">GlFloat</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L831"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L831" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="deleteSampler,OpenGl,GlUint"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#deleteSampler%2COpenGl%2CGlUint"><span class="Identifier">deleteSampler</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">sampler</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L835"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L835" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="createFramebuffer,OpenGl"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#createFramebuffer%2COpenGl"><span class="Identifier">createFramebuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L839"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L839" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="attachRenderbuffer,OpenGl,GlEnum,GlUint"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#attachRenderbuffer%2COpenGl%2CGlEnum%2CGlUint"><span class="Identifier">attachRenderbuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">attachment</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">renderbuffer</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L842"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L842" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="attachTexture1D,OpenGl,GlEnum,TextureTarget,GlUint,GlInt"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#attachTexture1D%2COpenGl%2CGlEnum%2CTextureTarget%2CGlUint%2CGlInt"><span class="Identifier">attachTexture1D</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">attachment</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">texTarget</span><span class="Other">:</span> <a href="gl.html#TextureTarget"><span class="Identifier">TextureTarget</span></a><span class="Other">;</span>
-                    <span class="Identifier">texture</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">mipLevel</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L846"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L846" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="attachTexture2D,OpenGl,GlEnum,TextureTarget,GlUint,GlInt"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#attachTexture2D%2COpenGl%2CGlEnum%2CTextureTarget%2CGlUint%2CGlInt"><span class="Identifier">attachTexture2D</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">attachment</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">texTarget</span><span class="Other">:</span> <a href="gl.html#TextureTarget"><span class="Identifier">TextureTarget</span></a><span class="Other">;</span>
-                    <span class="Identifier">texture</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">mipLevel</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L851"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L851" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="attachTextureLayer,OpenGl,GlEnum,GlUint,GlInt,GlInt"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#attachTextureLayer%2COpenGl%2CGlEnum%2CGlUint%2CGlInt%2CGlInt"><span class="Identifier">attachTextureLayer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">attachment</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">texture</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span>
-                       <span class="Identifier">mipLevel</span><span class="Other">,</span> <span class="Identifier">layer</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L856"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L856" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="framebufferStatus,OpenGl"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#framebufferStatus%2COpenGl"><span class="Identifier">framebufferStatus</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1647,10 +1625,9 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L861" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="blitFramebuffer,OpenGl,GlInt,GlInt,GlInt,GlInt,GlInt,GlInt,GlInt,GlInt,GlBitfield,GlEnum"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#blitFramebuffer%2COpenGl%2CGlInt%2CGlInt%2CGlInt%2CGlInt%2CGlInt%2CGlInt%2CGlInt%2CGlInt%2CGlBitfield%2CGlEnum"><span class="Identifier">blitFramebuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">srcX0</span><span class="Other">,</span> <span class="Identifier">srcY0</span><span class="Other">,</span> <span class="Identifier">srcX1</span><span class="Other">,</span> <span class="Identifier">srcY1</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span>
-                    <span class="Identifier">destX0</span><span class="Other">,</span> <span class="Identifier">destY0</span><span class="Other">,</span> <span class="Identifier">destX1</span><span class="Other">,</span> <span class="Identifier">destY1</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span> <span class="Identifier">mask</span><span class="Other">:</span> <a href="gl_types.html#GlBitfield"><span class="Identifier">GlBitfield</span></a><span class="Other">;</span>
-                    <span class="Identifier">filter</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="samplerParam,OpenGl,GlUint,GlEnum,GlInt"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#samplerParam%2COpenGl%2CGlUint%2CGlEnum%2CGlInt"><span class="Identifier">samplerParam</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">sampler</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">param</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">value</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1660,8 +1637,20 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L864" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="deleteFramebuffer,OpenGl,GlUint"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#deleteFramebuffer%2COpenGl%2CGlUint"><span class="Identifier">deleteFramebuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">framebuffer</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+<a id="samplerParam,OpenGl,GlUint,GlEnum,ptr.GlFloat"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#samplerParam%2COpenGl%2CGlUint%2CGlEnum%2Cptr.GlFloat"><span class="Identifier">samplerParam</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">sampler</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">param</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">value</span><span class="Other">:</span> <span class="Keyword">ptr</span> <a href="gl_types.html#GlFloat"><span class="Identifier">GlFloat</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L867"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L867" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="deleteSampler,OpenGl,GlUint"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#deleteSampler%2COpenGl%2CGlUint"><span class="Identifier">deleteSampler</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">sampler</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
@@ -1672,8 +1661,8 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L871" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="createRenderbuffer,OpenGl"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#createRenderbuffer%2COpenGl"><span class="Identifier">createRenderbuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="createFramebuffer,OpenGl"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#createFramebuffer%2COpenGl"><span class="Identifier">createFramebuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1683,10 +1672,9 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L875" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="renderbufferStorage,OpenGl,GlSizei,GlSizei,GlSizei,GlEnum"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#renderbufferStorage%2COpenGl%2CGlSizei%2CGlSizei%2CGlSizei%2CGlEnum"><span class="Identifier">renderbufferStorage</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">width</span><span class="Other">,</span> <span class="Identifier">height</span><span class="Other">,</span> <span class="Identifier">samples</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">;</span>
-                        <span class="Identifier">internalFormat</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<a id="attachRenderbuffer,OpenGl,GlEnum,GlUint"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#attachRenderbuffer%2COpenGl%2CGlEnum%2CGlUint"><span class="Identifier">attachRenderbuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">attachment</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">renderbuffer</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
@@ -1696,20 +1684,22 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L878" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="deleteRenderbuffer,OpenGl,GlUint"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#deleteRenderbuffer%2COpenGl%2CGlUint"><span class="Identifier">deleteRenderbuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">renderbuffer</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+<a id="attachTexture1D,OpenGl,GlEnum,TextureTarget,GlUint,GlInt"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#attachTexture1D%2COpenGl%2CGlEnum%2CTextureTarget%2CGlUint%2CGlInt"><span class="Identifier">attachTexture1D</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">attachment</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">texTarget</span><span class="Other">:</span> <a href="gl.html#TextureTarget"><span class="Identifier">TextureTarget</span></a><span class="Other">;</span>
+                    <span class="Identifier">texture</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">mipLevel</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L883"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L882"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L883" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L882" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="drawArrays,OpenGl,GlEnum,int,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#drawArrays%2COpenGl%2CGlEnum%2Cint%2Cint"><span class="Identifier">drawArrays</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">primitive</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">start</span><span class="Other">,</span> <span class="Identifier">count</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+<a id="attachTexture2D,OpenGl,GlEnum,TextureTarget,GlUint,GlInt"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#attachTexture2D%2COpenGl%2CGlEnum%2CTextureTarget%2CGlUint%2CGlInt"><span class="Identifier">attachTexture2D</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">attachment</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">texTarget</span><span class="Other">:</span> <a href="gl.html#TextureTarget"><span class="Identifier">TextureTarget</span></a><span class="Other">;</span>
+                    <span class="Identifier">texture</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span> <span class="Identifier">mipLevel</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
@@ -1720,6 +1710,138 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L887" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+<a id="attachTextureLayer,OpenGl,GlEnum,GlUint,GlInt,GlInt"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#attachTextureLayer%2COpenGl%2CGlEnum%2CGlUint%2CGlInt%2CGlInt"><span class="Identifier">attachTextureLayer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">attachment</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">texture</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">;</span>
+                       <span class="Identifier">mipLevel</span><span class="Other">,</span> <span class="Identifier">layer</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L892"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L892" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="framebufferStatus,OpenGl"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#framebufferStatus%2COpenGl"><span class="Identifier">framebufferStatus</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L897"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L897" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="blitFramebuffer,OpenGl,GlInt,GlInt,GlInt,GlInt,GlInt,GlInt,GlInt,GlInt,GlBitfield,GlEnum"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#blitFramebuffer%2COpenGl%2CGlInt%2CGlInt%2CGlInt%2CGlInt%2CGlInt%2CGlInt%2CGlInt%2CGlInt%2CGlBitfield%2CGlEnum"><span class="Identifier">blitFramebuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">srcX0</span><span class="Other">,</span> <span class="Identifier">srcY0</span><span class="Other">,</span> <span class="Identifier">srcX1</span><span class="Other">,</span> <span class="Identifier">srcY1</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span>
+                    <span class="Identifier">destX0</span><span class="Other">,</span> <span class="Identifier">destY0</span><span class="Other">,</span> <span class="Identifier">destX1</span><span class="Other">,</span> <span class="Identifier">destY1</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span> <span class="Identifier">mask</span><span class="Other">:</span> <a href="gl_types.html#GlBitfield"><span class="Identifier">GlBitfield</span></a><span class="Other">;</span>
+                    <span class="Identifier">filter</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L900"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L900" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="deleteFramebuffer,OpenGl,GlUint"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#deleteFramebuffer%2COpenGl%2CGlUint"><span class="Identifier">deleteFramebuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">framebuffer</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L907"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L907" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="createRenderbuffer,OpenGl"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#createRenderbuffer%2COpenGl"><span class="Identifier">createRenderbuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L911"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L911" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="renderbufferStorage,OpenGl,GlSizei,GlSizei,GlSizei,GlEnum"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#renderbufferStorage%2COpenGl%2CGlSizei%2CGlSizei%2CGlSizei%2CGlEnum"><span class="Identifier">renderbufferStorage</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">width</span><span class="Other">,</span> <span class="Identifier">height</span><span class="Other">,</span> <span class="Identifier">samples</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">;</span>
+                        <span class="Identifier">internalFormat</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L914"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L914" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="deleteRenderbuffer,OpenGl,GlUint"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#deleteRenderbuffer%2COpenGl%2CGlUint"><span class="Identifier">deleteRenderbuffer</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">renderbuffer</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L919"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L919" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="createFenceSync,OpenGl,GlEnum"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#createFenceSync%2COpenGl%2CGlEnum"><span class="Identifier">createFenceSync</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">condition</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlSync"><span class="Identifier">GlSync</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L923"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L923" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="pollSyncStatus,OpenGl,GlSync,GlUint64"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#pollSyncStatus%2COpenGl%2CGlSync%2CGlUint64"><span class="Identifier">pollSyncStatus</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">sync</span><span class="Other">:</span> <a href="gl_types.html#GlSync"><span class="Identifier">GlSync</span></a><span class="Other">;</span> <span class="Identifier">timeout</span><span class="Other">:</span> <a href="gl_types.html#GlUint64"><span class="Identifier">GlUint64</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L926"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L926" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="deleteSync,OpenGl,GlSync"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#deleteSync%2COpenGl%2CGlSync"><span class="Identifier">deleteSync</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">sync</span><span class="Other">:</span> <a href="gl_types.html#GlSync"><span class="Identifier">GlSync</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L929"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L929" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="drawArrays,OpenGl,GlEnum,int,int"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#drawArrays%2COpenGl%2CGlEnum%2Cint%2Cint"><span class="Identifier">drawArrays</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">primitive</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span> <span class="Identifier">start</span><span class="Other">,</span> <span class="Identifier">count</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L932"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L932" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 <a id="drawArraysInstanced,OpenGl,GlEnum,int,int,int"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#drawArraysInstanced%2COpenGl%2CGlEnum%2Cint%2Cint%2Cint"><span class="Identifier">drawArraysInstanced</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">primitive</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span>
                         <span class="Identifier">start</span><span class="Other">,</span> <span class="Identifier">count</span><span class="Other">,</span> <span class="Identifier">instanceCount</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
@@ -1728,9 +1850,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L890"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L935"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L890" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L935" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="drawElements,OpenGl,GlEnum,int,int,GlEnum"></a>
@@ -1740,9 +1862,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L902"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L947"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L902" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L947" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="drawElementsInstanced,OpenGl,GlEnum,int,int,int,GlEnum"></a>
@@ -1753,9 +1875,21 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L907"
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L952"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L907" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L952" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="readPixels,OpenGl,GlInt,GlInt,GlSizei,GlSizei,GlEnum,GlEnum,pointer"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#readPixels%2COpenGl%2CGlInt%2CGlInt%2CGlSizei%2CGlSizei%2CGlEnum%2CGlEnum%2Cpointer"><span class="Identifier">readPixels</span></a><span class="Other">(</span><span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a><span class="Other">;</span> <span class="Identifier">x</span><span class="Other">,</span> <span class="Identifier">y</span><span class="Other">:</span> <a href="gl_types.html#GlInt"><span class="Identifier">GlInt</span></a><span class="Other">;</span> <span class="Identifier">width</span><span class="Other">,</span> <span class="Identifier">height</span><span class="Other">:</span> <a href="gl_types.html#GlSizei"><span class="Identifier">GlSizei</span></a><span class="Other">;</span> <span class="Identifier">format</span><span class="Other">,</span> <span class="Identifier">typ</span><span class="Other">:</span> <a href="gl_types.html#GlEnum"><span class="Identifier">GlEnum</span></a><span class="Other">;</span>
+               <span class="Identifier">data</span><span class="Other">:</span> <span class="Identifier">pointer</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/gl.nim#L959"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/gl.nim#L959" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -1773,7 +1907,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-06-15 11:24:30 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-06-25 19:16:09 UTC</small>
       </div>
     </div>
   </div>

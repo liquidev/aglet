@@ -121,6 +121,11 @@ function main() {
     title="FilteringMode = enum
   fmNearest, fmLinear, fmNearestMipmapNearest, fmNearestMipmapLinear,
   fmLinearMipmapNearest, fmLinearMipmapLinear"><wbr />Filtering<wbr />Mode<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#AccessModeBit"
+    title="AccessModeBit = enum
+  amRead, amWrite"><wbr />Access<wbr />Mode<wbr />Bit<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#AccessMode"
+    title="AccessMode = set[AccessModeBit]"><wbr />Access<wbr />Mode<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -201,6 +206,29 @@ class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/enums.nim#L32" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
+<a id="AccessModeBit"></a>
+<dt><pre><a href="enums.html#AccessModeBit"><span class="Identifier">AccessModeBit</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
+  <span class="Identifier">amRead</span><span class="Other">,</span> <span class="Identifier">amWrite</span></pre></dt>
+<dd>
+
+Memory access modes.
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/enums.nim#L41"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/enums.nim#L41" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="AccessMode"></a>
+<dt><pre><a href="enums.html#AccessMode"><span class="Identifier">AccessMode</span></a> <span class="Other">=</span> <span class="Identifier">set</span><span class="Other">[</span><a href="enums.html#AccessModeBit"><span class="Identifier">AccessModeBit</span></a><span class="Other">]</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.1.0/src/aglet/enums.nim#L46"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/enums.nim#L46" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
 
 </dl></div>
 
@@ -211,7 +239,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-06-15 11:24:30 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-06-25 19:16:09 UTC</small>
       </div>
     </div>
   </div>
