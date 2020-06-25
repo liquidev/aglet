@@ -75,7 +75,7 @@ while not win.closeRequested:
   target.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
   target.draw(prog, rect, uniforms {
     ?noise: noiseTex.sampler(),
-    ?bricks: bricksTex.sampler(magFilter = tfNearest),
+    ?bricks: bricksTex.sampler(magFilter = fmNearest),
   }, drawParams)
   target.finish()
 

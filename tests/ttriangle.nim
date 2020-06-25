@@ -12,7 +12,7 @@ var win = agl.newWindowGlfw(800, 600, "GLFW window test",
 win.swapInterval = 1
 
 const
-  VertexShaderSrc = """
+  VertexShaderSrc = glsl"""
     #version 330 core
 
     uniform float time;
@@ -27,7 +27,7 @@ const
       vertexColor = color;
     }
   """
-  FragmentShaderSrc = """
+  FragmentShaderSrc = glsl"""
     #version 330 core
 
     in vec4 vertexColor;
@@ -65,7 +65,7 @@ let startTime = epochTime()
 while not win.closeRequested:
   var frame = win.render()
 
-  frame.clearColor(vec4f(0.0, 0.0, 0.0, 1.0))
+  frame.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
 
   frame.draw(prog, mesh, uniforms {
     time: float32(epochTime() - startTime),
