@@ -3,12 +3,16 @@
 import enums
 import framebuffer_attachment
 import gl
+import pixelbuffer
 import pixeltypes
 import rect
 import target
 import window
 
 export framebuffer_attachment
+
+# methods produce this annoying warning, so we turn it off
+{.push warning[LockLevel]: off.}
 
 type
   Renderbuffer*[T] = ref object of FramebufferAttachment
@@ -32,6 +36,10 @@ type
     id: GlUint
     fSize: Vec2i
     fSamples: int
+    pixelBuffer: PixelBuffer
+
+  DefaultFramebuffer* {.final.} = ref object of BaseFramebuffer
+    ## Object representation of the default framebuffer.
 
   SimpleFramebuffer* {.final.} = ref object of BaseFramebuffer
     ## Framebuffer with only one color attachment.
@@ -131,7 +139,7 @@ converter source*(rb: Renderbuffer[DepthStencilPixelType]): DepthStencilSource =
 
 # base framebuffer
 
-proc size*(framebuffer: BaseFramebuffer): Vec2i =
+method size*(framebuffer: BaseFramebuffer): Vec2i {.base.} =
   ## Returns the size of the framebuffer as a vector.
   framebuffer.fSize
 
@@ -159,6 +167,7 @@ proc blit*(source, dest: BaseFramebuffer, sourceArea, destArea: Recti,
   ## copy, and ``filter`` specifies the filtering mode.
   ## Both framebuffers must have the same parent window, attempting to use
   ## framebuffers created with different windows is an error.
+
   assert source.window == dest.window,
     "both framebuffers must be owned by the same window"
   source.window.IMPL_makeCurrent()
@@ -187,6 +196,111 @@ proc blit*(source, dest: BaseFramebuffer, sourceArea, destArea: Recti,
 proc use(framebuffer: BaseFramebuffer) =
   framebuffer.window.IMPL_makeCurrent()
   framebuffer.gl.bindFramebuffer({ftRead, ftDraw}, framebuffer.id)
+
+proc sizeInBytes[T: ClientPixelType](framebuffer: BaseFramebuffer): int =
+  result = framebuffer.width * framebuffer.height * sizeof(T)
+
+proc ensurePixelBuffer[T: ClientPixelType](framebuffer: BaseFramebuffer): int =
+  assert framebuffer.width > 0 and framebuffer.height > 0,
+    "framebuffer must have a valid attachment for pixel downloading"
+  if framebuffer.pixelBuffer == nil:
+    framebuffer.pixelBuffer = framebuffer.window.newPixelBuffer()
+  result = framebuffer.sizeInBytes[:T]()
+  framebuffer.pixelBuffer.ensureSize(result)
+
+proc download*[T: ClientPixelType](framebuffer: BaseFramebuffer, area: Recti,
+                                   callback: proc (data: ptr UncheckedArray[T],
+                                                   len: Natural)) =
+  ## Asynchronously download pixels off the graphics card from the given ara,
+  ## in the given format.
+  ## This calls the callback procedure after the pixels are downloaded, which
+  ## may take some amount of time to accomplish. This callback retrieves a
+  ## pointer to the downloaded array of pixels with **read-only access**,
+  ## along with the amount of pixels (not bytes!) stored in that array.
+  ##
+  ## If you wish to preserve this data in a ``seq`` or some other container, use
+  ## ``copyMem(data[0].addr, theSeq[0].addr, len * sizeof(T))``. Passing the
+  ## ``data`` array anywhere outside of this callback is undefined behavior
+  ## (most likely resulting in a crash).
+  ##
+  ## This procedure is asynchronous. Don't forget to update the window's async
+  ## event loop using ``pollAsyncCallbacks``, ``pollEvents``, or ``waitEvents``.
+  ## Otherwise the results will never arrive.
+
+  framebuffer.use()
+  let dataSize = framebuffer.ensurePixelBuffer[:T]()
+  framebuffer.pixelBuffer.packUse:
+    framebuffer.gl.readPixels(area.x, area.y,
+                              GlSizei(area.width), GlSizei(area.height),
+                              T.format, T.dataType, nil)
+  let fence = framebuffer.gl.createFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE)
+  framebuffer.window.startAsync do -> bool:
+    let status = framebuffer.gl.pollSyncStatus(fence, timeout = 0)
+    # have to convert to int here because of generic quirks
+    result = status.int notin
+             [GL_ALREADY_SIGNALED.int, GL_CONDITION_SATISFIED.int]
+    if not result:
+      # XXX: is mapping and unmapping the buffer fast? probably not.
+      # there's definitely some room for optimization here
+      framebuffer.pixelBuffer.map({amRead})
+      callback(cast[ptr UncheckedArray[T]](framebuffer.pixelBuffer.data),
+               dataSize div sizeof(T))
+      framebuffer.pixelBuffer.unmap()
+      framebuffer.gl.deleteSync(fence)
+
+proc download*[T: ClientPixelType](framebuffer: BaseFramebuffer, area: Recti,
+                                   callback: proc (data: seq[T])) =
+  ## Version of ``download`` that yields a seq. This seq contains an
+  ## *owned* copy of the data stored in the framebuffer, so it's safe to assign
+  ## it to somewhere else outside of the callback.
+
+  framebuffer.download(area) do (data: ptr UncheckedArray[T], len: Natural):
+    var dataSeq: seq[T]
+    dataSeq.setLen(len)
+    copyMem(dataSeq[0].addr, data[0].addr, len * sizeof(T))
+    callback(dataSeq)
+
+proc downloadSync*[T: ClientPixelType](framebuffer: BaseFramebuffer,
+                                       area: Recti): seq[T] =
+  ## *Synchronously* download pixels off the graphics card from the given area,
+  ## in the given format.
+  ##
+  ## This procedure is **synchronous**, so the results are available
+  ## immediately. However, it forces a synchronization between the CPU and
+  ## the GPU. This can negatively impact performance if it is called frequently.
+  ## Prefer the asynchronous versions whenever possible.
+
+  framebuffer.use()
+  let dataSize = framebuffer.sizeInBytes[:T]()
+  result.setLen(dataSize div sizeof(T))
+  framebuffer.gl.readPixels(area.x, area.y,
+                            GlSizei(area.width), GlSizei(area.height),
+                            T.format, T.dataType, addr result[0])
+
+template framebufferInit(T) =
+  new(result) do (fb: T):
+    fb.window.IMPL_makeCurrent()
+    fb.gl.deleteFramebuffer(fb.id)
+  result.window = window
+  IMPL_makeCurrent(window)
+  result.id = createFramebuffer(gl)
+  result.gl = gl
+  result.fSamples = -1
+
+
+# default framebuffer
+
+method size*(defaultfb: DefaultFramebuffer): Vec2i =
+  ## Returns the size of the framebuffer as a vector.
+  defaultfb.window.size
+
+proc defaultFramebuffer*(window: Window): DefaultFramebuffer =
+  ## Returns a handle to the window's default framebuffer.
+  new(result)
+  result.window = window
+  result.id = 0
+  result.gl = window.IMPL_getGlContext()
+  result.fSamples = result.gl.defaultFramebufferSamples
 
 
 # simple framebuffer
@@ -231,16 +345,6 @@ singleSource SimpleFramebuffer, DepthSource, fDepth, GL_DEPTH_ATTACHMENT
 singleSource SimpleFramebuffer, StencilSource, fStencil, GL_STENCIL_ATTACHMENT
 singleSource SimpleFramebuffer, DepthStencilSource, fDepthStencil,
              GL_DEPTH_STENCIL_ATTACHMENT
-
-template framebufferInit(T) =
-  new(result) do (fb: T):
-    fb.window.IMPL_makeCurrent()
-    fb.gl.deleteFramebuffer(fb.id)
-  result.window = window
-  IMPL_makeCurrent(window)
-  result.id = createFramebuffer(gl)
-  result.gl = gl
-  result.fSamples = -1
 
 template framebufferCheck =
   result.use()
@@ -483,3 +587,5 @@ proc render*(framebuffer: BaseFramebuffer): FramebufferTarget =
     framebuffer.window.IMPL_makeCurrent()
     gl.bindFramebuffer({ftRead, ftDraw}, framebuffer.id)
     gl.viewport(0, 0, framebuffer.width.GlSizei, framebuffer.height.GlSizei)
+
+{.pop.}

@@ -1,10 +1,11 @@
-## 1D, 2D, and 3D textures and samplers.
+## Texture types for pixel storage and sampling in shaders.
 
 import std/tables
 
 import enums
 import framebuffer
 import gl
+import pixelbuffer
 import pixeltypes
 import rect
 import uniform
@@ -16,6 +17,8 @@ import window
 type
   TexturePixelType* = ColorPixelType | DepthPixelType | DepthStencilPixelType
     ## Pixel formats supported by textures.
+
+  DownloadPixelType* = TexturePixelType and ClientPixelType
 
   TextureMinFilter* = FilteringMode
   TextureMagFilter* = range[fmNearest..fmLinear]
@@ -49,6 +52,7 @@ type
     samplers: Table[SamplerParams, Sampler]
     dirty: bool
     target: TextureTarget
+    pixelBuffer: PixelBuffer
 
   TextureArray = ref object of Texture
 
@@ -63,10 +67,10 @@ type
     ## 3D texture.
     fSize: Vec3i
   Texture1DArray*[T: TexturePixelType] {.final.} = ref object of TextureArray
-    ## An array of 1D textures.
+    ## An array of 1D textures. Currently useless.
     fWidth, fLen: int
   Texture2DArray*[T: TexturePixelType] {.final.} = ref object of TextureArray
-    ## An array of 2D textures.
+    ## An array of 2D textures. Currently useless.
     fSize: Vec2i
     fLen: int
     fSamples: int
@@ -74,6 +78,7 @@ type
     ## A cubemap texture. This stores six textures for all the individual sides
     ## of a cube. This is commonly used for skyboxes, as it only requires one
     ## texture unit while providing a total of 6 textures.
+    ## Currently useless.
     fSize: Vec2i
 
   Some2DTexture* = Texture2D | Texture2DArray
@@ -110,13 +115,6 @@ proc toGlEnum(wrap: TextureWrap): GlEnum =
   of twMirroredRepeat: GL_MIRRORED_REPEAT
   of twClampToEdge: GL_CLAMP_TO_EDGE
   of twClampToBorder: GL_CLAMP_TO_BORDER
-
-proc format(T: type[TexturePixelType]): GlEnum =
-  when T is Red8 | Red16 | Red32 | Red32f: GL_RED
-  elif T is Rg8 | Rg16 | Rg32 | Rg32f: GL_RG
-  elif T is Rgb8 | Rgb16 | Rgb32 | Rgb32f: GL_RGB
-  elif T is Rgba8 | Rgba16 | Rgba32 | Rgba32f: GL_RGBA
-  elif T is Depth16 | Depth24 | Depth32: GL_DEPTH_COMPONENT
 
 proc dataType(T: type[AnyPixelType]): GlEnum =
   when T is Red8 | Rg8 | Rgb8 | Rgba8 | Depth24: GL_TUNSIGNED_BYTE
@@ -213,6 +211,24 @@ proc height*(texture: TextureCubeMap): int =
   ## Returns the height of each texture in the cubemap.
   texture.size.y
 
+proc sizeInBytes[T: TexturePixelType](texture: Texture1D[T]): int =
+  texture.width * sizeof(T)
+
+proc sizeInBytes[T: TexturePixelType](texture: Texture2D[T]): int =
+  texture.width * texture.height * sizeof(T)
+
+proc sizeInBytes[T: TexturePixelType](texture: Texture3D[T]): int =
+  texture.width * texture.height * texture.depth * sizeof(T)
+
+proc sizeInBytes[T: TexturePixelType](texture: Texture1DArray[T]): int =
+  texture.width * texture.len * sizeof(T)
+
+proc sizeInBytes[T: TexturePixelType](texture: Texture2DArray[T]): int =
+  texture.width * texture.height * texture.len * sizeof(T)
+
+proc sizeInBytes[T: TexturePixelType](texture: TextureCubeMap[T]): int =
+  6 * texture.width * texture.height * sizeof(T)
+
 proc use[T: Texture](texture: T) =
   texture.window.IMPL_makeCurrent()
   texture.gl.bindTexture(texture.target, texture.id)
@@ -274,6 +290,85 @@ proc upload*[T: ColorPixelType](texture: Texture1D[T], data: openArray[T]) =
 
   assert data.len > 0
   texture.upload(data.len, data[0].unsafeAddr)
+
+template asyncTextureDownloadImpl(texture: Texture) =
+  # gotta love generics + templates
+  # you can't use dot calls because the compiler has a stroke
+  use(texture)
+  if texture.pixelBuffer == nil:
+    texture.pixelBuffer = newPixelBuffer(texture.window)
+    ensureSize(texture.pixelBuffer, sizeInBytes(texture))
+  let dataSize = sizeInBytes(texture)
+  packUse(texture.pixelBuffer):
+    getImage(texture.gl, texture.target, GlInt(mipLevel),
+             format(T), dataType(T), nil)
+  let fence = createFenceSync(texture.gl, GL_SYNC_GPU_COMMANDS_COMPLETE)
+  startAsync(texture.window) do -> bool:
+    let status = pollSyncStatus(texture.gl, fence, timeout = 0)
+    # conversion because generics are quirky
+    result = int(status) notin
+      [int(GL_ALREADY_SIGNALED), int(GL_CONDITION_SATISFIED)]
+    if not result:
+      # XXX: same as framebuffer.nim: is mapping and unmapping fast enough?
+      map(texture.pixelBuffer, {amRead})
+      callback(cast[ptr UncheckedArray[T]](texture.pixelBuffer.data),
+               dataSize div sizeof(T))
+      unmap(texture.pixelBuffer)
+      deleteSync(texture.gl, fence)
+
+template asyncTextureSeqDownloadImpl(texture: Texture) =
+  download(texture, proc (data: ptr UncheckedArray[T], len: Natural) =
+      var dataSeq: seq[T]
+      setLen(dataSeq, len)
+      copyMem(dataSeq[0].addr, data[0].addr, len * sizeof(T))
+      callback(dataSeq),
+    mipLevel)
+
+template syncTextureDownloadImpl(texture: Texture) =
+  use(texture)
+  let dataSize = sizeInBytes(texture)
+  setLen(result, dataSize div sizeof(T))
+  getImage(texture.gl, texture.target, GlInt(mipLevel),
+           format(T), dataType(T), addr result[0])
+
+proc download*[T: DownloadPixelType](texture: Texture1D[T],
+                                     callback:
+                                       proc (data: ptr UncheckedArray[T],
+                                             len: Natural),
+                                     mipLevel = 0) =
+  ## Asynchronously download the texture off the graphics card.
+  ## This calls the callback procedure after the pixels are downloaded, which
+  ## may take some amount of time to accomplish. This callback retrieves a
+  ## pointer to the downloaded array of pixels with **read-only access**,
+  ## along with the amount of pixels (not bytes!) stored in that array.
+  ##
+  ## If you wish to preserve this data in a ``seq`` or some other container, use
+  ## ``copyMem(data[0].addr, theSeq[0].addr, len * sizeof(T))``. Passing the
+  ## ``data`` array anywhere outside of this callback is undefined behavior
+  ## (most likely resulting in a crash).
+  ##
+  ## This procedure is asynchronous. Don't forget to update the window's async
+  ## event loop using ``pollAsyncCallbacks``, ``pollEvents``, or ``waitEvents``.
+  ## Otherwise the results will never arrive.
+  asyncTextureDownloadImpl(texture)
+
+proc download*[T: DownloadPixelType](texture: Texture1D[T],
+                                     callback: proc (data: seq[T]),
+                                     mipLevel = 0) =
+  ## Version of ``download`` that yields a seq. This seq containes an *owned*
+  ## copy of the data stored in the texture, so it's safe to assign it to
+  ## somewhere else outside of the callback.
+  asyncTextureSeqDownloadImpl(texture)
+
+proc downloadSync*[T: DownloadPixelType](texture: Texture1D[T],
+                                         mipLevel = 0): seq[T] =
+  ## *Synchronously* download the texture off the graphics card.
+  ##
+  ## This procedure is **synchronous**, so the results are available
+  ## immediately. However, it forces a synchronization between the CPU and
+  ## the GPU. This can negatively impact performance if it is called frequently.
+  ## Prefer the asynchronous versions whenever possible.
+  syncTextureDownloadImpl(texture)
 
 template textureInit(gl: OpenGl) =
   # bind createTexture, deleteTexture
@@ -424,6 +519,33 @@ proc upload*[T: ColorPixelType,
     texture.fSize = vec2i(image.width.int32, image.height.int32)
   texture.subImage(vec2i(0, 0), image)
 
+proc download*[T: DownloadPixelType](texture: Texture2D[T],
+                                     callback:
+                                       proc (data: ptr UncheckedArray[T],
+                                             len: Natural),
+                                     mipLevel = 0) =
+  ## Asynchronously download the texture off the graphics card.
+  ## See the documentation for the ``Texture1D`` version for details.
+  asyncTextureDownloadImpl(texture)
+
+proc download*[T: DownloadPixelType](texture: Texture2D[T],
+                                     callback: proc (data: seq[T]),
+                                     mipLevel = 0) =
+  ## Version of ``download`` that yields a seq. This seq containes an *owned*
+  ## copy of the data stored in the texture, so it's safe to assign it to
+  ## somewhere else outside of the callback.
+  asyncTextureSeqDownloadImpl(texture)
+
+proc downloadSync*[T: DownloadPixelType](texture: Texture2D[T],
+                                         mipLevel = 0): seq[T] =
+  ## *Synchronously* download the texture off the graphics card.
+  ##
+  ## This procedure is **synchronous**, so the results are available
+  ## immediately. However, it forces a synchronization between the CPU and
+  ## the GPU. This can negatively impact performance if it is called frequently.
+  ## Prefer the asynchronous versions whenever possible.
+  syncTextureDownloadImpl(texture)
+
 proc newTexture2D*[T: ColorPixelType](window: Window): Texture2D[T] =
   ## Creates a new 2D texture. The texture does not contain any data; a data
   ## store must be allocated using ``upload`` before the texture is used.
@@ -542,10 +664,36 @@ proc upload*[T: ColorPixelType](texture: Texture3D[T], size: Vec3i,
   assert data.len == size.x * size.y * size.z
   texture.upload(size, data[0].unsafeAddr)
 
+proc download*[T: DownloadPixelType](texture: Texture3D[T],
+                                     callback:
+                                       proc (data: ptr UncheckedArray[T],
+                                             len: Natural),
+                                     mipLevel = 0) =
+  ## Asynchronously download the texture off the graphics card.
+  ## See the documentation for the ``Texture1D`` version for details.
+  asyncTextureDownloadImpl(texture)
+
+proc download*[T: DownloadPixelType](texture: Texture3D[T],
+                                     callback: proc (data: seq[T]),
+                                     mipLevel = 0) =
+  ## Version of ``download`` that yields a seq. This seq containes an *owned*
+  ## copy of the data stored in the texture, so it's safe to assign it to
+  ## somewhere else outside of the callback.
+  asyncTextureSeqDownloadImpl(texture)
+
+proc downloadSync*[T: DownloadPixelType](texture: Texture3D[T],
+                                         mipLevel = 0): seq[T] =
+  ## *Synchronously* download the texture off the graphics card.
+  ##
+  ## This procedure is **synchronous**, so the results are available
+  ## immediately. However, it forces a synchronization between the CPU and
+  ## the GPU. This can negatively impact performance if it is called frequently.
+  ## Prefer the asynchronous versions whenever possible.
+  syncTextureDownloadImpl(texture)
+
 proc newTexture3D*[T: ColorPixelType](window: Window): Texture3D[T] =
   ## Creates a new 3D texture without any data. A data store must be allocated
   ## using ``upload`` before the texture is used.
-
 
   window.IMPL_makeCurrent()
   var gl = window.IMPL_getGlContext()

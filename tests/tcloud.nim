@@ -7,6 +7,7 @@ import aglet
 import aglet/window/glfw
 import glm/mat_transform
 import glm/noise
+from nimPNG import savePNG32
 
 type
   Vertex = object
@@ -113,6 +114,7 @@ var
   win = agl.newWindowGlfw(800, 600, "tcloud",
                           winHints(resizable = false,
                                    msaaSamples = 1))
+  defaultFb = win.defaultFramebuffer
   volumeProgram = win.newProgram[:Vertex](VolumeVertex, VolumeFragment)
   blurProgram = win.newProgram[:Vertex](BlurVertex, BlurFragment)
   blurBufferA, blurBufferB: SimpleFramebuffer
@@ -132,8 +134,40 @@ proc updateBlurBuffer() =
   blurBufferB = win.newTexture2D[:Rgba8](win.size).toFramebuffer
 updateBlurBuffer()
 
+proc saveScreenshot(data: ptr UncheckedArray[Rgba8], len: Natural) =
+  var counter {.global.} = 0
+
+  echo "data retrieved, inverting Y axis"
+  var pngData = newSeq[uint8](len * sizeof(Rgba8))
+  let pitch = win.width * sizeof(Rgba8)
+  for y in 0..<win.height:
+    copyMem(pngData[y * win.width * sizeof(Rgba8)].addr,
+            data[(win.height - y - 1) * win.width].addr,
+            pitch)
+  let filename = "tcloud_fbshot_" & $counter & ".png"
+  echo "data downloaded, saving screenshot to ", filename
+  echo "status: ", savePng32(filename, pngData, win.width, win.height)
+  inc(counter)
+
+proc saveColorScreenshot(framebuffer: SimpleFramebuffer) =
+  let texture = framebuffer.color.Texture2D[:Rgba8]
+  texture.download do (data: ptr UncheckedArray[Rgba8], len: Natural):
+    var counter {.global.} = 0
+    echo "data retrieved, inverting Y axis"
+    var pngData = newSeq[uint8](len * sizeof(Rgba8))
+    let pitch = framebuffer.width * sizeof(Rgba8)
+    for y in 0..<framebuffer.height:
+      copyMem(pngData[y * framebuffer.width * sizeof(Rgba8)].addr,
+              data[(framebuffer.height - y - 1) * framebuffer.width].addr,
+              pitch)
+    let filename = "tcloud_colorshot" & $counter & ".png"
+    echo "data downloaded, saving screenshot to ", filename
+    echo "status: ", savePng32(filename, pngData,
+                               framebuffer.width, framebuffer.height)
+    inc(counter)
+
 const
-  Density = 128
+  Density = 96
   TextureDensity = 16
   Noise = 0.05
   NoiseRange = -Noise..Noise
@@ -228,7 +262,7 @@ while not win.closeRequested:
       .rotateY(rotationY)
       .scale(zoom),
     projection: projection,
-    ?volume: volume.sampler(magFilter = tfLinear,
+    ?volume: volume.sampler(magFilter = fmLinear,
                             wrapS = twClampToEdge,
                             wrapT = twClampToEdge,
                             wrapR = twClampToEdge),
@@ -257,15 +291,29 @@ while not win.closeRequested:
   frame.finish()
 
   win.pollEvents do (event: InputEvent):
-    if event.kind in {iekMousePress, iekMouseRelease}:
+    case event.kind
+    of iekMousePress, iekMouseRelease:
       dragging = event.kind == iekMousePress
-    elif event.kind == iekMouseMove:
+    of iekMouseMove:
       if dragging:
         let delta = event.mousePos - lastMousePos
         rotationX += delta.y / 100
         rotationY += delta.x / 100
       lastMousePos = event.mousePos
-    elif event.kind == iekMouseScroll:
+    of iekMouseScroll:
       zoom += event.scrollPos.y * 0.1
-    elif event.kind == iekWindowFrameResize:
+    of iekWindowFrameResize:
       updateBlurBuffer()
+    of iekKeyPress:
+      case event.key
+      of keyS:
+        echo "taking async screenshot…"
+        defaultFb.download(rect(vec2i(0), win.size), saveScreenshot)
+      of key1, key2:
+        echo "taking screenshot of buffer ", int(event.key) - int(key1)
+        let buffer =
+          if event.key == key1: blurBufferA
+          else: blurBufferB
+        saveColorScreenshot(buffer)
+      else: discard
+    else: discard
