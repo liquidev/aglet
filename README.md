@@ -125,9 +125,6 @@ Please report any extra features you'd like to see in the Issues tab!
 
 ## Installation
 
-**aglet is not in the Nimble package directory yet, please install manually via
-the method described below.**
-
 By adding it your dependencies:
 ```nim
 requires "aglet >= 0.1.0"
