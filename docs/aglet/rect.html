@@ -134,12 +134,16 @@ function main() {
     title="rect[T](position: Vec2[T]; size: Vec2[T]): Rect[T]"><wbr />rect<span class="attachedType">Rect</span></a></li>
   <li><a class="reference" href="#rect%2CT%2CT%2CT%2CT"
     title="rect[T](x, y, width, height: T): Rect[T]"><wbr />rect<span class="attachedType">Rect</span></a></li>
+  <li><a class="reference" href="#rectf%2C%2C"
+    title="rectf(position`gensym14796205, size`gensym14796206: Vec2[float32]): Rect[float32]"><wbr />rectf<span class="attachedType">Rect</span></a></li>
   <li><a class="reference" href="#rectf%2Cfloat32%2Cfloat32%2Cfloat32%2Cfloat32"
-    title="rectf(x`gensym14806192, y`gensym14806193, width`gensym14806194,
-      height`gensym14806195: float32): Rect[float32]"><wbr />rectf<span class="attachedType">Rect</span></a></li>
+    title="rectf(x`gensym14796207, y`gensym14796208, width`gensym14796209,
+      height`gensym14796210: float32): Rect[float32]"><wbr />rectf<span class="attachedType">Rect</span></a></li>
+  <li><a class="reference" href="#recti%2C%2C"
+    title="recti(position`gensym14800170, size`gensym14800171: Vec2[int32]): Rect[int32]"><wbr />recti<span class="attachedType">Rect</span></a></li>
   <li><a class="reference" href="#recti%2Cint32%2Cint32%2Cint32%2Cint32"
-    title="recti(x`gensym14810133, y`gensym14810134, width`gensym14810135,
-      height`gensym14810136: int32): Rect[int32]"><wbr />recti<span class="attachedType">Rect</span></a></li>
+    title="recti(x`gensym14800172, y`gensym14800173, width`gensym14800174,
+      height`gensym14800175: int32): Rect[int32]"><wbr />recti<span class="attachedType">Rect</span></a></li>
 
   </ul>
 </li>
@@ -163,7 +167,7 @@ function main() {
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L6"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L6"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L6" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -174,7 +178,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L9"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L9"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L9" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -185,7 +189,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L10"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L10"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L10" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -196,137 +200,162 @@ class="link-seesrc" target="_blank">Source</a>
 <h1><a class="toc-backref" href="#13">Funcs</a></h1>
 <dl class="item">
 <a id="x,Rect[T]"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#x%2CRect%5BT%5D"><span class="Identifier">x</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span></pre></dt>
+<dt><pre><span class="Keyword">func</span> <a href="#x%2CRect%5BT%5D"><span class="Identifier">x</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-
+Returns the X position of the rectangle.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L12"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L12"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L12" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="y,Rect[T]"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#y%2CRect%5BT%5D"><span class="Identifier">y</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span></pre></dt>
+<dt><pre><span class="Keyword">func</span> <a href="#y%2CRect%5BT%5D"><span class="Identifier">y</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-
+Returns the Y position of the rectangle.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L13"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L13" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="width,Rect[T]"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#width%2CRect%5BT%5D"><span class="Identifier">width</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L15"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L15" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="height,Rect[T]"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#height%2CRect%5BT%5D"><span class="Identifier">height</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L16"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L16"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L16" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="left,Rect[T]"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#left%2CRect%5BT%5D"><span class="Identifier">left</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span></pre></dt>
+<a id="width,Rect[T]"></a>
+<dt><pre><span class="Keyword">func</span> <a href="#width%2CRect%5BT%5D"><span class="Identifier">width</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-
+Returns the width of the rectangle.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L18"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L18" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="right,Rect[T]"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#right%2CRect%5BT%5D"><span class="Identifier">right</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L19"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L19" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="top,Rect[T]"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#top%2CRect%5BT%5D"><span class="Identifier">top</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span></pre></dt>
-<dd>
-
-
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L20"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L20"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L20" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
-<a id="bottom,Rect[T]"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#bottom%2CRect%5BT%5D"><span class="Identifier">bottom</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span></pre></dt>
+<a id="height,Rect[T]"></a>
+<dt><pre><span class="Keyword">func</span> <a href="#height%2CRect%5BT%5D"><span class="Identifier">height</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-
+Returns the height of the rectangle.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L21"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L24"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L21" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L24" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="left,Rect[T]"></a>
+<dt><pre><span class="Keyword">func</span> <a href="#left%2CRect%5BT%5D"><span class="Identifier">left</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Returns the left boundary of the rectangle.
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L28"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L28" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="right,Rect[T]"></a>
+<dt><pre><span class="Keyword">func</span> <a href="#right%2CRect%5BT%5D"><span class="Identifier">right</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Returns the right boundary of the rectangle.
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L32"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L32" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="top,Rect[T]"></a>
+<dt><pre><span class="Keyword">func</span> <a href="#top%2CRect%5BT%5D"><span class="Identifier">top</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Returns the top boundary of the rectangle.
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L36"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L36" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="bottom,Rect[T]"></a>
+<dt><pre><span class="Keyword">func</span> <a href="#bottom%2CRect%5BT%5D"><span class="Identifier">bottom</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">rect</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">T</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Returns the bottom boundary of the rectangle.
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L40"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L40" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="rect,Vec2[T],Vec2[T]"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#rect%2CVec2%5BT%5D%2CVec2%5BT%5D"><span class="Identifier">rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">position</span><span class="Other">:</span> <span class="Identifier">Vec2</span><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">size</span><span class="Other">:</span> <span class="Identifier">Vec2</span><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span></pre></dt>
+<dt><pre><span class="Keyword">func</span> <a href="#rect%2CVec2%5BT%5D%2CVec2%5BT%5D"><span class="Identifier">rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">position</span><span class="Other">:</span> <span class="Identifier">Vec2</span><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">size</span><span class="Other">:</span> <span class="Identifier">Vec2</span><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-
+Creates a rectangle with the given position and size.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L23"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L44"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L23" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L44" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="rect,T,T,T,T"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#rect%2CT%2CT%2CT%2CT"><span class="Identifier">rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">x</span><span class="Other">,</span> <span class="Identifier">y</span><span class="Other">,</span> <span class="Identifier">width</span><span class="Other">,</span> <span class="Identifier">height</span><span class="Other">:</span> <span class="Identifier">T</span><span class="Other">)</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span></pre></dt>
+<dt><pre><span class="Keyword">func</span> <a href="#rect%2CT%2CT%2CT%2CT"><span class="Identifier">rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span><span class="Other">(</span><span class="Identifier">x</span><span class="Other">,</span> <span class="Identifier">y</span><span class="Other">,</span> <span class="Identifier">width</span><span class="Other">,</span> <span class="Identifier">height</span><span class="Other">:</span> <span class="Identifier">T</span><span class="Other">)</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">T</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-
+Creates a rectangle with the given X and Y coordinates, width, and height.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L26"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L48"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L26" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L48" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="rectf,,"></a>
+<dt><pre><span class="Keyword">func</span> <a href="#rectf%2C%2C"><span class="Identifier">rectf</span></a><span class="Other">(</span><span class="Identifier">position`gensym14796205</span><span class="Other">,</span> <span class="Identifier">size`gensym14796206</span><span class="Other">:</span> <span class="Identifier">Vec2</span><span class="Other">[</span><span class="Identifier">float32</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span>
+    <span class="Identifier">float32</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Creates a float32 rectangle with the given position and size.
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L54"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L54" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="rectf,float32,float32,float32,float32"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#rectf%2Cfloat32%2Cfloat32%2Cfloat32%2Cfloat32"><span class="Identifier">rectf</span></a><span class="Other">(</span><span class="Identifier">x`gensym14806192</span><span class="Other">,</span> <span class="Identifier">y`gensym14806193</span><span class="Other">,</span> <span class="Identifier">width`gensym14806194</span><span class="Other">,</span>
-          <span class="Identifier">height`gensym14806195</span><span class="Other">:</span> <span class="Identifier">float32</span><span class="Other">)</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">float32</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">func</span> <a href="#rectf%2Cfloat32%2Cfloat32%2Cfloat32%2Cfloat32"><span class="Identifier">rectf</span></a><span class="Other">(</span><span class="Identifier">x`gensym14796207</span><span class="Other">,</span> <span class="Identifier">y`gensym14796208</span><span class="Other">,</span> <span class="Identifier">width`gensym14796209</span><span class="Other">,</span>
+          <span class="Identifier">height`gensym14796210</span><span class="Other">:</span> <span class="Identifier">float32</span><span class="Other">)</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">float32</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-
+Creates a float32 rectangle with the given X and Y coordinates, width, and height.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L33"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L62"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L33" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L62" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="recti,,"></a>
+<dt><pre><span class="Keyword">func</span> <a href="#recti%2C%2C"><span class="Identifier">recti</span></a><span class="Other">(</span><span class="Identifier">position`gensym14800170</span><span class="Other">,</span> <span class="Identifier">size`gensym14800171</span><span class="Other">:</span> <span class="Identifier">Vec2</span><span class="Other">[</span><span class="Identifier">int32</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">int32</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+Creates an int32 rectangle with the given position and size.
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L54"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L54" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="recti,int32,int32,int32,int32"></a>
-<dt><pre><span class="Keyword">func</span> <a href="#recti%2Cint32%2Cint32%2Cint32%2Cint32"><span class="Identifier">recti</span></a><span class="Other">(</span><span class="Identifier">x`gensym14810133</span><span class="Other">,</span> <span class="Identifier">y`gensym14810134</span><span class="Other">,</span> <span class="Identifier">width`gensym14810135</span><span class="Other">,</span>
-          <span class="Identifier">height`gensym14810136</span><span class="Other">:</span> <span class="Identifier">int32</span><span class="Other">)</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">int32</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">func</span> <a href="#recti%2Cint32%2Cint32%2Cint32%2Cint32"><span class="Identifier">recti</span></a><span class="Other">(</span><span class="Identifier">x`gensym14800172</span><span class="Other">,</span> <span class="Identifier">y`gensym14800173</span><span class="Other">,</span> <span class="Identifier">width`gensym14800174</span><span class="Other">,</span>
+          <span class="Identifier">height`gensym14800175</span><span class="Other">:</span> <span class="Identifier">int32</span><span class="Other">)</span><span class="Other">:</span> <a href="rect.html#Rect"><span class="Identifier">Rect</span></a><span class="Other">[</span><span class="Identifier">int32</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-
+Creates an int32 rectangle with the given X and Y coordinates, width, and height.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/rect.nim#L34"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/rect.nim#L68"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L34" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/rect.nim#L68" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -339,7 +368,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-06-25 19:22:53 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-10 09:46:04 UTC</small>
       </div>
     </div>
   </div>

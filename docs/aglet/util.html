@@ -126,10 +126,10 @@ function main() {
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#getUniforms.i%2CEmptyUniforms"
     title="getUniforms(none: EmptyUniforms): (string, Uniform)"><wbr />get<wbr />Uniforms<span class="attachedType">EmptyUniforms</span></a></li>
-  <li><a class="reference" href="#getUniforms.i"
-    title="getUniforms(rec: tuple | object): (string, Uniform)"><wbr />get<wbr />Uniforms<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#getUniforms.i%2CSomeTable%5Bstring%2CUniform%5D"
     title="getUniforms(table: SomeTable[string, Uniform]): (string, Uniform)"><wbr />get<wbr />Uniforms<span class="attachedType">SomeTable</span></a></li>
+  <li><a class="reference" href="#getUniforms.i"
+    title="getUniforms(rec: tuple | object): (string, Uniform)"><wbr />get<wbr />Uniforms<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -137,7 +137,7 @@ function main() {
   <a class="reference reference-toplevel" href="#17" id="67">Macros</a>
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#uniforms.m%2Cuntyped"
-    title="uniforms(pairs: untyped): untyped"><wbr />uniforms<span class="attachedType"></span></a></li>
+    title="uniforms(uniforms: untyped): untyped"><wbr />uniforms<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -164,7 +164,7 @@ function main() {
 
 special type that represents an empty uniform table
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/util.nim#L10"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/util.nim#L10"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L10" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -175,7 +175,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/util.nim#L13"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/util.nim#L13"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L13" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -189,9 +189,9 @@ class="link-seesrc" target="_blank">Source</a>
 <dt><pre><a href="util.html#NoUniforms"><span class="Identifier">NoUniforms</span></a> <span class="Other">=</span> <span class="Other">(</span><span class="Other">)</span></pre></dt>
 <dd>
 
-
+Empty uniforms constant. This is preferred over <tt class="docutils literal"><span class="pre">uniforms {:}</span></tt> (which is transformed to <tt class="docutils literal"><span class="pre">NoUniforms</span></tt> anyways).
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/util.nim#L15"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/util.nim#L15"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L15" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -205,22 +205,11 @@ class="link-seesrc" target="_blank">Source</a>
 <dt><pre><span class="Keyword">iterator</span> <a href="#getUniforms.i%2CEmptyUniforms"><span class="Identifier">getUniforms</span></a><span class="Other">(</span><span class="Identifier">none</span><span class="Other">:</span> <a href="util.html#EmptyUniforms"><span class="Identifier">EmptyUniforms</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">string</span><span class="Other">,</span> <a href="uniform.html#Uniform"><span class="Identifier">Uniform</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-Yields no uniforms. This is preferred instead of <tt class="docutils literal"><span class="pre">uniforms {:}</span></tt>.
+Yields no uniforms.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/util.nim#L59"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/util.nim#L92"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L59" class="link-seesrc" target="_blank" >Edit</a>
-
-</dd>
-<a id="getUniforms.i"></a>
-<dt><pre><span class="Keyword">iterator</span> <a href="#getUniforms.i"><span class="Identifier">getUniforms</span></a><span class="Other">(</span><span class="Identifier">rec</span><span class="Other">:</span> <span class="Keyword">tuple</span> <span class="Operator">|</span> <span class="Keyword">object</span><span class="Other">)</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">string</span><span class="Other">,</span> <a href="uniform.html#Uniform"><span class="Identifier">Uniform</span></a><span class="Other">)</span></pre></dt>
-<dd>
-
-Built-in helper iterator for the <tt class="docutils literal"><span class="pre">uniforms</span></tt> macro. This also allows for user-defined object types to be used as UniformSources.
-&nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/util.nim#L62"
-class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L62" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L92" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getUniforms.i,SomeTable[string,Uniform]"></a>
@@ -229,9 +218,22 @@ class="link-seesrc" target="_blank">Source</a>
 
 Built-in helper for Tables containing Uniforms.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/util.nim#L69"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/util.nim#L95"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L69" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L95" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="getUniforms.i"></a>
+<dt><pre><span class="Keyword">iterator</span> <a href="#getUniforms.i"><span class="Identifier">getUniforms</span></a><span class="Other">(</span><span class="Identifier">rec</span><span class="Other">:</span> <span class="Keyword">tuple</span> <span class="Operator">|</span> <span class="Keyword">object</span><span class="Other">)</span><span class="Other">:</span> <span class="Other">(</span><span class="Identifier">string</span><span class="Other">,</span> <a href="uniform.html#Uniform"><span class="Identifier">Uniform</span></a><span class="Other">)</span></pre></dt>
+<dd>
+
+<p>Built-in helper iterator for the <tt class="docutils literal"><span class="pre">uniforms</span></tt> macro. This also allows for user-defined object types to be used as UniformSources. Every field in the record must be convertable to a uniform using <tt class="docutils literal"><span class="pre">toUniform</span></tt>.</p>
+<p>If a field's name begins with <tt class="docutils literal"><span class="pre">..</span></tt> (which is normally only possible through the use of macros), the field is iterated using <tt class="docutils literal"><span class="pre">getUniforms</span></tt>. This process happens recursively for any field whose name begins with <tt class="docutils literal"><span class="pre">..</span></tt>.</p>
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/util.nim#L100"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L100" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -240,10 +242,13 @@ class="link-seesrc" target="_blank">Source</a>
 <h1><a class="toc-backref" href="#17">Macros</a></h1>
 <dl class="item">
 <a id="uniforms.m,untyped"></a>
-<dt><pre><span class="Keyword">macro</span> <a href="#uniforms.m%2Cuntyped"><span class="Identifier">uniforms</span></a><span class="Other">(</span><span class="Identifier">pairs</span><span class="Other">:</span> <span class="Identifier">untyped</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
+<dt><pre><span class="Keyword">macro</span> <a href="#uniforms.m%2Cuntyped"><span class="Identifier">uniforms</span></a><span class="Other">(</span><span class="Identifier">uniforms</span><span class="Other">:</span> <span class="Identifier">untyped</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">untyped</span></pre></dt>
 <dd>
 
-Helper macro that transforms a table constructor to a <tt class="docutils literal"><span class="pre">UniformSource</span></tt>-compatible tuple. This macro is mainly useful to avoid repetitive noise by <tt class="docutils literal"><span class="pre">toUniform</span></tt>, and not have to worry about remembering to add <tt class="docutils literal"><span class="pre">.toUniform</span></tt> to the end of your value.
+<p>Helper macro that transforms a table constructor to a <tt class="docutils literal"><span class="pre">UniformSource</span></tt>-compatible tuple. This macro is mainly useful for readability and rapid prototyping via the features described below.</p>
+<p>This macro supports a special syntax for optional uniforms. Normally, when a uniform is not used in a shader, an error is thrown. This can be suppressed by prefixing the uniform name with a <tt class="docutils literal"><span class="pre">?</span></tt>, eg. <tt class="docutils literal"><span class="pre">?offset</span></tt>. The same trick works with uniform Tables.</p>
+<p>Additionally, to allow libraries to add their own sets of uniforms, it is possible to use <tt class="docutils literal"><span class="pre">..</span></tt> as a prefix operator in the constructor's body. The operand must be a value that can be iterated with <tt class="docutils literal"><span class="pre">getUniforms</span></tt>. The uniforms returned by this value are simply included in the final uniforms passed to <tt class="docutils literal"><span class="pre">draw</span></tt>, as defined by the <tt class="docutils literal"><span class="pre">getUniforms</span></tt> iterator for records.</p>
+
 <p><strong class="examples_text">Examples:</strong></p>
 <pre class="listing"><span class="Keyword">import</span>
   <span class="Identifier">aglet</span> <span class="Operator">/</span> <span class="Identifier">uniform</span>
@@ -251,13 +256,18 @@ Helper macro that transforms a table constructor to a <tt class="docutils litera
 <span class="Keyword">import</span>
   <span class="Identifier">glm</span> <span class="Operator">/</span> <span class="Identifier">vec</span>
 
+<span class="Keyword">type</span>
+  <span class="Identifier">Expansion</span> <span class="Other">=</span> <span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">extra</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">]</span>
+<span class="Keyword">proc</span> <span class="Identifier">myExpansion</span><span class="Other">(</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Expansion</span> <span class="Other">=</span>
+  <span class="Other">(</span><span class="Identifier">extra</span><span class="Other">:</span> <span class="DecNumber">42</span><span class="Other">)</span>
+
 <span class="Keyword">let</span>
-  <span class="Identifier">a</span> <span class="Other">=</span> <span class="Identifier">uniforms</span> <span class="Other">{</span><span class="Identifier">constant</span><span class="Other">:</span> <span class="FloatNumber">10.0</span><span class="Other">,</span> <span class="Identifier">offsetPerInstance</span><span class="Other">:</span> <span class="Identifier">vec2f</span><span class="Other">(</span><span class="FloatNumber">2.0</span><span class="Other">,</span> <span class="FloatNumber">0.0</span><span class="Other">)</span><span class="Other">}</span>
-  <span class="Identifier">b</span> <span class="Other">=</span> <span class="Other">(</span><span class="Identifier">constant</span><span class="Other">:</span> <span class="FloatNumber">10.0'f32</span><span class="Other">.</span><span class="Identifier">toUniform</span><span class="Other">,</span> <span class="Identifier">offsetPerInstance</span><span class="Other">:</span> <span class="Identifier">vec2f</span><span class="Other">(</span><span class="FloatNumber">2.0</span><span class="Other">,</span> <span class="FloatNumber">0.0</span><span class="Other">)</span><span class="Other">.</span><span class="Identifier">toUniform</span><span class="Other">)</span></pre>
+  <span class="Identifier">a</span> <span class="Other">=</span> <span class="Identifier">uniforms</span> <span class="Other">{</span><span class="Operator">?</span><span class="Identifier">constant</span><span class="Other">:</span> <span class="FloatNumber">10.0</span><span class="Other">,</span> <span class="Identifier">offsetPerInstance</span><span class="Other">:</span> <span class="Identifier">vec2f</span><span class="Other">(</span><span class="FloatNumber">2.0</span><span class="Other">,</span> <span class="FloatNumber">0.0</span><span class="Other">)</span><span class="Other">,</span> <span class="Operator">..</span><span class="Identifier">myExpansion</span><span class="Other">(</span><span class="Other">)</span><span class="Other">}</span>
+  <span class="Identifier">b</span> <span class="Other">=</span> <span class="Other">(</span><span class="Identifier">offsetPerInstance</span><span class="Other">:</span> <span class="Identifier">vec2f</span><span class="Other">(</span><span class="FloatNumber">2.0</span><span class="Other">,</span> <span class="FloatNumber">0.0</span><span class="Other">)</span><span class="Other">,</span><span class="Other">)</span></pre>
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/util.nim#L22"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/util.nim#L24"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L22" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L24" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -270,7 +280,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-06-25 19:22:56 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-10 09:46:07 UTC</small>
       </div>
     </div>
   </div>

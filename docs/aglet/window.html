@@ -250,7 +250,7 @@ function main() {
   <li><a class="reference" href="#render%2CWindow"
     title="render(window: Window): Frame"><wbr />render<span class="attachedType">Window</span></a></li>
   <li><a class="reference" href="#finish%2CFrame"
-    title="finish(frame: Frame)"><wbr />finish<span class="attachedType">Frame</span></a></li>
+    title="finish(frame: var Frame)"><wbr />finish<span class="attachedType">Frame</span></a></li>
   <li><a class="reference" href="#glVersion%2CWindow"
     title="glVersion(window: Window): string"><wbr />gl<wbr />Version<span class="attachedType">Window</span></a></li>
   <li><a class="reference" href="#initWindow%2CAglet"
@@ -296,7 +296,7 @@ function main() {
 <blockquote><p>Window hints. For most hints, if a backend does not support them, they should be ignored.</p></blockquote>
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L23"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L23"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L23" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -307,7 +307,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Callback for async polling. The value returned signals whether the callback should fire on the next <tt class="docutils literal"><span class="pre">pollEvents</span></tt> or <tt class="docutils literal"><span class="pre">waitEvents</span></tt>.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L35"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L35"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L35" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -354,7 +354,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 A backend-independent window. This also contains the OpenGL context, so resource allocation is done using this handle.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L39"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L39"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L39" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -368,7 +368,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L111"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L111"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L111" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -388,7 +388,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L161"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L161"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L161" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -404,7 +404,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 <strong>Do not use this.</strong> Makes a window's context current. You should not use this in normal code. This is left as part of the public API, but it's an implementation detail left in because of global state.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L115"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L115"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L115" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -415,7 +415,7 @@ class="link-seesrc" target="_blank">Source</a>
              <span class="Identifier">scaleToDpi</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">colorBits</span> <span class="Other">=</span> <span class="Other">(</span><span class="Identifier">red</span><span class="Other">:</span> <span class="DecNumber">8</span><span class="Other">,</span> <span class="Identifier">green</span><span class="Other">:</span> <span class="DecNumber">8</span><span class="Other">,</span> <span class="Identifier">blue</span><span class="Other">:</span> <span class="DecNumber">8</span><span class="Other">,</span> <span class="Identifier">alpha</span><span class="Other">:</span> <span class="DecNumber">8</span><span class="Other">)</span><span class="Other">;</span>
              <span class="Identifier">depthBits</span> <span class="Other">=</span> <span class="DecNumber">24</span><span class="Other">;</span> <span class="Identifier">stencilBits</span> <span class="Other">=</span> <span class="DecNumber">8</span><span class="Other">;</span> <span class="Identifier">stereoscopic</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">msaaSamples</span> <span class="Other">=</span> <span class="DecNumber">0</span><span class="Other">;</span>
              <span class="Identifier">glVersion</span> <span class="Other">=</span> <span class="Other">(</span><span class="Identifier">major</span><span class="Other">:</span> <span class="DecNumber">3</span><span class="Other">,</span> <span class="Identifier">minor</span><span class="Other">:</span> <span class="DecNumber">3</span><span class="Other">)</span><span class="Other">;</span> <span class="Identifier">debugContext</span> <span class="Other">=</span> <span class="Keyword">not</span> <span class="DecNumber">false</span><span class="Other">)</span><span class="Other">:</span> <a href="window.html#WindowHints"><span class="Identifier">WindowHints</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Constructs a WindowHints with sensible defaults:<ul class="simple"><li>resizable: true</li>
@@ -436,19 +436,19 @@ Constructs a WindowHints with sensible defaults:<ul class="simple"><li>resizable
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L126"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L126"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L126" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="startAsync,Window,AsyncCallback"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#startAsync%2CWindow%2CAsyncCallback"><span class="Identifier">startAsync</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <a href="window.html#AsyncCallback"><span class="Identifier">AsyncCallback</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#startAsync%2CWindow%2CAsyncCallback"><span class="Identifier">startAsync</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">callback</span><span class="Other">:</span> <a href="window.html#AsyncCallback"><span class="Identifier">AsyncCallback</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Adds a procedure to the dispatcher loop. This procedure is fired on the next <tt class="docutils literal"><span class="pre">pollAsyncCallbacks</span></tt> call. If it returns <tt class="docutils literal"><span class="pre">false</span></tt>, it is removed from the dispatched procedures; otherwise, it will run on the next async tick.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L163"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L163"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L163" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -459,369 +459,377 @@ class="link-seesrc" target="_blank">Source</a>
 
 Run all active async callbacks registered through <tt class="docutils literal"><span class="pre">startAsync</span></tt>. This is called implicitly by <tt class="docutils literal"><span class="pre">pollEvents</span></tt> and <tt class="docutils literal"><span class="pre">waitEvents</span></tt>, so usually you don't need to call this.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L170"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L170"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L170" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="pollEvents,Window,InputProc"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#pollEvents%2CWindow%2CInputProc"><span class="Identifier">pollEvents</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">processEvent</span><span class="Other">:</span> <a href="input.html#InputProc"><span class="Identifier">InputProc</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#pollEvents%2CWindow%2CInputProc"><span class="Identifier">pollEvents</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">processEvent</span><span class="Other">:</span> <a href="input.html#InputProc"><span class="Identifier">InputProc</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Poll for incoming events from the given window. <tt class="docutils literal"><span class="pre">processEvent</span></tt> will be called for each incoming event. This also dispatches all async callbacks.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L194"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L194"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L194" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="waitEvents,Window,InputProc"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#waitEvents%2CWindow%2CInputProc"><span class="Identifier">waitEvents</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">processEvent</span><span class="Other">:</span> <a href="input.html#InputProc"><span class="Identifier">InputProc</span></a><span class="Other">;</span> <span class="Identifier">timeout</span> <span class="Other">=</span> <span class="Operator">-</span><span class="FloatNumber">1.0</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+<dt><pre><span class="Keyword">proc</span> <a href="#waitEvents%2CWindow%2CInputProc"><span class="Identifier">waitEvents</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">processEvent</span><span class="Other">:</span> <a href="input.html#InputProc"><span class="Identifier">InputProc</span></a><span class="Other">;</span> <span class="Identifier">timeout</span> <span class="Other">=</span> <span class="Operator">-</span><span class="FloatNumber">1.0</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span>
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Wait for incoming events from the given window. <tt class="docutils literal"><span class="pre">processEvent</span></tt> will be called for each incoming event. If <tt class="docutils literal"><span class="pre">timeout</span></tt> is specified, the procedure will only wait for the specified amount of seconds, and then continue execution. This also dispatches all async callbacks <em>before</em> the wait period.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L200"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L200"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L200" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="requestClose,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#requestClose%2CWindow"><span class="Identifier">requestClose</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#requestClose%2CWindow"><span class="Identifier">requestClose</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Requests that the window gets closed. This may not <em>actually</em> close the window, it only sets a bit in the window's state, and the application determines whether the window actually closes.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L210"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L210"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L210" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="rejectClose,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#rejectClose%2CWindow"><span class="Identifier">rejectClose</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#rejectClose%2CWindow"><span class="Identifier">rejectClose</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Resets the close request bit.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L216"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L216"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L216" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="closeRequested,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#closeRequested%2CWindow"><span class="Identifier">closeRequested</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#closeRequested%2CWindow"><span class="Identifier">closeRequested</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+                                        <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns whether a window close request has been made.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L220"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L220"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L220" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="swapInterval=,Window,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#swapInterval%3D%2CWindow%2Cint"><span class="Identifier">swapInterval=</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">interval</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+<dt><pre><span class="Keyword">proc</span> <a href="#swapInterval%3D%2CWindow%2Cint"><span class="Identifier">swapInterval=</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">interval</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Sets the window's buffer swap interval. The swap interval controls whether VSync should be used. A value of 0 disables VSync, a value of 1 enables VSync at the monitor's refresh rate, and any values higher than that enable VSync at the monitor's refresh rate divided by the interval.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L224"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L224"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L224" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="key,Window,Key"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#key%2CWindow%2CKey"><span class="Identifier">key</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <a href="input.html#Key"><span class="Identifier">Key</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#key%2CWindow%2CKey"><span class="Identifier">key</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">key</span><span class="Other">:</span> <a href="input.html#Key"><span class="Identifier">Key</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns the pressed state of the given key. <tt class="docutils literal"><span class="pre">true</span></tt> is pressed.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L232"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L232"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L232" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="mouse,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#mouse%2CWindow"><span class="Identifier">mouse</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Vec2f</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#mouse%2CWindow"><span class="Identifier">mouse</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Vec2f</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 <p>Returns the current position of the mouse cursor in the window. This may be used in an input event handler to query the last mouse position.</p>
 <p>If the window is not focused, it returns the last position of the cursor when the window <em>was</em> focused. If you need the mouse position when the window is not focused, consider using the (slower) <tt class="docutils literal"><span class="pre">pollMouse</span></tt>.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L236"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L236"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L236" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="pollMouse,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#pollMouse%2CWindow"><span class="Identifier">pollMouse</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Vec2f</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#pollMouse%2CWindow"><span class="Identifier">pollMouse</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Vec2f</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Polls the OS for the mouse cursor's position. Unlike <tt class="docutils literal"><span class="pre">mouse</span></tt>, this works returns the current position regardless of the window's focus.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L246"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L246"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L246" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="position,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#position%2CWindow"><span class="Identifier">position</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Vec2i</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#position%2CWindow"><span class="Identifier">position</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Vec2i</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns the window's current position <em>in screen coordinates</em> as a vector.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L251"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L251"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L251" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="position=,Window,Vec2i"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#position%3D%2CWindow%2CVec2i"><span class="Identifier">position=</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">newPosition</span><span class="Other">:</span> <span class="Identifier">Vec2i</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+<dt><pre><span class="Keyword">proc</span> <a href="#position%3D%2CWindow%2CVec2i"><span class="Identifier">position=</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">newPosition</span><span class="Other">:</span> <span class="Identifier">Vec2i</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Sets the window's position <em>in screen coordinates</em>.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L257"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L257"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L257" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="size,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#size%2CWindow"><span class="Identifier">size</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Vec2i</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#size%2CWindow"><span class="Identifier">size</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Vec2i</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns the current size of the window <em>in screen coordinates</em> as a vector.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L261"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L261"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L261" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="width,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#width%2CWindow"><span class="Identifier">width</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#width%2CWindow"><span class="Identifier">width</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns the current width of the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L267"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L267"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L267" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="height,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#height%2CWindow"><span class="Identifier">height</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#height%2CWindow"><span class="Identifier">height</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns the current height of the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L271"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L271"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L271" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="framebufferSize,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#framebufferSize%2CWindow"><span class="Identifier">framebufferSize</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Vec2i</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#framebufferSize%2CWindow"><span class="Identifier">framebufferSize</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Vec2i</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns the size of the window <em>in pixels</em> as a vector.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L275"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L275"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L275" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="framebufferWidth,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#framebufferWidth%2CWindow"><span class="Identifier">framebufferWidth</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#framebufferWidth%2CWindow"><span class="Identifier">framebufferWidth</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns the window's width in pixels.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L281"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L281"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L281" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="framebufferHeight,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#framebufferHeight%2CWindow"><span class="Identifier">framebufferHeight</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#framebufferHeight%2CWindow"><span class="Identifier">framebufferHeight</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns the window's height in pixels.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L285"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L285"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L285" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="contentScale,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#contentScale%2CWindow"><span class="Identifier">contentScale</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Vec2f</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#contentScale%2CWindow"><span class="Identifier">contentScale</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Vec2f</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+                                       <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns the content scale of the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L289"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L289"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L289" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="limitSize,Window,Option[Vec2i],Option[Vec2i]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#limitSize%2CWindow%2COption%5BVec2i%5D%2COption%5BVec2i%5D"><span class="Identifier">limitSize</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">min</span><span class="Other">,</span> <span class="Identifier">max</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Vec2i</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+<dt><pre><span class="Keyword">proc</span> <a href="#limitSize%2CWindow%2COption%5BVec2i%5D%2COption%5BVec2i%5D"><span class="Identifier">limitSize</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">min</span><span class="Other">,</span> <span class="Identifier">max</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><span class="Identifier">Vec2i</span><span class="Other">]</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Limits the size of the window. This resets the aspect ration limitation.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L295"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L295"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L295" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="constrainAspect,Window,int,int"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#constrainAspect%2CWindow%2Cint%2Cint"><span class="Identifier">constrainAspect</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">num</span><span class="Other">,</span> <span class="Identifier">den</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+<dt><pre><span class="Keyword">proc</span> <a href="#constrainAspect%2CWindow%2Cint%2Cint"><span class="Identifier">constrainAspect</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">num</span><span class="Other">,</span> <span class="Identifier">den</span><span class="Other">:</span> <span class="Identifier">int</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Constrains the window's aspect ratio to <tt class="docutils literal"><span class="pre">num/den</span></tt>, where <tt class="docutils literal"><span class="pre">num</span></tt> is the width, and <tt class="docutils literal"><span class="pre">den</span></tt> is the height. This resets the size limitation.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L300"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L300"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L300" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="unconstrainAspect,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#unconstrainAspect%2CWindow"><span class="Identifier">unconstrainAspect</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#unconstrainAspect%2CWindow"><span class="Identifier">unconstrainAspect</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+                                      <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Resets the aspect ratio contraint.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L306"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L306"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L306" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="iconify,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#iconify%2CWindow"><span class="Identifier">iconify</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#iconify%2CWindow"><span class="Identifier">iconify</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Iconifies the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L310"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L310"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L310" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="iconified,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#iconified%2CWindow"><span class="Identifier">iconified</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#iconified%2CWindow"><span class="Identifier">iconified</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns whether the window is iconified or not.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L314"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L314"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L314" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="maximize,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#maximize%2CWindow"><span class="Identifier">maximize</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#maximize%2CWindow"><span class="Identifier">maximize</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Maximizes the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L318"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L318"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L318" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="maximized,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#maximized%2CWindow"><span class="Identifier">maximized</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#maximized%2CWindow"><span class="Identifier">maximized</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns whether the window is maximized or not.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L322"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L322"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L322" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="restore,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#restore%2CWindow"><span class="Identifier">restore</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#restore%2CWindow"><span class="Identifier">restore</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Restores the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L326"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L326"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L326" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="visible=,Window,bool"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#visible%3D%2CWindow%2Cbool"><span class="Identifier">visible=</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">visible</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#visible%3D%2CWindow%2Cbool"><span class="Identifier">visible=</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">visible</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Sets whether the window is visible or not.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L330"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L330"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L330" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="visible,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#visible%2CWindow"><span class="Identifier">visible</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#visible%2CWindow"><span class="Identifier">visible</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns whether the window is visible or not.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L335"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L335"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L335" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="title=,Window,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#title%3D%2CWindow%2Cstring"><span class="Identifier">title=</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">newTitle</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#title%3D%2CWindow%2Cstring"><span class="Identifier">title=</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">;</span> <span class="Identifier">newTitle</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span>
+    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Sets the title of the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L339"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L339"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L339" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="render,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#render%2CWindow"><span class="Identifier">render</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <a href="window.html#Frame"><span class="Identifier">Frame</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#render%2CWindow"><span class="Identifier">render</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <a href="window.html#Frame"><span class="Identifier">Frame</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Starts rendering a single frame of animation. Only one frame may be rendered at a time. After rendering the frame, use <tt class="docutils literal"><span class="pre">finish</span></tt> to stop rendering to the frame.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L343"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L343"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L343" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="finish,Frame"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#finish%2CFrame"><span class="Identifier">finish</span></a><span class="Other">(</span><span class="Identifier">frame</span><span class="Other">:</span> <a href="window.html#Frame"><span class="Identifier">Frame</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#finish%2CFrame"><span class="Identifier">finish</span></a><span class="Other">(</span><span class="Identifier">frame</span><span class="Other">:</span> <span class="Keyword">var</span> <a href="window.html#Frame"><span class="Identifier">Frame</span></a><span class="Other">)</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Finishes a frame blitting it onto the screen.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L358"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L359"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L358" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L359" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="glVersion,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#glVersion%2CWindow"><span class="Identifier">glVersion</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#glVersion%2CWindow"><span class="Identifier">glVersion</span></a><span class="Other">(</span><span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 Returns a string containing the version of OpenGL as reported by the driver.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L362"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L364"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L362" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L364" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="initWindow,Aglet"></a>
@@ -830,9 +838,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Initializes the windowing submodule. You should call this before doing anything with windows.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L367"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L369"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L367" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L369" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="IMPL_loadGl,Window"></a>
@@ -841,20 +849,20 @@ class="link-seesrc" target="_blank">Source</a>
 
 <strong>Do not use this.</strong> Initializes the OpenGL context. This is called internally by backend-specific constructors.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L372"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L374"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L372" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L374" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="IMPL_getGlContext,Window"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#IMPL_getGlContext%2CWindow"><span class="Identifier">IMPL_getGlContext</span></a><span class="Other">(</span><span class="Identifier">win</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#IMPL_getGlContext%2CWindow"><span class="Identifier">IMPL_getGlContext</span></a><span class="Other">(</span><span class="Identifier">win</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a><span class="Other">)</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 <strong>Do not use this.</strong> Returns the raw OpenGL context for use in internal code.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.2.0/src/aglet/window.nim#L379"
+href="https://github.com/liquid600pgm/aglet/tree/0.2.1/src/aglet/window.nim#L381"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L379" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L381" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -867,7 +875,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-06-25 19:22:54 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-10 09:46:06 UTC</small>
       </div>
     </div>
   </div>
