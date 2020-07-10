@@ -11,6 +11,7 @@ import uniform
 type
   Target* = object of RootObj
     ## Rendering target interface.
+    size*: Vec2i
     useImpl*: proc (target: Target, gl: OpenGl) {.nimcall.}
     gl*: OpenGl
 
@@ -24,6 +25,14 @@ type
 
 proc use(target: Target) =
   target.useImpl(target, target.gl)
+
+proc width*(target: Target): int =
+  ## Returns the width of the target.
+  target.size.x
+
+proc height*(target: Target): int =
+  ## Returns the height of the target.
+  target.size.y
 
 proc clearColor*(target: Target, color: Rgba32f) =
   ## Clear the target's color with a solid color.

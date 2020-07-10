@@ -345,7 +345,8 @@ proc render*(window: Window): Frame =
   ## Only one frame may be rendered at a time. After rendering the frame, use
   ## ``finish`` to stop rendering to the frame.
 
-  result = Frame(gl: window.gl, window: window, finished: false)
+  result = Frame(gl: window.gl, size: window.size,
+                 window: window, finished: false)
 
   result.useImpl = proc (target: Target, gl: OpenGl) {.nimcall.} =
     assert not target.Frame.finished,
@@ -355,9 +356,10 @@ proc render*(window: Window): Frame =
     gl.bindFramebuffer({ftRead, ftDraw}, 0)
     gl.viewport(0, 0, window.width.GlSizei, window.height.GlSizei)
 
-proc finish*(frame: Frame) =
+proc finish*(frame: var Frame) =
   ## Finishes a frame blitting it onto the screen.
   frame.window.swapBuffersImpl(frame.window)
+  frame.finished = true
 
 proc glVersion*(window: Window): string =
   ## Returns a string containing the version of OpenGL as reported by the

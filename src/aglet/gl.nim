@@ -760,7 +760,7 @@ proc vertexAttrib*[T](gl: OpenGl, index, stride, offset: int) =
     type TT = T
   const
     N =
-      when T is Vec: default(T).N
+      when T is Vec: GlInt(default(T).N)
       else: 1
   when TT is float32:
     gl.glVertexAttribPointer(GlUint(index), N, GL_TFLOAT,

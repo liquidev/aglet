@@ -582,6 +582,7 @@ proc render*(framebuffer: BaseFramebuffer): FramebufferTarget =
 
   result.framebuffer = framebuffer
   result.gl = framebuffer.gl
+  result.size = framebuffer.size
   result.useImpl = proc (target: Target, gl: OpenGl) {.nimcall.} =
     let framebuffer = target.FramebufferTarget.framebuffer
     framebuffer.window.IMPL_makeCurrent()

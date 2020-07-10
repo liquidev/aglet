@@ -304,6 +304,7 @@ proc draw*(slice: MeshSlice, gl: OpenGl) =
 converter allVertices*[V](mesh: Mesh[V]): MeshSlice[V] =
   ## Implicit converter to avoid having to use ``mesh[0..<mesh.vertexCount]``
   ## when attempting to draw something.
+  assert mesh.vertexCount > 0, "cannot draw a mesh with no vertices"
   result = mesh[0..<mesh.vertexCount]
 
 proc newMesh*[V](window: Window, usage: MeshUsage,
