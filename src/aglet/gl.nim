@@ -357,14 +357,14 @@ else:
   # for me.
   {.error: "WebGL is not supported".}
 
-proc toGlEnum(target: BufferTarget): GlEnum =
+proc toGlEnum(target: BufferTarget): GlEnum {.inline.} =
   case target
   of btArray: GL_ARRAY_BUFFER
   of btElementArray: GL_ELEMENT_ARRAY_BUFFER
   of btPixelPack: GL_PIXEL_PACK_BUFFER
   of btPixelUnpack: GL_PIXEL_UNPACK_BUFFER
 
-proc toGlEnum(target: TextureTarget): GlEnum =
+proc toGlEnum(target: TextureTarget): GlEnum {.inline.} =
   case target
   of ttTexture1D: GL_TEXTURE_1D
   of ttTexture1DArray: GL_TEXTURE_1D_ARRAY
@@ -377,7 +377,7 @@ proc toGlEnum(target: TextureTarget): GlEnum =
     let index = ord(target) - ord(ttTextureCubeMapNegX)
     GlEnum(GL_TEXTURE_CUBEMAP_POSITIVE_X.int + index)
 
-proc toGlEnum(feature: OpenGlFeature): GlEnum =
+proc toGlEnum(feature: OpenGlFeature): GlEnum {.inline.} =
   # lol this is actually deprecated but I'm leaving it in anyways as I don't
   # want "just a placeholder enum value"
   case feature
@@ -395,18 +395,18 @@ proc toGlEnum(feature: OpenGlFeature): GlEnum =
   of glfTextureCubeMapSeamless: GL_TEXTURE_CUBE_MAP_SEAMLESS
   of glfProgramPointSize: GL_PROGRAM_POINT_SIZE
 
-proc toGlEnum*(hint: Hint): GlEnum =
+proc toGlEnum*(hint: Hint): GlEnum {.inline.} =
   case hint
   of hintFragmentShaderDerivative: GL_FRAGMENT_SHADER_DERIVATIVE_HINT
   of hintLineSmooth: GL_LINE_SMOOTH_HINT
   of hintPolygonSmooth: GL_POLYGON_SMOOTH_HINT
 
-proc toGlEnum*(facing: Facing): GlEnum =
+proc toGlEnum*(facing: Facing): GlEnum {.inline.} =
   case facing
   of facingBack: GL_BACK
   of facingFront: GL_FRONT
 
-proc toGlEnum*(mode: AccessMode): GlEnum =
+proc toGlEnum*(mode: AccessMode): GlEnum {.inline.} =
   assert card(mode) > 0
   if mode == {amRead}: result = GL_READ_ONLY
   elif mode == {amWrite}: result = GL_WRITE_ONLY
@@ -937,7 +937,7 @@ proc drawArraysInstanced*(gl: OpenGl, primitive: GlEnum,
   gl.glDrawArraysInstanced(primitive, start.GlInt, count.GlSizei,
                            instanceCount.GlSizei)
 
-proc indexTypeSize(indexType: GlEnum): int =
+proc indexTypeSize(indexType: GlEnum): int {.inline.} =
   case indexType
   of GL_TUNSIGNED_BYTE: result = 1
   of GL_TUNSIGNED_SHORT: result = 2

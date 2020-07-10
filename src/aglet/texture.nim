@@ -100,7 +100,7 @@ type
 const
   fmMipmapped = {fmNearestMipmapNearest..fmLinearMipmapLinear}
 
-proc toGlEnum(filter: FilteringMode): GlEnum =
+proc toGlEnum(filter: FilteringMode): GlEnum {.inline.} =
   case filter
   of fmNearest: GL_NEAREST
   of fmLinear: GL_LINEAR
@@ -109,7 +109,7 @@ proc toGlEnum(filter: FilteringMode): GlEnum =
   of fmLinearMipmapNearest: GL_LINEAR_MIPMAP_NEAREST
   of fmLinearMipmapLinear: GL_LINEAR_MIPMAP_LINEAR
 
-proc toGlEnum(wrap: TextureWrap): GlEnum =
+proc toGlEnum(wrap: TextureWrap): GlEnum {.inline.} =
   case wrap
   of twRepeat: GL_REPEAT
   of twMirroredRepeat: GL_MIRRORED_REPEAT
@@ -126,7 +126,7 @@ proc dataType(T: type[AnyPixelType]): GlEnum =
 
 # getters
 
-proc texture*(sampler: Sampler): Texture =
+proc texture*(sampler: Sampler): Texture {.inline.} =
   ## Retrieves the texture this sampler was created for.
   ## Note that this returns the *generic* ``Texture`` type, which can later be
   ## casted to any of its descendants. The type of the descendant can be checked
@@ -134,99 +134,102 @@ proc texture*(sampler: Sampler): Texture =
   ## if the sampler was created for a 2D texture.
   sampler.texture
 
-proc width*(texture: Texture1D): int =
+proc width*(texture: Texture1D): int {.inline.} =
   ## Returns the width of the texture.
   texture.fWidth
 
-proc width*(array: Texture1DArray): int =
+proc width*(array: Texture1DArray): int {.inline.} =
   ## Returns the width of all the 1D textures stored in the array.
   array.fWidth
 
-proc len*(array: Texture1DArray): int =
+proc len*(array: Texture1DArray): int {.inline.} =
   ## Returns how many 1D textures the array stores.
   array.fLen
 
-proc size*(texture: Texture2D): Vec2i =
+proc size*(texture: Texture2D): Vec2i {.inline.} =
   ## Returns the size of the texture as a vector.
   texture.fSize
 
-proc width*(texture: Texture2D): int =
+proc width*(texture: Texture2D): int {.inline.} =
   ## Returns the width of the texture.
   texture.size.x
 
-proc height*(texture: Texture2D): int =
+proc height*(texture: Texture2D): int {.inline.} =
   ## Returns the height of the texture.
   texture.size.y
 
-proc size*(array: Texture2DArray): Vec2i =
+proc size*(array: Texture2DArray): Vec2i {.inline.} =
   ## Returns the size of the array's textures as a vector.
   array.fSize
 
-proc width*(array: Texture2DArray): int =
+proc width*(array: Texture2DArray): int {.inline.} =
   ## Returns the width of all the 2D textures stored in the array.
   array.size.x
 
-proc height*(array: Texture2DArray): int =
+proc height*(array: Texture2DArray): int {.inline.} =
   ## Returns the height of all the 2D textures stored in the array.
   array.size.y
 
-proc len*(array: Texture2DArray): int =
+proc len*(array: Texture2DArray): int {.inline.} =
   ## Returns how many 2D textures the array stores.
   array.fLen
 
-proc multisampled*(texture: Some2DTexture): bool =
+proc multisampled*(texture: Some2DTexture): bool {.inline.} =
   ## Returns whether the texture is multisampled.
   texture.fSamples > 0
 
-proc samples*(texture: Some2DTexture): int =
+proc samples*(texture: Some2DTexture): int {.inline.} =
   ## Returns the amount of samples in a multisampled texture.
   ## Returns 0 if the texture is not multisampled.
   texture.fSamples
 
-proc size*(texture: Texture3D): Vec3i =
+proc size*(texture: Texture3D): Vec3i {.inline.} =
   ## Returns the size of the texture as a vector.
   texture.fSize
 
-proc width*(texture: Texture3D): int =
+proc width*(texture: Texture3D): int {.inline.} =
   ## Returns the width of the texture.
   texture.size.x
 
-proc height*(texture: Texture3D): int =
+proc height*(texture: Texture3D): int {.inline.} =
   ## Returns the height of the texture.
   texture.size.y
 
-proc depth*(texture: Texture3D): int =
+proc depth*(texture: Texture3D): int {.inline.} =
   ## Returns the depth of the texture.
   texture.size.z
 
-proc size*(texture: TextureCubeMap): Vec2i =
+proc size*(texture: TextureCubeMap): Vec2i {.inline.} =
   ## Returns the size of the cubemap's textures as a vector.
   texture.fSize
 
-proc width*(texture: TextureCubeMap): int =
+proc width*(texture: TextureCubeMap): int {.inline.} =
   ## Returns the width of each texture in the cubemap.
   texture.size.x
 
-proc height*(texture: TextureCubeMap): int =
+proc height*(texture: TextureCubeMap): int {.inline.} =
   ## Returns the height of each texture in the cubemap.
   texture.size.y
 
-proc sizeInBytes[T: TexturePixelType](texture: Texture1D[T]): int =
+proc sizeInBytes[T: TexturePixelType](texture: Texture1D[T]): int {.inline.} =
   texture.width * sizeof(T)
 
-proc sizeInBytes[T: TexturePixelType](texture: Texture2D[T]): int =
+proc sizeInBytes[T: TexturePixelType](texture: Texture2D[T]): int {.inline.} =
   texture.width * texture.height * sizeof(T)
 
-proc sizeInBytes[T: TexturePixelType](texture: Texture3D[T]): int =
+proc sizeInBytes[T: TexturePixelType](texture: Texture3D[T]): int {.inline.} =
   texture.width * texture.height * texture.depth * sizeof(T)
 
-proc sizeInBytes[T: TexturePixelType](texture: Texture1DArray[T]): int =
+proc sizeInBytes[T: TexturePixelType](texture: Texture1DArray[T]): int
+                                     {.inline.} =
   texture.width * texture.len * sizeof(T)
 
-proc sizeInBytes[T: TexturePixelType](texture: Texture2DArray[T]): int =
+proc sizeInBytes[T: TexturePixelType](texture: Texture2DArray[T]): int
+                                     {.inline.} =
   texture.width * texture.height * texture.len * sizeof(T)
 
-proc sizeInBytes[T: TexturePixelType](texture: TextureCubeMap[T]): int =
+proc sizeInBytes[T: TexturePixelType](texture: TextureCubeMap[T]): int
+                                     {.inline.} =
   6 * texture.width * texture.height * sizeof(T)
 
 proc use[T: Texture](texture: T) =
@@ -262,7 +265,7 @@ proc subImage*[T: ColorPixelType](texture: Texture1D[T],
   texture.dirty = true
 
 proc subImage*[T: ColorPixelType](texture: Texture1D[T], x: int,
-                                  data: openArray[T]) =
+                                  data: openArray[T]) {.inline.} =
   ## Safe version of ``subImage``. The width is inferred from the length of
   ## ``data``.
 
@@ -283,7 +286,8 @@ proc upload*[T: ColorPixelType](texture: Texture1D[T],
     texture.fWidth = width
   texture.subImage(0, width, data)
 
-proc upload*[T: ColorPixelType](texture: Texture1D[T], data: openArray[T]) =
+proc upload*[T: ColorPixelType](texture: Texture1D[T], data: openArray[T])
+                               {.inline.} =
   ## Safe version of ``upload``. The width of the texture is inferred from the
   ## length of the data array. This will only allocate a new data store if the
   ## texture's existing width does not match the target width.
@@ -390,7 +394,7 @@ proc newTexture1D*[T: TexturePixelType](window: Window): Texture1D[T] =
   result.target = ttTexture1D
 
 proc newTexture1D*[T: ColorPixelType](window: Window, width: Positive,
-                                      data: ptr T): Texture1D[T] =
+                                      data: ptr T): Texture1D[T] {.inline.} =
   ## Creates a new 1D texture and initializes it with data stored at the
   ## given pointer. This procedure is **unsafe** as it deals with pointers.
   ## Prefer the ``openArray`` version instead.
@@ -399,7 +403,8 @@ proc newTexture1D*[T: ColorPixelType](window: Window, width: Positive,
   result.upload[:T](width, data)
 
 proc newTexture1D*[T: ColorPixelType](window: Window,
-                                      data: openArray[T]): Texture1D[T] =
+                                      data: openArray[T]): Texture1D[T]
+                                     {.inline.} =
   ## Creates a new 1D texture and initializes it with the given data.
   ## The width of the texture is inferred from the data's length, which must not
   ## be zero.
@@ -408,7 +413,8 @@ proc newTexture1D*[T: ColorPixelType](window: Window,
   result.upload[:T](data)
 
 proc newTexture1D*[T: TexturePixelType](window: Window,
-                                        width: Positive): Texture1D[T] =
+                                        width: Positive): Texture1D[T]
+                                       {.inline.} =
   ## Creates a new 1D texture and allocates a data store of the given width.
   ## What the data store contains is undefined. This procedure is primarily
   ## meant for usage with framebuffers, prefer the versions that accept
@@ -458,7 +464,7 @@ proc subImage*[T: ColorPixelType](texture: Texture2D[T], position, size: Vec2i,
   texture.dirty = true
 
 proc subImage*[T: ColorPixelType](texture: Texture2D[T], position, size: Vec2i,
-                                  data: openArray[T]) =
+                                  data: openArray[T]) {.inline.} =
   ## ``subImage`` for 2D textures that accepts an ``openArray`` for data.
   ## ``data.len`` must be equal to ``size.x * size.y``, otherwise an assertion
   ## is triggered.
@@ -500,7 +506,7 @@ proc upload*[T: ColorPixelType](texture: Texture2D[T],
   texture.subImage(vec2i(0, 0), size, data)
 
 proc upload*[T: ColorPixelType](texture: Texture2D[T], size: Vec2i,
-                                data: openArray[T]) =
+                                data: openArray[T]) {.inline.} =
   ## Safe version of ``upload``. ``data.len`` must be equal to
   ## ``size.x * size.y``, otherwise an assertion is triggered.
 
@@ -556,7 +562,7 @@ proc newTexture2D*[T: ColorPixelType](window: Window): Texture2D[T] =
   result.target = ttTexture2D
 
 proc newTexture2D*[T: ColorPixelType](window: Window, size: Vec2i,
-                                      data: ptr T): Texture2D[T] =
+                                      data: ptr T): Texture2D[T] {.inline.} =
   ## Creates a new 2D texture and initializes it with data stored at the given
   ## pointer. This procedure is **unsafe** as it deals with pointers.
   ## Prefer the ``openArray`` and ``BinaryImageBuffer`` versions when possible.
@@ -565,7 +571,8 @@ proc newTexture2D*[T: ColorPixelType](window: Window, size: Vec2i,
   result.upload[:T](size, data)
 
 proc newTexture2D*[T: ColorPixelType](window: Window, size: Vec2i,
-                                      data: openArray[T]): Texture2D[T] =
+                                      data: openArray[T]): Texture2D[T]
+                                     {.inline.} =
   ## Creates a new 2D texture and initializes it with data stored in the given
   ## array.
 
@@ -574,7 +581,7 @@ proc newTexture2D*[T: ColorPixelType](window: Window, size: Vec2i,
 
 proc newTexture2D*[I: BinaryImageBuffer](window: Window,
                                          T: type[ColorPixelType],
-                                         image: I): Texture2D[T] =
+                                         image: I): Texture2D[T] {.inline.} =
   ## Creates a new 2D texture and initializes it with pixels stored in the given
   ## image.
 
@@ -583,7 +590,8 @@ proc newTexture2D*[I: BinaryImageBuffer](window: Window,
 
 proc newTexture2D*[T: TexturePixelType](window: Window,
                                         size: Vec2i,
-                                        samples = 0.Natural): Texture2D[T] =
+                                        samples = 0.Natural): Texture2D[T]
+                                       {.inline.} =
   ## Creates a new 2D texture and allocates a data store of the given size.
   ## If ``samples`` is greater than zero, the resulting texture will be
   ## multisampled. What the data store contains is undefined. This procedure is
@@ -630,7 +638,7 @@ proc subImage*[T: ColorPixelType](texture: Texture3D[T], position, size: Vec3i,
   texture.dirty = true
 
 proc subImage*[T: ColorPixelType](texture: Texture3D[T], position, size: Vec3i,
-                                  data: openArray[T]) =
+                                  data: openArray[T]) {.inline.} =
   ## ``subImage`` for 3D textures that accepts an ``openArray`` for data.
   ## ``data.len`` must be equal to ``size.x * size.y * size.z``, otherwise an
   ## assertion is triggered.
@@ -657,7 +665,7 @@ proc upload*[T: ColorPixelType](texture: Texture3D[T],
   texture.subImage(vec3i(0, 0, 0), size, data)
 
 proc upload*[T: ColorPixelType](texture: Texture3D[T], size: Vec3i,
-                                data: openArray[T]) =
+                                data: openArray[T]) {.inline.} =
   ## Safe version of ``upload``. ``data.len`` must be equal to
   ## ``size.x * size.y * size.z``, otherwise an assertion is triggered.
 
@@ -701,7 +709,7 @@ proc newTexture3D*[T: ColorPixelType](window: Window): Texture3D[T] =
   result.target = ttTexture3D
 
 proc newTexture3D*[T: ColorPixelType](window: Window, size: Vec3i,
-                                      data: ptr T): Texture3D[T] =
+                                      data: ptr T): Texture3D[T] {.inline.} =
   ## Creates a new 3D texture and initializes it with data stored at the given
   ## pointer. This procedure is **unsafe** as it deals with pointers.
   ## Prefer the ``openArray`` version instead.
@@ -710,7 +718,8 @@ proc newTexture3D*[T: ColorPixelType](window: Window, size: Vec3i,
   result.upload[:T](size, data)
 
 proc newTexture3D*[T: ColorPixelType](window: Window, size: Vec3i,
-                                      data: openArray[T]): Texture3D[T] =
+                                      data: openArray[T]): Texture3D[T]
+                                     {.inline.} =
   ## Creates a new 3D texture and initializes it with data stored in the given
   ## array. ``data.len`` must be equal to ``size.x * size.y * size.z``,
   ## otherwise an assertion is triggered.
@@ -719,7 +728,7 @@ proc newTexture3D*[T: ColorPixelType](window: Window, size: Vec3i,
   result.upload[:T](size, data)
 
 proc newTexture3D*[T: TexturePixelType](window: Window,
-                                        size: Vec3i): Texture3D[T] =
+                                        size: Vec3i): Texture3D[T] {.inline.} =
   ## Creates a new 3D texture and allocates a data store of the given size.
   ## What the data store contains is undefined. This procedure is primarily
   ## meant for usage with framebuffers, prefer the versions that accept
@@ -779,7 +788,7 @@ proc sampler*[T: Texture](texture: T,
     texture.gl.genMipmaps(texture.target)
     texture.dirty = false
 
-proc toUniform*(sampler: Sampler): Uniform =
+proc toUniform*(sampler: Sampler): Uniform {.inline.} =
   ## Conversion proc that allows samplers to be used as uniforms.
 
   let usampler = USampler(textureTarget: sampler.textureTarget.uint8,
@@ -790,7 +799,8 @@ proc toUniform*(sampler: Sampler): Uniform =
 
 # framebuffer support
 
-proc implSource(texture: Texture2D[ColorPixelType]): FramebufferSource =
+proc implSource(texture: Texture2D[ColorPixelType]): FramebufferSource
+               {.inline.} =
 
   result.attachment = texture.FramebufferAttachment
   result.size = texture.size
@@ -800,15 +810,15 @@ proc implSource(texture: Texture2D[ColorPixelType]): FramebufferSource =
     texture.gl.attachTexture2D(attachment, texture.target,
                                texture.id, mipLevel = 0)
 
-converter source*(texture: Texture2D[ColorPixelType]): ColorSource =
+converter source*(texture: Texture2D[ColorPixelType]): ColorSource {.inline.} =
   ## ``ColorSource`` implementation for 2D textures.
   result = texture.implSource().ColorSource
 
-converter source*(texture: Texture2D[DepthPixelType]): DepthSource =
+converter source*(texture: Texture2D[DepthPixelType]): DepthSource {.inline.} =
   ## ``DepthSource`` implementation for 2D textures.
   result = texture.implSource().DepthSource
 
-proc toFramebuffer*(texture: Texture2D): SimpleFramebuffer =
+proc toFramebuffer*(texture: Texture2D): SimpleFramebuffer {.inline.} =
   ## Helper for easy framebuffer creation. This does not allow you to
   ## attach depth and stencil buffers; for that, use
   ## ``framebuffer.newFramebuffer``.

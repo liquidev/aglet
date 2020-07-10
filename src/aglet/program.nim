@@ -30,7 +30,7 @@ macro bindAttribLocations(gl: OpenGl, program: GlUint, T: typedesc): untyped =
         bindAttribLocation(`gl`, `program`, `indexLit`, `nameLit`))
       inc(index)
 
-proc glsl*(source: string): GlslSource =
+proc glsl*(source: string): GlslSource {.inline.} =
   ## Shorthand for constructing GLSL source code.
   result = GlslSource(source)
 

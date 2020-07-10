@@ -131,7 +131,7 @@ proc winHints*(resizable = true, visible = true, decorated = true,
                stereoscopic = false,
                msaaSamples = 0,
                glVersion = (major: 3, minor: 3),
-               debugContext = not defined(release)): WindowHints =
+               debugContext = not defined(release)): WindowHints {.inline.} =
   ## Constructs a WindowHints with sensible defaults:
   ##
   ## - resizable: true
@@ -160,7 +160,7 @@ proc winHints*(resizable = true, visible = true, decorated = true,
 
 const DefaultWindowHints* = winHints()
 
-proc startAsync*(window: Window, callback: AsyncCallback) =
+proc startAsync*(window: Window, callback: AsyncCallback) {.inline.} =
   ## Adds a procedure to the dispatcher loop. This procedure is fired on the
   ## next ``pollAsyncCallbacks`` call. If it returns ``false``, it is removed
   ## from the dispatched procedures; otherwise, it will run on the next async
@@ -191,14 +191,14 @@ proc interceptEvents(window: Window, userCallback: InputProc): InputProc =
     if ev.kind == iekMouseMove:
       window.mousePos = ev.mousePos
 
-proc pollEvents*(window: Window, processEvent: InputProc) =
+proc pollEvents*(window: Window, processEvent: InputProc) {.inline.} =
   ## Poll for incoming events from the given window. ``processEvent`` will be
   ## called for each incoming event. This also dispatches all async callbacks.
   window.pollAsyncCallbacks()
   window.pollEventsImpl(window, window.interceptEvents(processEvent))
 
 proc waitEvents*(window: Window, processEvent: InputProc,
-                 timeout = -1.0) =
+                 timeout = -1.0) {.inline.} =
   ## Wait for incoming events from the given window. ``processEvent`` will be
   ## called for each incoming event. If ``timeout`` is specified, the procedure
   ## will only wait for the specified amount of seconds, and then continue
@@ -207,21 +207,21 @@ proc waitEvents*(window: Window, processEvent: InputProc,
   window.pollAsyncCallbacks()
   window.waitEventsImpl(window, window.interceptEvents(processEvent), timeout)
 
-proc requestClose*(window: Window) =
+proc requestClose*(window: Window) {.inline.} =
   ## Requests that the window gets closed. This may not *actually* close the
   ## window, it only sets a bit in the window's state, and the application
   ## determines whether the window actually closes.
   window.setCloseRequestedImpl(window, true)
 
-proc rejectClose*(window: Window) =
+proc rejectClose*(window: Window) {.inline.} =
   ## Resets the close request bit.
   window.setCloseRequestedImpl(window, false)
 
-proc closeRequested*(window: Window): bool =
+proc closeRequested*(window: Window): bool {.inline.} =
   ## Returns whether a window close request has been made.
   result = window.closeRequestedImpl(window)
 
-proc `swapInterval=`*(window: Window, interval: int) =
+proc `swapInterval=`*(window: Window, interval: int) {.inline.} =
   ## Sets the window's buffer swap interval.
   ## The swap interval controls whether VSync should be used. A value of 0
   ## disables VSync, a value of 1 enables VSync at the monitor's refresh rate,
@@ -229,11 +229,11 @@ proc `swapInterval=`*(window: Window, interval: int) =
   ## divided by the interval.
   window.setSwapIntervalImpl(window, interval)
 
-proc key*(window: Window, key: Key): bool =
+proc key*(window: Window, key: Key): bool {.inline.} =
   ## Returns the pressed state of the given key. ``true`` is pressed.
   result = window.keyStates[key.int]
 
-proc mouse*(window: Window): Vec2f =
+proc mouse*(window: Window): Vec2f {.inline.} =
   ## Returns the current position of the mouse cursor in the window.
   ## This may be used in an input event handler to query the last mouse
   ## position.
@@ -243,100 +243,100 @@ proc mouse*(window: Window): Vec2f =
   ## window is not focused, consider using the (slower) ``pollMouse``.
   result = window.mousePos
 
-proc pollMouse*(window: Window): Vec2f =
+proc pollMouse*(window: Window): Vec2f {.inline.} =
   ## Polls the OS for the mouse cursor's position. Unlike ``mouse``, this works
   ## returns the current position regardless of the window's focus.
   result = window.pollMouseImpl(window)
 
-proc position*(window: Window): Vec2i =
+proc position*(window: Window): Vec2i {.inline.} =
   ## Returns the window's current position *in screen coordinates* as a vector.
   var x, y: int
   window.getPositionImpl(window, x, y)
   result = vec2i(x.int32, y.int32)
 
-proc `position=`*(window: Window, newPosition: Vec2i) =
+proc `position=`*(window: Window, newPosition: Vec2i) {.inline.} =
   ## Sets the window's position *in screen coordinates*.
   window.setPositionImpl(window, newPosition.x, newPosition.y)
 
-proc size*(window: Window): Vec2i =
+proc size*(window: Window): Vec2i {.inline.} =
   ## Returns the current size of the window *in screen coordinates* as a vector.
   var x, y: int
   window.getSizeImpl(window, x, y)
   result = vec2i(x.int32, y.int32)
 
-proc width*(window: Window): int =
+proc width*(window: Window): int {.inline.} =
   ## Returns the current width of the window.
   result = window.size.x
 
-proc height*(window: Window): int =
+proc height*(window: Window): int {.inline.} =
   ## Returns the current height of the window.
   result = window.size.y
 
-proc framebufferSize*(window: Window): Vec2i =
+proc framebufferSize*(window: Window): Vec2i {.inline.} =
   ## Returns the size of the window *in pixels* as a vector.
   var x, y: int
   window.getFramebufferSizeImpl(window, x, y)
   result = vec2i(x.int32, y.int32)
 
-proc framebufferWidth*(window: Window): int =
+proc framebufferWidth*(window: Window): int {.inline.} =
   ## Returns the window's width in pixels.
   result = window.framebufferSize.x
 
-proc framebufferHeight*(window: Window): int =
+proc framebufferHeight*(window: Window): int {.inline.} =
   ## Returns the window's height in pixels.
   result = window.framebufferSize.y
 
-proc contentScale*(window: Window): Vec2f =
+proc contentScale*(window: Window): Vec2f {.inline.} =
   ## Returns the content scale of the window.
   var x, y: float
   window.getContentScaleImpl(window, x, y)
   result = vec2f(x, y)
 
-proc limitSize*(window: Window, min, max: Option[Vec2i]) =
+proc limitSize*(window: Window, min, max: Option[Vec2i]) {.inline.} =
   ## Limits the size of the window. This resets the aspect ration limitation.
   window.resetAspectRatioImpl(window)
   window.setSizeLimitsImpl(window, min, max)
 
-proc constrainAspect*(window: Window, num, den: int) =
+proc constrainAspect*(window: Window, num, den: int) {.inline.} =
   ## Constrains the window's aspect ratio to ``num/den``, where ``num`` is the
   ## width, and ``den`` is the height. This resets the size limitation.
   window.setSizeLimitsImpl(window, Vec2i.none, Vec2i.none)
   window.setAspectRatioImpl(window, num, den)
 
-proc unconstrainAspect*(window: Window) =
+proc unconstrainAspect*(window: Window) {.inline.} =
   ## Resets the aspect ratio contraint.
   window.resetAspectRatioImpl(window)
 
-proc iconify*(window: Window) =
+proc iconify*(window: Window) {.inline.} =
   ## Iconifies the window.
   window.iconifyImpl(window)
 
-proc iconified*(window: Window): bool =
+proc iconified*(window: Window): bool {.inline.} =
   ## Returns whether the window is iconified or not.
   result = window.iconifiedImpl(window)
 
-proc maximize*(window: Window) =
+proc maximize*(window: Window) {.inline.} =
   ## Maximizes the window.
   window.maximizeImpl(window)
 
-proc maximized*(window: Window): bool =
+proc maximized*(window: Window): bool {.inline.} =
   ## Returns whether the window is maximized or not.
   result = window.maximizedImpl(window)
 
-proc restore*(window: Window) =
+proc restore*(window: Window) {.inline.} =
   ## Restores the window.
   window.restoreImpl(window)
 
-proc `visible=`*(window: Window, visible: bool) =
+proc `visible=`*(window: Window, visible: bool) {.inline.} =
   ## Sets whether the window is visible or not.
   if visible: window.showImpl(window)
   else: window.hideImpl(window)
 
-proc visible*(window: Window): bool =
+proc visible*(window: Window): bool {.inline.} =
   ## Returns whether the window is visible or not.
   result = window.visibleImpl(window)
 
-proc `title=`*(window: Window, newTitle: string) =
+proc `title=`*(window: Window, newTitle: string) {.inline.} =
   ## Sets the title of the window.
   window.setTitleImpl(window, newTitle)
 
@@ -361,10 +361,10 @@ proc finish*(frame: var Frame) =
   frame.window.swapBuffersImpl(frame.window)
   frame.finished = true
 
-proc glVersion*(window: Window): string =
+proc glVersion*(window: Window): string {.inline.} =
   ## Returns a string containing the version of OpenGL as reported by the
   ## driver.
-  result = window.gl.version
+  window.gl.version
 
 proc initWindow*(agl: var Aglet) =
   ## Initializes the windowing submodule. You should call this before doing
@@ -378,7 +378,7 @@ proc IMPL_loadGl*(win: Window) =
   win.gl = newGl()
   win.gl.load(win.getProcAddrImpl)
 
-proc IMPL_getGlContext*(win: Window): OpenGl =
+proc IMPL_getGlContext*(win: Window): OpenGl {.inline.} =
   ## **Do not use this.**
   ## Returns the raw OpenGL context for use in internal code.
   result = win.gl

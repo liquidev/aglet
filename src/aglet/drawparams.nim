@@ -158,7 +158,7 @@ type
     val: DrawParamsVal  ## actual draw parameters
 
 proc blendMode*(color: BlendFunc, alpha = color,
-                constant = vec4f(0.0)): BlendMode =
+                constant = vec4f(0.0)): BlendMode {.inline.} =
   ## Construct a blend mode.
   BlendMode(
     color: color,
@@ -166,7 +166,7 @@ proc blendMode*(color: BlendFunc, alpha = color,
     constant: constant,
   )
 
-proc blendAdd*(src, dest: BlendFactor): BlendFunc =
+proc blendAdd*(src, dest: BlendFactor): BlendFunc {.inline.} =
   ## Construct an addition blend function. Check ``BlendFunc`` for reference.
   BlendFunc(
     equation: beAdd,
@@ -174,7 +174,7 @@ proc blendAdd*(src, dest: BlendFactor): BlendFunc =
     dest: dest,
   )
 
-proc blendSub*(src, dest: BlendFactor): BlendFunc =
+proc blendSub*(src, dest: BlendFactor): BlendFunc {.inline.} =
   ## Construct a subtraction blend function.
   BlendFunc(
     equation: beSubtract,
@@ -182,7 +182,7 @@ proc blendSub*(src, dest: BlendFactor): BlendFunc =
     dest: dest,
   )
 
-proc blendRevSub*(src, dest: BlendFactor): BlendFunc =
+proc blendRevSub*(src, dest: BlendFactor): BlendFunc {.inline.} =
   ## Construct a reverse subtraction blend function.
   BlendFunc(
     equation: beReverseSubtract,
@@ -200,7 +200,7 @@ const
 proc stencilMode*(funcs: array[Facing, StencilFunc],
                   ops: array[Facing, StencilOp],
                   masks: array[Facing, uint32] =
-                    [high(uint32), high(uint32)]): StencilMode =
+                    [high(uint32), high(uint32)]): StencilMode {.inline.} =
   ## Constructs a stencil mode using the provided stencil functions and
   ## operations.
   StencilMode(
@@ -210,7 +210,7 @@ proc stencilMode*(funcs: array[Facing, StencilFunc],
   )
 
 proc stencilMode*(funcBoth: StencilFunc, opBoth: StencilOp,
-                  maskBoth = high(uint32)): StencilMode =
+                  maskBoth = high(uint32)): StencilMode {.inline.} =
   ## Constructs a stencil mode. ``funcBoth`` and ``opBoth`` are used both for
   ## front and back faces.
   StencilMode(
@@ -220,7 +220,7 @@ proc stencilMode*(funcBoth: StencilFunc, opBoth: StencilOp,
   )
 
 proc stencilFunc*(equation: CompareFunc, reference: int32,
-                  mask = high(uint32)): StencilFunc =
+                  mask = high(uint32)): StencilFunc {.inline.} =
   ## Constructs a stencil test function using the given equation,
   ## reference value, and optional bitmask.
   StencilFunc(
@@ -230,7 +230,7 @@ proc stencilFunc*(equation: CompareFunc, reference: int32,
   )
 
 proc stencilOp*(stencilFail, stencilPassDepthFail,
-                stencilPassDepthPass: StencilAction): StencilOp =
+                stencilPassDepthPass: StencilAction): StencilOp {.inline.} =
   ## Constructs a stencil operation from the given parameters.
   StencilOp(
     stencilFail: stencilFail,
@@ -241,7 +241,7 @@ proc stencilOp*(stencilFail, stencilPassDepthFail,
 using
   params: var DrawParams
 
-proc blend*(params; mode: BlendMode) =
+proc blend*(params; mode: BlendMode) {.inline.} =
   ## Enables blending. If enabled, each fragment to be drawn (source) is blended
   ## with fragments already in the framebuffer (destination). Refer to
   ## ``BlendMode`` for more details.
@@ -249,31 +249,31 @@ proc blend*(params; mode: BlendMode) =
   ## **Default:** disabled
   params.val.blend = some(mode)
 
-proc noBlend*(params) =
+proc noBlend*(params) {.inline.} =
   ## Disables blending.
   ##
   ## **Default:** disabled
   params.val.blend = BlendMode.none
 
-proc noColorLogicOp*(params) =
+proc noColorLogicOp*(params) {.inline.} =
   ## Disables color logic operations.
   ##
   ## **Default:** disabled
   params.val.colorLogicOp = ColorLogic.none
 
-proc colorLogicOp*(params; op: ColorLogic) =
+proc colorLogicOp*(params; op: ColorLogic) {.inline.} =
   ## Enables color logic operations.
   ##
   ## **Default:** disabled
   params.val.colorLogicOp = ColorLogic.none
 
-proc colorMask*(params; red, green, blue, alpha: bool) =
+proc colorMask*(params; red, green, blue, alpha: bool) {.inline.} =
   ## Sets the color mask.
   ##
   ## **Default:** ``(on, on, on, on)``
   params.val.colorMask = (red, green, blue, alpha)
 
-proc depthMask*(params; enabled: bool) =
+proc depthMask*(params; enabled: bool) {.inline.} =
   ## Enables or disables writing to the depth buffer.
   ## Depth testing is still performed if ``enabled == false``, but new depth
   ## fragments are not written.
@@ -281,25 +281,25 @@ proc depthMask*(params; enabled: bool) =
   ## **Default:** ``on``
   params.val.depthMask = enabled
 
-proc depthTest*(params; function = cfLess) =
+proc depthTest*(params; function = cfLess) {.inline.} =
   ## Enables depth testing.
   ##
   ## **Default:** disabled
   params.val.depthTest = some(function)
 
-proc noDepthTest*(params) =
+proc noDepthTest*(params) {.inline.} =
   ## Enables depth testing.
   ##
   ## **Default:** disabled
   params.val.depthTest = CompareFunc.none
 
-proc dither*(params; enabled: bool) =
+proc dither*(params; enabled: bool) {.inline.} =
   ## Enables or disables dithering.
   ##
   ## **Default:** ``on``
   params.val.dither = enabled
 
-proc faceCulling*(params; facings: set[Facing]) =
+proc faceCulling*(params; facings: set[Facing]) {.inline.} =
   ## Enables or disables face culling.
   ##
   ## **Default:** disabled
@@ -311,7 +311,7 @@ proc frontFace*(params; winding: Winding) =
   ## **Default:** ``windingCounterclockwise``
   params.val.frontFace = winding
 
-proc hint*(params; hint: Hint, value: HintValue) =
+proc hint*(params; hint: Hint, value: HintValue) {.inline.} =
   ## Sets an implementation-defined hint.
   ##
   ## **Defaults:**
@@ -320,21 +320,21 @@ proc hint*(params; hint: Hint, value: HintValue) =
   ## - ``hintPolygonSmooth``: ``hvDontCare``
   params.val.hints[hint] = value
 
-proc lineSmooth*(params; enabled: bool) =
+proc lineSmooth*(params; enabled: bool) {.inline.} =
   ## Enables or disables line antialiasing. This feature can be used without
   ## multisampling.
   ##
   ## **Default:** ``off``
   params.val.lineSmooth = enabled
 
-proc lineWidth*(params; width: float32) =
+proc lineWidth*(params; width: float32) {.inline.} =
   ## Sets the line width. The allowed range of values is implementation-defined,
   ## and the only width guaranteed to be supported is 1.
   ##
   ## **Default:** 1
   params.val.lineWidth = width
 
-proc multisample*(params; enabled: bool) =
+proc multisample*(params; enabled: bool) {.inline.} =
   ## Enables or disables multisample anti-aliasing (MSAA).
   ## Keep in mind that the target must have a multisample capable framebuffer.
   ## This can be enabled for the default framebuffer when creating the window,
@@ -346,19 +346,19 @@ proc multisample*(params; enabled: bool) =
   ## **Default:** ``off``
   params.val.multisample = enabled
 
-proc pointSize*(params; size: float32) =
+proc pointSize*(params; size: float32) {.inline.} =
   ## Specifies the radius of rasterized points.
   ##
   ## **Default:** 1
   params.val.pointSize = size
 
-proc programPointSize*(params; enabled: bool) =
+proc programPointSize*(params; enabled: bool) {.inline.} =
   ## Enables or disables setting the point size via shader programs.
   ## Enabling this will make rasterization respect the ``gl_PointSize`` variable
   ## from vertex and geometry shaders.
   params.val.programPointSize = enabled
 
-proc polygonMode*(params; facings: set[Facing], mode: PolygonMode) =
+proc polygonMode*(params; facings: set[Facing], mode: PolygonMode) {.inline.} =
   ## Sets the polygon rasterization mode.
   ##
   ## **Defaults:**
@@ -367,7 +367,7 @@ proc polygonMode*(params; facings: set[Facing], mode: PolygonMode) =
   for facing in facings:
     params.val.polygonMode[facing] = mode
 
-proc polygonSmooth*(params; enabled: bool) =
+proc polygonSmooth*(params; enabled: bool) {.inline.} =
   ## Enables or disables polygon antialiasing. This feature can be used without
   ## multisampling.
   ## Alpha blending must be enabled and polygons must be sorted from front to
@@ -376,7 +376,7 @@ proc polygonSmooth*(params; enabled: bool) =
   ## **Default:** ``off``
   params.val.lineSmooth = enabled
 
-proc primitiveRestartIndex*(params; index: uint32) =
+proc primitiveRestartIndex*(params; index: uint32) {.inline.} =
   ## Enables the primitive restart index. The usage of this index in any mesh
   ## will cause the current primitive to be restarted. This is useful for
   ## line strips, line loops, triangle fans, and triangle strips.
@@ -384,26 +384,26 @@ proc primitiveRestartIndex*(params; index: uint32) =
   ## **Default:** disabled
   params.val.primitiveRestartIndex = some(index)
 
-proc noPrimitiveRestartIndex*(params) =
+proc noPrimitiveRestartIndex*(params) {.inline.} =
   ## Disables the primitive restart index.
   ##
   ## **Default:** disabled
   params.val.primitiveRestartIndex = uint32.none
 
-proc scissor*(params; rect: Recti) =
+proc scissor*(params; rect: Recti) {.inline.} =
   ## Enables scissor testing. If enabled, the scissor test discards all
   ## fragments outside of the provided ``rect``.
   ##
   ## **Default:** disabled
   params.val.scissor = some(rect)
 
-proc noScissor*(params) =
+proc noScissor*(params) {.inline.} =
   ## Disables scissor testing.
   ##
   ## **Default:** disabled
   params.val.scissor = Recti.none
 
-proc stencil*(params; mode: StencilMode) =
+proc stencil*(params; mode: StencilMode) {.inline.} =
   ## Enables stencil testing. If enabled, a per-fragment stencil test is
   ## performed. Fragments that don't pass the test are discarded. Refer to
   ## ``StencilMode``'s documentation for details.
@@ -411,20 +411,20 @@ proc stencil*(params; mode: StencilMode) =
   ## **Default:** disabled
   params.val.stencilMode = some(mode)
 
-proc noStencil*(params) =
+proc noStencil*(params) {.inline.} =
   ## Disables stencil testing.
   ##
   ## **Default:** disabled
   params.val.stencilMode = StencilMode.none
 
-proc seamlessCubeMapSampling*(params; enabled: bool) =
+proc seamlessCubeMapSampling*(params; enabled: bool) {.inline.} =
   ## Enables or disables seamless cubemap sampling. This parameter enables
   ## blending of cubemap edges, making the cubemap seamless.
   ##
   ## **Default:** disabled
   params.val.seamlessCubeMap = enabled
 
-proc finish*(params) =
+proc finish*(params) {.inline.} =
   ## Finalizes construction of draw parameters by re-hashing them.
   ## This step is **very important**. aglet keeps a hash of the draw parameters
   ## for optimization purposes (so that the parameters don't have to be
@@ -436,7 +436,7 @@ proc finish*(params) =
   ## (which you should).
   params.hash = hashData(addr params, sizeof(params))
 
-proc `==`*(a, b: DrawParams): bool =
+proc `==`*(a, b: DrawParams): bool {.inline.} =
   ## Compares two sets of draw parameters by their hash.
   a.hash == b.hash
 
@@ -512,7 +512,7 @@ proc defaultDrawParams*(): DrawParams =
     multisample off
     seamlessCubeMapSampling off
 
-proc toGlEnum(blendEquation: BlendEquation): GlEnum =
+proc toGlEnum(blendEquation: BlendEquation): GlEnum {.inline.} =
   case blendEquation
   of beAdd: GL_FUNC_ADD
   of beSubtract: GL_FUNC_SUBTRACT
@@ -520,7 +520,7 @@ proc toGlEnum(blendEquation: BlendEquation): GlEnum =
   of beMin: GL_MIN
   of beMax: GL_MAX
 
-proc toGlEnum(blendFactor: BlendFactor): GlEnum =
+proc toGlEnum(blendFactor: BlendFactor): GlEnum {.inline.} =
   case blendFactor
   of bfZero: GL_ZERO
   of bfOne: GL_ONE
@@ -538,7 +538,7 @@ proc toGlEnum(blendFactor: BlendFactor): GlEnum =
   of bfConstAlpha: GL_CONSTANT_ALPHA
   of bfOneMinusConstAlpha: GL_ONE_MINUS_CONSTANT_ALPHA
 
-proc toGlEnum(colorLogic: ColorLogic): GlEnum =
+proc toGlEnum(colorLogic: ColorLogic): GlEnum {.inline.} =
   case colorLogic
   of clClear: GL_CLEAR
   of clSet: GL_SET
@@ -557,7 +557,7 @@ proc toGlEnum(colorLogic: ColorLogic): GlEnum =
   of clOrReverse: GL_OR_REVERSE
   of clOrInverted: GL_OR_INVERTED
 
-proc toGlEnum(compareFunc: CompareFunc): GlEnum =
+proc toGlEnum(compareFunc: CompareFunc): GlEnum {.inline.} =
   case compareFunc
   of cfNever: GL_NEVER
   of cfLess: GL_LESS
@@ -568,7 +568,7 @@ proc toGlEnum(compareFunc: CompareFunc): GlEnum =
   of cfNotEqual: GL_NOTEQUAL
   of cfAlways: GL_ALWAYS
 
-proc toGlEnum(stencilAction: StencilAction): GlEnum =
+proc toGlEnum(stencilAction: StencilAction): GlEnum {.inline.} =
   case stencilAction
   of saKeep: GL_KEEP
   of saZero: GL_ZERO
@@ -579,13 +579,13 @@ proc toGlEnum(stencilAction: StencilAction): GlEnum =
   of saDecWrap: GL_DECR_WRAP
   of saInvert: GL_INVERT
 
-proc toGlEnum(hintValue: HintValue): GlEnum =
+proc toGlEnum(hintValue: HintValue): GlEnum {.inline.} =
   case hintValue
   of hvDontCare: GL_DONT_CARE
   of hvFastest: GL_FASTEST
   of hvNicest: GL_NICEST
 
-proc toGlEnum(polygonMode: PolygonMode): GlEnum =
+proc toGlEnum(polygonMode: PolygonMode): GlEnum {.inline.} =
   case polygonMode
   of pmFill: GL_FILL
   of pmLine: GL_LINE

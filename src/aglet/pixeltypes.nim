@@ -95,95 +95,95 @@ type
 # I hate repetitive code like this but afaik there's no better way to do this
 # while preserving the doc comments.
 
-proc red8*(red: uint8): Red8 =
+proc red8*(red: uint8): Red8 {.inline.} =
   ## Construct a Red8 value.
   result = Red8(red)
 
-proc red16*(red: uint16): Red16 =
+proc red16*(red: uint16): Red16 {.inline.} =
   ## Construct a Red16 value.
   result = Red16(red)
 
-proc red32*(red: uint32): Red32 =
+proc red32*(red: uint32): Red32 {.inline.} =
   ## Construct a Red32 value.
   result = Red32(red)
 
-proc red32f*(red: float32): Red32f =
+proc red32f*(red: float32): Red32f {.inline.} =
   ## Construct a Red32f value.
   result = Red32f(red)
 
-proc rg8*(red, green: uint8): Rg8 =
+proc rg8*(red, green: uint8): Rg8 {.inline.} =
   ## Construct a Rg8 value.
   result = Rg8(vec2(red, green))
 
-proc rg16*(red, green: uint16): Rg16 =
+proc rg16*(red, green: uint16): Rg16 {.inline.} =
   ## Construct a Rg16 value.
   result = Rg16(vec2(red, green))
 
-proc rg32*(red, green: uint32): Rg32 =
+proc rg32*(red, green: uint32): Rg32 {.inline.} =
   ## Construct a Rg32 value.
   result = Rg32(vec2(red, green))
 
-proc rg32f*(red, green: float32): Rg32f =
+proc rg32f*(red, green: float32): Rg32f {.inline.} =
   ## Construct a Rg32f value.
   result = Rg32f(vec2(red, green))
 
-proc rgb8*(red, green, blue: uint8): Rgb8 =
+proc rgb8*(red, green, blue: uint8): Rgb8 {.inline.} =
   ## Construct a Rgb8 value.
   result = Rgb8(vec3(red, green, blue))
 
-proc rgb16*(red, green, blue: uint16): Rgb16 =
+proc rgb16*(red, green, blue: uint16): Rgb16 {.inline.} =
   ## Construct a Rgb16 value.
   result = Rgb16(vec3(red, green, blue))
 
-proc rgb32*(red, green, blue: uint32): Rgb32 =
+proc rgb32*(red, green, blue: uint32): Rgb32 {.inline.} =
   ## Construct a Rgb32 value.
   result = Rgb32(vec3(red, green, blue))
 
-proc rgb32f*(red, green, blue: float32): Rgb32f =
+proc rgb32f*(red, green, blue: float32): Rgb32f {.inline.} =
   ## Construct a Rgb32f value.
   result = Rgb32f(vec3(red, green, blue))
 
-proc rgba8*(red, green, blue, alpha: uint8): Rgba8 =
+proc rgba8*(red, green, blue, alpha: uint8): Rgba8 {.inline.} =
   ## Construct a Rgba8 value.
   result = Rgba8(vec4(red, green, blue, alpha))
 
-proc rgba16*(red, green, blue, alpha: uint16): Rgba16 =
+proc rgba16*(red, green, blue, alpha: uint16): Rgba16 {.inline.} =
   ## Construct a Rgba16 value.
   result = Rgba16(vec4(red, green, blue, alpha))
 
-proc rgba32*(red, green, blue, alpha: uint32): Rgba32 =
+proc rgba32*(red, green, blue, alpha: uint32): Rgba32 {.inline.} =
   ## Construct a Rgba32 value.
   result = Rgba32(vec4(red, green, blue, alpha))
 
-proc rgba32f*(red, green, blue, alpha: float32): Rgba32f =
+proc rgba32f*(red, green, blue, alpha: float32): Rgba32f {.inline.} =
   ## Construct a Rgba32f value.
   result = Rgba32f(vec4(red, green, blue, alpha))
 
 # we also define some nice aliases for color types used commonly across the lib
 
-proc rg*(red, green: float32): Rg32f =
+proc rg*(red, green: float32): Rg32f {.inline.} =
   ## Alias for ``rgba32f``.
   rg32f(red, green)
 
-proc rgb*(red, green, blue: float32): Rgb32f =
+proc rgb*(red, green, blue: float32): Rgb32f {.inline.} =
   ## Alias for ``rgba32f``.
   rgb32f(red, green, blue)
 
-proc rgba*(red, green, blue, alpha: float32): Rgba32f =
+proc rgba*(red, green, blue, alpha: float32): Rgba32f {.inline.} =
   ## Alias for ``rgba32f``.
   rgba32f(red, green, blue, alpha)
 
 
 # color getters
 
-proc r*(color: Red8): uint8 = uint8(color)
-proc r*(color: Red16): uint16 = uint16(color)
-proc r*(color: Red32): uint32 = uint32(color)
-proc r*(color: Red32f): float32 = float32(color)
+proc r*(color: Red8): uint8 {.inline.} = uint8(color)
+proc r*(color: Red16): uint16 {.inline.} = uint16(color)
+proc r*(color: Red32): uint32 {.inline.} = uint32(color)
+proc r*(color: Red32f): float32 {.inline.} = float32(color)
 
 template colorFieldsRg(T, R: type): untyped =
-  proc r*(color: T): R {.borrow.}
-  proc g*(color: T): R {.borrow.}
+  proc r*(color: T): R {.borrow, inline.}
+  proc g*(color: T): R {.borrow, inline.}
 
 colorFieldsRg Rg8, uint8
 colorFieldsRg Rg16, uint16
@@ -191,9 +191,9 @@ colorFieldsRg Rg32, uint32
 colorFieldsRg Rg32f, float32
 
 template colorFieldsRgb(T, R: type): untyped =
-  proc r*(color: T): R {.borrow.}
-  proc g*(color: T): R {.borrow.}
-  proc b*(color: T): R {.borrow.}
+  proc r*(color: T): R {.borrow, inline.}
+  proc g*(color: T): R {.borrow, inline.}
+  proc b*(color: T): R {.borrow, inline.}
 
 colorFieldsRgb Rgb8, uint8
 colorFieldsRgb Rgb16, uint16
@@ -201,10 +201,10 @@ colorFieldsRgb Rgb32, uint32
 colorFieldsRgb Rgb32f, float32
 
 template colorFieldsRgba(T, R: type): untyped =
-  proc r*(color: T): R {.borrow.}
-  proc g*(color: T): R {.borrow.}
-  proc b*(color: T): R {.borrow.}
-  proc a*(color: T): R {.borrow.}
+  proc r*(color: T): R {.borrow, inline.}
+  proc g*(color: T): R {.borrow, inline.}
+  proc b*(color: T): R {.borrow, inline.}
+  proc a*(color: T): R {.borrow, inline.}
 
 colorFieldsRgba Rgba8, uint8
 colorFieldsRgba Rgba16, uint16

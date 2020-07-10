@@ -49,7 +49,7 @@ type
     dpTriangleStripAdjacency
     dpTriangleFan
 
-proc toGlEnum(dp: DrawPrimitive): GlEnum =
+proc toGlEnum(dp: DrawPrimitive): GlEnum {.inline.} =
   case dp
   of dpPoints: GL_POINTS
   of dpLines: GL_LINES
@@ -63,47 +63,47 @@ proc toGlEnum(dp: DrawPrimitive): GlEnum =
   of dpTriangleStripAdjacency: GL_TRIANGLE_STRIP_ADJACENCY
   of dpTriangleFan: GL_TRIANGLE_FAN
 
-proc toGlEnum(ty: IndexTypeEnum): GlEnum =
+proc toGlEnum(ty: IndexTypeEnum): GlEnum {.inline.} =
   case ty
   of it8: GL_TUNSIGNED_BYTE
   of it16: GL_TUNSIGNED_SHORT
   of it32: GL_TUNSIGNED_INT
   else: GlEnum(0)
 
-proc vboCapacity*(mesh: Mesh): int =
+proc vboCapacity*(mesh: Mesh): int {.inline.} =
   ## Returns the capacity of the mesh's VBO.
   mesh.vboCap
 
-proc vboLen*(mesh: Mesh): int =
+proc vboLen*(mesh: Mesh): int {.inline.} =
   ## Returns the length of the mesh's VBO.
   mesh.fVboLen
 
-proc hasEbo*(mesh: Mesh): bool =
+proc hasEbo*(mesh: Mesh): bool {.inline.} =
   ## Returns whether the mesh has an EBO allocated.
   mesh.ebo != 0
 
-proc eboCapacity*(mesh: Mesh): int =
+proc eboCapacity*(mesh: Mesh): int {.inline.} =
   ## Returns the capacity of the mesh's EBO.
   mesh.eboCap
 
-proc eboLen*(mesh: Mesh): int =
+proc eboLen*(mesh: Mesh): int {.inline.} =
   ## Returns the length of the mesh's EBO.
   mesh.fEboLen
 
-proc primitive*(mesh: Mesh): DrawPrimitive =
+proc primitive*(mesh: Mesh): DrawPrimitive {.inline.} =
   ## Returns what primitive the mesh is built from.
   mesh.fPrimitive
 
-proc `primitive=`*(mesh: Mesh, newPrimitive: DrawPrimitive) =
+proc `primitive=`*(mesh: Mesh, newPrimitive: DrawPrimitive) {.inline.} =
   ## Changes what primitive the mesh is built from.
   mesh.fPrimitive = newPrimitive
 
-proc vertexCount*(mesh: Mesh): int =
+proc vertexCount*(mesh: Mesh): int {.inline.} =
   ## Returns the total amount of vertices that can be drawn using the mesh.
   if mesh.hasEbo: mesh.eboLen
   else: mesh.vboLen
 
-proc primitiveCount*(mesh: Mesh): int =
+proc primitiveCount*(mesh: Mesh): int {.inline.} =
   ## Returns how many primitives the mesh contains.
   let verts = mesh.vertexCount
   case mesh.primitive
@@ -301,7 +301,7 @@ proc draw*(slice: MeshSlice, gl: OpenGl) =
       gl.drawArrays(slice.mesh.primitive.toGlEnum,
                     slice.range.a, 1 + slice.range.b - slice.range.a)
 
-converter allVertices*[V](mesh: Mesh[V]): MeshSlice[V] =
+converter allVertices*[V](mesh: Mesh[V]): MeshSlice[V] {.inline.} =
   ## Implicit converter to avoid having to use ``mesh[0..<mesh.vertexCount]``
   ## when attempting to draw something.
   assert mesh.vertexCount > 0, "cannot draw a mesh with no vertices"

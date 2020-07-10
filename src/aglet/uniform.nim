@@ -114,6 +114,7 @@ proc addConverters(stmts: var NimNode, typeList: seq[string]) =
       newTree(nnkObjConstr, ident"Uniform",
               newColonExpr(ident"ty", ident("ut" & typeName.capitalizeAscii)),
               newColonExpr(ident("val" & typeName.capitalizeAscii), val))
+    procDef.addPragma(ident"inline")
     stmts.add(procDef)
 
 macro genUniforms() =

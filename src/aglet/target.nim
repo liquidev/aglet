@@ -23,28 +23,28 @@ type
       k is string
       v is Uniform
 
-proc use(target: Target) =
+proc use(target: Target) {.inline.} =
   target.useImpl(target, target.gl)
 
-proc width*(target: Target): int =
+proc width*(target: Target): int {.inline.} =
   ## Returns the width of the target.
   target.size.x
 
-proc height*(target: Target): int =
+proc height*(target: Target): int {.inline.} =
   ## Returns the height of the target.
   target.size.y
 
-proc clearColor*(target: Target, color: Rgba32f) =
+proc clearColor*(target: Target, color: Rgba32f) {.inline.} =
   ## Clear the target's color with a solid color.
   target.use()
   target.gl.clearColor(color.r, color.g, color.b, color.a)
 
-proc clearDepth*(target: Target, depth: float32) =
+proc clearDepth*(target: Target, depth: float32) {.inline.} =
   ## Clear the target's depth buffer with a single value.
   target.use()
   target.gl.clearDepth(depth)
 
-proc clearStencil*(target: Target, stencil: int32) =
+proc clearStencil*(target: Target, stencil: int32) {.inline.} =
   ## Clear the target's stencil buffer with a single value.
   target.use()
   target.gl.clearStencil(stencil.GlInt)

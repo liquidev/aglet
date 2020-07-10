@@ -62,23 +62,23 @@ type
 
 # renderbuffer
 
-proc size*(renderbuffer: Renderbuffer): Vec2i =
+proc size*(renderbuffer: Renderbuffer): Vec2i {.inline.} =
   ## Returns the size of the renderbuffer as a vector.
   renderbuffer.fSize
 
-proc width*(renderbuffer: Renderbuffer): int =
+proc width*(renderbuffer: Renderbuffer): int {.inline.} =
   ## Returns the width of the renderbuffer.
   renderbuffer.size.x
 
-proc height*(renderbuffer: Renderbuffer): int =
+proc height*(renderbuffer: Renderbuffer): int {.inline.} =
   ## Returns the height of the renderbuffer.
   renderbuffer.size.y
 
-proc multisampled*(renderbuffer: Renderbuffer): bool =
+proc multisampled*(renderbuffer: Renderbuffer): bool {.inline.} =
   ## Returns whether the renderbuffer is multisampled.
   renderbuffer.fSamples > 0
 
-proc samples*(renderbuffer: Renderbuffer): int =
+proc samples*(renderbuffer: Renderbuffer): int {.inline.} =
   ## Returns the number of MSAA samples for the renderbuffer, or 0 if the
   ## renderbuffer does not have MSAA enabled.
   renderbuffer.fSamples
@@ -119,19 +119,21 @@ proc implSource(renderbuffer: Renderbuffer): FramebufferSource =
     renderbuffer.use()
     renderbuffer.gl.attachRenderbuffer(attachment, renderbuffer.id)
 
-converter source*(rb: Renderbuffer[ColorPixelType]): ColorSource =
+converter source*(rb: Renderbuffer[ColorPixelType]): ColorSource {.inline.} =
   ## ``ColorSource`` implementation for color renderbuffers.
   result = rb.implSource().ColorSource
 
-converter source*(rb: Renderbuffer[DepthPixelType]): DepthSource =
+converter source*(rb: Renderbuffer[DepthPixelType]): DepthSource {.inline.} =
   ## ``DepthSource`` implementation for depth renderbuffers.
   result = rb.implSource().DepthSource
 
-converter source*(rb: Renderbuffer[StencilPixelType]): StencilSource =
+converter source*(rb: Renderbuffer[StencilPixelType]): StencilSource
+                 {.inline.} =
   ## ``StencilSource`` implementation for stencil renderbuffers.
   result = rb.implSource().StencilSource
 
-converter source*(rb: Renderbuffer[DepthStencilPixelType]): DepthStencilSource =
+converter source*(rb: Renderbuffer[DepthStencilPixelType]): DepthStencilSource
+                 {.inline.} =
   ## ``DepthStencilSource`` implementation for combined depth/stencil
   ## renderbuffers.
   result = rb.implSource().DepthStencilSource
@@ -143,19 +145,19 @@ method size*(framebuffer: BaseFramebuffer): Vec2i {.base.} =
   ## Returns the size of the framebuffer as a vector.
   framebuffer.fSize
 
-proc width*(framebuffer: BaseFramebuffer): int =
+proc width*(framebuffer: BaseFramebuffer): int {.inline.} =
   ## Returns the width of the framebuffer.
   framebuffer.size.x
 
-proc height*(framebuffer: BaseFramebuffer): int =
+proc height*(framebuffer: BaseFramebuffer): int {.inline.} =
   ## Returns the height of the framebuffer.
   framebuffer.size.y
 
-proc multisampled*(framebuffer: BaseFramebuffer): bool =
+proc multisampled*(framebuffer: BaseFramebuffer): bool {.inline.} =
   ## Returns whether the framebuffer is multisampled.
   framebuffer.fSamples > 0
 
-proc samples*(framebuffer: BaseFramebuffer): int =
+proc samples*(framebuffer: BaseFramebuffer): int {.inline.} =
   ## Returns the MSAA sample count of the framebuffer.
   framebuffer.fSamples
 
@@ -305,21 +307,22 @@ proc defaultFramebuffer*(window: Window): DefaultFramebuffer =
 
 # simple framebuffer
 
-proc color*(simplefb: SimpleFramebuffer): FramebufferAttachment =
+proc color*(simplefb: SimpleFramebuffer): FramebufferAttachment {.inline.} =
   ## Returns the color attachment of this framebuffer.
   simplefb.fColor
 
-proc depth*(simplefb: SimpleFramebuffer): FramebufferAttachment =
+proc depth*(simplefb: SimpleFramebuffer): FramebufferAttachment {.inline.} =
   ## Returns the depth attachment of this framebuffer, or ``nil`` if no depth
   ## target was attached.
   simplefb.fDepth
 
-proc stencil*(simplefb: SimpleFramebuffer): FramebufferAttachment =
+proc stencil*(simplefb: SimpleFramebuffer): FramebufferAttachment {.inline.} =
   ## Returns the stencil attachment of this framebuffer, or ``nil`` if no
   ## stencil target was attached.
   simplefb.fStencil
 
-proc depthStencil*(simplefb: SimpleFramebuffer): FramebufferAttachment =
+proc depthStencil*(simplefb: SimpleFramebuffer): FramebufferAttachment
+                  {.inline.} =
   ## Returns the combined depth/stencil attachment of this framebuffer, or
   ## ``nil`` if no combined depth/stencil target was attached.
   simplefb.fStencil
@@ -441,25 +444,27 @@ proc newFramebuffer*(window: Window, color: ColorSource): SimpleFramebuffer =
 
 # multi framebuffer
 
-proc colorCount*(multifb: MultiFramebuffer): int =
+proc colorCount*(multifb: MultiFramebuffer): int {.inline.} =
   ## Returns the number of color attachments.
   multifb.fColor.len
 
-proc color*(multifb: MultiFramebuffer, index: Natural): FramebufferAttachment =
+proc color*(multifb: MultiFramebuffer, index: Natural): FramebufferAttachment
+           {.inline.} =
   ## Returns the color attachment ``index`` of the framebuffer.
   multifb.fColor[index]
 
-proc depth*(multifb: MultiFramebuffer): FramebufferAttachment =
+proc depth*(multifb: MultiFramebuffer): FramebufferAttachment {.inline.} =
   ## Returns the depth attachment of this framebuffer, or ``nil`` if no depth
   ## target was attached.
   multifb.fDepth
 
-proc stencil*(multifb: MultiFramebuffer): FramebufferAttachment =
+proc stencil*(multifb: MultiFramebuffer): FramebufferAttachment {.inline.} =
   ## Returns the stencil attachment of this framebuffer, or ``nil`` if no
   ## stencil  target was attached.
   multifb.fStencil
 
-proc depthStencil*(multifb: MultiFramebuffer): FramebufferAttachment =
+proc depthStencil*(multifb: MultiFramebuffer): FramebufferAttachment
+                  {.inline.} =
   ## Returns the combined depth/stencil attachment of this framebuffer, or
   ## ``nil`` if no combined depth/stencil target was attached.
   multifb.fDepthStencil
