@@ -44,3 +44,12 @@ type
     amWrite
 
   AccessMode* = set[AccessModeBit]
+
+  ColorComponent* = enum
+    ## A color component, used in texture swizzle masks.
+    ccZero
+    ccOne
+    ccRed
+    ccGreen
+    ccBlue
+    ccAlpha

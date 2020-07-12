@@ -19,9 +19,17 @@ type
     ## Pixel formats supported by textures.
 
   DownloadPixelType* = TexturePixelType and ClientPixelType
+    ## Valid pixel types for downloads.
 
   TextureMinFilter* = FilteringMode
+    ## Diltering modes for minification. This includes all filtering modes.
   TextureMagFilter* = range[fmNearest..fmLinear]
+    ## Filtering modes for magnification. This only includes nearest and linear
+    ## filtering, because mipmaps aren't used with magnification.
+
+  SwizzleMask* = array[4, ColorComponent]
+    ## Swizzle mask for textures. The values in the array are R, G, B, A
+    ## respectively.
 
   TextureWrap* = enum
     ## Texture wrapping mode.
@@ -84,15 +92,11 @@ type
   Some2DTexture* = Texture2D | Texture2DArray
     ## Texture that can be multisampled.
 
-  ByteArray* = concept array
-    ## Describes an array of values, of which each one can be casted to a uint8.
-    sizeof(array[int]) == 1
-
   BinaryImageBuffer* = concept image
     ## Concept describing an image that holds some arbitrary 8-bit data.
     image.width is SomeInteger
     image.height is SomeInteger
-    image.data is ByteArray
+    sizeof(image.data[0]) == 1
 
 
 # utilities
@@ -739,6 +743,42 @@ proc newTexture3D*[T: TexturePixelType](window: Window,
 
 
 # sampler
+
+proc toGlEnum(cc: ColorComponent): GlEnum {.inline.} =
+  case cc
+  of ccZero: GL_ZERO
+  of ccOne: GL_ONE
+  of ccRed: GL_RED
+  of ccGreen: GL_GREEN
+  of ccBlue: GL_BLUE
+  of ccAlpha: GL_ALPHA
+
+template setSwizzleMaskImpl(texture: Texture, mask: SwizzleMask) =
+  var values = [
+    # unrolled for efficiency
+    mask[0].toGlEnum, mask[1].toGlEnum, mask[2].toGlEnum, mask[3].toGlEnum
+  ]
+  use(texture)
+  textureParam(texture.gl, texture.target,
+               GL_TEXTURE_SWIZZLE_RGBA, cast[ptr GlInt](addr values))
+
+proc `swizzleMask=`*[T: ColorPixelType](texture: Texture1D[T],
+                                        mask: SwizzleMask) =
+  ## Sets the swizzle mask for the given 1D texture.
+  ## The swizzle mask specifies how to reorder color components when accessing
+  ## them from shaders.
+  ## The default value is ``[ccRed, ccGreen, ccBlue, ccAlpha]``.
+  setSwizzleMaskImpl(texture, mask)
+
+proc `swizzleMask=`*[T: ColorPixelType](texture: Texture2D[T],
+                                        mask: SwizzleMask) =
+  ## Sets the swizzle mask for the given 2D texture.
+  setSwizzleMaskImpl(texture, mask)
+
+proc `swizzleMask=`*[T: ColorPixelType](texture: Texture3D[T],
+                                        mask: SwizzleMask) =
+  ## Sets the swizzle mask for the given 3D texture.
+  setSwizzleMaskImpl(texture, mask)
 
 proc sampler*[T: Texture](texture: T,
                           minFilter: TextureMinFilter = fmNearestMipmapLinear,

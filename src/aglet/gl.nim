@@ -223,9 +223,6 @@ type
     glTexImage1D: proc (target: GlEnum, level, internalFormat: GlInt,
                         width: GlSizei, border: GlInt, format, kind: GlEnum,
                         data: pointer) {.cdecl.}
-    glTexSubImage1D: proc (target: GlEnum, level, xoffset: GlInt,
-                           width: GlSizei, format, typ: GlEnum,
-                           data: pointer) {.cdecl.}
     glTexImage2D: proc (target: GlEnum, level, internalFormat: GlInt,
                         width, height: GlSizei, border: GlInt,
                         format, kind: GlEnum, data: pointer) {.cdecl.}
@@ -233,9 +230,6 @@ type
                                    internalFormat: GlInt,
                                    width, height: GlSizei,
                                    fixedSampleLocations: GlBool) {.cdecl.}
-    glTexSubImage2D: proc (target: GlEnum, level, xoffset, yoffset: GlInt,
-                           width, height: GlSizei, format, typ: GlEnum,
-                           data: pointer) {.cdecl.}
     glTexImage3D: proc (target: GlEnum, level, internalFormat: GlInt,
                         width, height, depth: GlSizei, border: GlInt,
                         format, kind: GlEnum, data: pointer) {.cdecl.}
@@ -243,6 +237,13 @@ type
                                    internalFormat: GlInt,
                                    width, height, depth: GlSizei,
                                    fixedSampleLocations: GlBool) {.cdecl.}
+    glTexParameteriv: proc (target, pname: GlEnum, params: ptr GlInt) {.cdecl.}
+    glTexSubImage1D: proc (target: GlEnum, level, xoffset: GlInt,
+                           width: GlSizei, format, typ: GlEnum,
+                           data: pointer) {.cdecl.}
+    glTexSubImage2D: proc (target: GlEnum, level, xoffset, yoffset: GlInt,
+                           width, height: GlSizei, format, typ: GlEnum,
+                           data: pointer) {.cdecl.}
     glTexSubImage3D: proc (target: GlEnum, level: GlInt,
                            xoffset, yoffset, zoffset: GlInt,
                            width, height, depth: GlSizei, format, typ: GlEnum,
@@ -853,6 +854,10 @@ proc getImage*(gl: OpenGl, target: TextureTarget, level: GlInt,
 
 proc genMipmaps*(gl: OpenGl, target: TextureTarget) =
   gl.glGenerateMipmap(target.toGlEnum)
+
+proc textureParam*(gl: OpenGl, target: TextureTarget,
+                   param: GlEnum, values: ptr GlInt) =
+  gl.glTexParameteriv(target.toGlEnum, param, values)
 
 proc deleteTexture*(gl: OpenGl, texture: GlUint) =
   var texture = texture
