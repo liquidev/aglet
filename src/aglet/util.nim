@@ -83,8 +83,8 @@ macro uniforms*(uniforms: untyped): untyped =
         result.add(newColonExpr(key, value))
       elif decl.kind == nnkPrefix:
         decl[0].expectIdent("..")
-        let
-          key = ident(".." & $expansionCount)
+        let key = ident(".." & $expansionCount)
+        inc(expansionCount)
         result.add(newColonExpr(key, decl[1]))
       else:
         error("uniform 'name: value' or expansion '..expansion' expected", decl)
