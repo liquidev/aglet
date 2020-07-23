@@ -92,26 +92,37 @@ macro uniforms*(uniforms: untyped): untyped =
 iterator getUniforms*(none: EmptyUniforms): (string, Uniform) =
   ## Yields no uniforms.
 
-iterator getUniforms*(table: SomeTable[string, Uniform]): (string, Uniform) =
-  ## Built-in helper for Tables containing Uniforms.
-  for key, value in table:
-    yield (key, value)
-
-iterator getUniforms*(rec: tuple | object): (string, Uniform) =
+iterator getUniforms*(tup: tuple): (string, Uniform) =
   ## Built-in helper iterator for the ``uniforms`` macro. This also allows for
   ## user-defined object types to be used as UniformSources.
-  ## Every field in the record must be convertable to a uniform using
+  ## Every field in the tuple must be convertable to a uniform using
   ## ``toUniform``.
   ##
   ## If a field's name begins with `..` (which is normally only possible through
   ## the use of macros), the field is iterated using ``getUniforms``.
   ## This process happens recursively for any field whose name begins with `..`.
 
-  template expand(rec) =
-    for key, value in fieldPairs(rec):
-      when key.len >= 2 and key[0..1] == "..":
-        expand(value)
-      else:
-        yield (key, value.toUniform)
+  template expand(tup) =
+    when tup is tuple:
+      for key, value in fieldPairs(tup):
+        when key.len >= 2 and key[0..1] == "..":
+          expand(value)
+        else:
+          yield (key, value.toUniform)
+    else:
+      mixin getUniforms
 
-  expand(rec)
+      for key, value in getUniforms(tup):
+        yield (key, value)
+
+  expand(tup)
+
+iterator getUniforms*(table: Table[string, Uniform]): (string, Uniform) =
+  ## Built-in helper for Tables containing Uniforms.
+  for key, value in table:
+    yield (key, value)
+
+iterator getUniforms*(table: TableRef[string, Uniform]): (string, Uniform) =
+  ## Built-in helper for TableRefs containing Uniforms.
+  for key, value in table:
+    yield (key, value)
