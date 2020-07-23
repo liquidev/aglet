@@ -296,7 +296,7 @@ function main() {
 <blockquote><p>Window hints. For most hints, if a backend does not support them, they should be ignored.</p></blockquote>
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L23"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L23"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L23" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -307,7 +307,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Callback for async polling. The value returned signals whether the callback should fire on the next <tt class="docutils literal"><span class="pre">pollEvents</span></tt> or <tt class="docutils literal"><span class="pre">waitEvents</span></tt>.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L35"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L35"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L35" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -354,7 +354,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 A backend-independent window. This also contains the OpenGL context, so resource allocation is done using this handle.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L39"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L39"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L39" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -368,7 +368,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L111"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L111"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L111" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -388,7 +388,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L161"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L161"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L161" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -404,7 +404,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 <strong>Do not use this.</strong> Makes a window's context current. You should not use this in normal code. This is left as part of the public API, but it's an implementation detail left in because of global state.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L115"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L115"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L115" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -436,7 +436,7 @@ Constructs a WindowHints with sensible defaults:<ul class="simple"><li>resizable
 </ul>
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L126"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L126"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L126" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -448,7 +448,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Adds a procedure to the dispatcher loop. This procedure is fired on the next <tt class="docutils literal"><span class="pre">pollAsyncCallbacks</span></tt> call. If it returns <tt class="docutils literal"><span class="pre">false</span></tt>, it is removed from the dispatched procedures; otherwise, it will run on the next async tick.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L163"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L163"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L163" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -459,7 +459,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Run all active async callbacks registered through <tt class="docutils literal"><span class="pre">startAsync</span></tt>. This is called implicitly by <tt class="docutils literal"><span class="pre">pollEvents</span></tt> and <tt class="docutils literal"><span class="pre">waitEvents</span></tt>, so usually you don't need to call this.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L170"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L170"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L170" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -471,7 +471,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Poll for incoming events from the given window. <tt class="docutils literal"><span class="pre">processEvent</span></tt> will be called for each incoming event. This also dispatches all async callbacks.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L194"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L194"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L194" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -483,7 +483,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Wait for incoming events from the given window. <tt class="docutils literal"><span class="pre">processEvent</span></tt> will be called for each incoming event. If <tt class="docutils literal"><span class="pre">timeout</span></tt> is specified, the procedure will only wait for the specified amount of seconds, and then continue execution. This also dispatches all async callbacks <em>before</em> the wait period.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L200"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L200"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L200" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -494,7 +494,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Requests that the window gets closed. This may not <em>actually</em> close the window, it only sets a bit in the window's state, and the application determines whether the window actually closes.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L210"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L210"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L210" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -505,7 +505,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Resets the close request bit.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L216"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L216"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L216" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -517,7 +517,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns whether a window close request has been made.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L220"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L220"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L220" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -529,7 +529,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Sets the window's buffer swap interval. The swap interval controls whether VSync should be used. A value of 0 disables VSync, a value of 1 enables VSync at the monitor's refresh rate, and any values higher than that enable VSync at the monitor's refresh rate divided by the interval.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L224"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L224"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L224" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -540,7 +540,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the pressed state of the given key. <tt class="docutils literal"><span class="pre">true</span></tt> is pressed.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L232"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L232"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L232" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -553,7 +553,7 @@ class="link-seesrc" target="_blank">Source</a>
 <p>If the window is not focused, it returns the last position of the cursor when the window <em>was</em> focused. If you need the mouse position when the window is not focused, consider using the (slower) <tt class="docutils literal"><span class="pre">pollMouse</span></tt>.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L236"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L236"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L236" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -564,7 +564,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Polls the OS for the mouse cursor's position. Unlike <tt class="docutils literal"><span class="pre">mouse</span></tt>, this works returns the current position regardless of the window's focus.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L246"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L246"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L246" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -575,7 +575,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the window's current position <em>in screen coordinates</em> as a vector.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L251"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L251"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L251" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -587,7 +587,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Sets the window's position <em>in screen coordinates</em>.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L257"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L257"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L257" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -598,7 +598,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the current size of the window <em>in screen coordinates</em> as a vector.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L261"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L261"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L261" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -609,7 +609,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the current width of the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L267"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L267"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L267" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -620,7 +620,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the current height of the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L271"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L271"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L271" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -632,7 +632,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the size of the window <em>in pixels</em> as a vector.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L275"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L275"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L275" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -644,7 +644,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the window's width in pixels.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L281"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L281"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L281" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -656,7 +656,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the window's height in pixels.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L285"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L285"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L285" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -668,7 +668,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the content scale of the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L289"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L289"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L289" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -680,7 +680,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Limits the size of the window. This resets the aspect ration limitation.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L295"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L295"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L295" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -692,7 +692,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Constrains the window's aspect ratio to <tt class="docutils literal"><span class="pre">num/den</span></tt>, where <tt class="docutils literal"><span class="pre">num</span></tt> is the width, and <tt class="docutils literal"><span class="pre">den</span></tt> is the height. This resets the size limitation.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L300"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L300"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L300" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -704,7 +704,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Resets the aspect ratio contraint.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L306"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L306"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L306" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -715,7 +715,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Iconifies the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L310"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L310"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L310" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -726,7 +726,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns whether the window is iconified or not.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L314"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L314"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L314" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -737,7 +737,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Maximizes the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L318"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L318"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L318" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -748,7 +748,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns whether the window is maximized or not.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L322"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L322"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L322" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -759,7 +759,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Restores the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L326"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L326"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L326" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -771,7 +771,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Sets whether the window is visible or not.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L330"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L330"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L330" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -782,7 +782,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns whether the window is visible or not.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L335"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L335"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L335" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -794,7 +794,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Sets the title of the window.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L339"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L339"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L339" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -805,7 +805,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Starts rendering a single frame of animation. Only one frame may be rendered at a time. After rendering the frame, use <tt class="docutils literal"><span class="pre">finish</span></tt> to stop rendering to the frame.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L343"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L343"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L343" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -816,7 +816,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Finishes a frame blitting it onto the screen.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L359"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L359"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L359" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -827,7 +827,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns a string containing the version of OpenGL as reported by the driver.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L364"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L364"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L364" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -838,7 +838,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Initializes the windowing submodule. You should call this before doing anything with windows.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L369"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L369"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L369" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -849,7 +849,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 <strong>Do not use this.</strong> Initializes the OpenGL context. This is called internally by backend-specific constructors.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L374"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L374"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L374" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -860,7 +860,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 <strong>Do not use this.</strong> Returns the raw OpenGL context for use in internal code.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.1/src/aglet/window.nim#L381"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/window.nim#L381"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/window.nim#L381" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -875,7 +875,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-20 16:26:09 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-23 15:24:48 UTC</small>
       </div>
     </div>
   </div>
