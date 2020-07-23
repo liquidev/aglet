@@ -48,8 +48,7 @@ proc genTypeNames(dest: var seq[string]) =
       dest.add("Mat" & size & ty)
 
   block:
-    # this block is here to make the ``arrays`` variable have as short of a
-    # lifetime as possible
+    # need to do some seq juggling because a seq can't be modified mid-iteration
     var arrays: seq[string]
     for ty in dest:
       arrays.add(ty & "Array")
@@ -64,7 +63,7 @@ proc addUniformTypeEnum(typesec: var NimNode, typeList: seq[string]) =
     enumDef.add(ident(base))
 
   typesec.add(newTree(nnkTypeDef,
-                      newTree(nnkPostfix, ident"*", ident"UniformType"),
+                      postfix(ident"UniformType", "*"),
                       newEmptyNode(),
                       enumDef))
 
@@ -74,7 +73,7 @@ proc addUniformObject(typesec: var NimNode, typeList: seq[string]) =
     recList = newNimNode(nnkRecList)
     cases = newTree(nnkRecCase,
                     newTree(nnkIdentDefs,
-                            newTree(nnkPostfix, ident"*", ident"ty"),
+                            postfix(ident"ty", "*"),
                             ident"UniformType",
                             newEmptyNode()))
 
@@ -85,13 +84,13 @@ proc addUniformObject(typesec: var NimNode, typeList: seq[string]) =
       ty = typeNameToNode(typeName, "seq")
     cases.add(newTree(nnkOfBranch, ident(enumName),
                       newTree(nnkIdentDefs,
-                              newTree(nnkPostfix, ident"*", ident(fieldName)),
+                              postfix(ident(fieldName), "*"),
                               ty, newEmptyNode())))
 
   recList.add(cases)
   objDef.add(recList)
   typesec.add(newTree(nnkTypeDef,
-                      newTree(nnkPostfix, ident"*", ident"Uniform"),
+                      postfix(ident"Uniform", "*"),
                       newEmptyNode(),
                       objDef))
 
@@ -99,7 +98,7 @@ proc addConverters(stmts: var NimNode, typeList: seq[string]) =
   for typeName in typeList:
     var
       argType = typeNameToNode(typeName, "openArray")
-      procDef = newProc(newTree(nnkPostfix, ident"*", ident"toUniform"),
+      procDef = newProc(postfix(ident"toUniform", "*"),
                         params = @[
                           ident"Uniform",
                           newTree(nnkIdentDefs, ident"val", argType,
@@ -107,7 +106,7 @@ proc addConverters(stmts: var NimNode, typeList: seq[string]) =
                         ])
       val =
         if typeName.endsWith("Array"):
-          newTree(nnkPrefix, ident"@", ident"val")
+          prefix(ident"val", "@")
         else:
           ident"val"
     procDef.body =
@@ -116,6 +115,40 @@ proc addConverters(stmts: var NimNode, typeList: seq[string]) =
               newColonExpr(ident("val" & typeName.capitalizeAscii), val))
     procDef.addPragma(ident"inline")
     stmts.add(procDef)
+
+proc addEquality(stmts: var NimNode, typeList: seq[string]) =
+  var
+    procDef = newProc(name = postfix(ident"==", "*"),
+                      params = [
+                        bindSym"bool",
+                        newIdentDefs(ident"a", ident"Uniform"),
+                        newIdentDefs(ident"b", ident"Uniform"),
+                      ])
+    kindsNotEqual = infix(newDotExpr(ident"a", ident"ty"), "!=",
+                          newDotExpr(ident"b", ident"ty"))
+    caseStmt = newTree(nnkCaseStmt, newDotExpr(ident"a", ident"ty"))
+
+  for typeName in typeList:
+    let
+      enumIdent = ident("ut" & typeName.capitalizeAscii)
+      fieldIdent = ident("val" & typeName.capitalizeAscii)
+    var check = infix(newDotExpr(ident"a", fieldIdent), "==",
+                      newDotExpr(ident"b", fieldIdent))
+    caseStmt.add(newTree(nnkOfBranch, enumIdent, check))
+
+  procDef.body = quote do:
+    if `kindsNotEqual`:
+      return false
+    result = `caseStmt`
+  stmts.add(procDef)
+
+proc addSets(stmts: var NimNode, typeList: seq[string]) =
+  block arrays:
+    var arraysSet = newNimNode(nnkCurly)
+    for typeName in typeList:
+      if typeName.endsWith("Array"):
+        arraysSet.add(ident("ut" & typeName.capitalizeAscii))
+    stmts.add(newConstStmt(postfix(ident"utArrays", "*"), arraysSet))
 
 macro genUniforms() =
   result = newStmtList()
@@ -131,8 +164,10 @@ macro genUniforms() =
   result.add(typesec)
 
   addConverters(result, types)
+  addEquality(result, types)
+  addSets(result, types)
 
-genUniforms()
+genUniforms
 
 # to mitigate the warning produced by target.nim:
 when defined(nimHasUsed):
