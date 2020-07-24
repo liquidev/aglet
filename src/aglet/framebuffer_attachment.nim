@@ -12,7 +12,7 @@ type
   FramebufferSource* = object
     ## Abstract interface for all the available types of sources.
     attachment*: FramebufferAttachment
-    attachToFramebuffer*: proc (framebuffer: GlUint, attachment: GlEnum)
+    attachToFramebuffer*: proc (framebuffer: Framebuffer, attachment: GlEnum)
     size*: Vec2i
     samples*: int
 

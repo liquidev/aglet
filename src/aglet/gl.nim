@@ -53,6 +53,9 @@ type
   VertexArray* = object
     buffers: array[BufferTarget, GlUint]
     id*: GlUint
+  Framebuffer* = ref object
+    id*: GlUint
+    drawBuffers: seq[GlEnum]
 
   UniformVecProc = proc (location: GlInt, count: GlSizei,
                          value: pointer) {.cdecl.}
@@ -77,7 +80,7 @@ type
     sDepthFunc: GlEnum
     sDepthMask: bool
     sEnabledFeatures: array[OpenGlFeature, bool]
-    sFramebuffers: tuple[read, draw: GlUint]
+    sFramebuffers: tuple[read, draw: Framebuffer]
     sFrontFace: GlEnum
     sHints: array[Hint, GlEnum]
     sLogicOp: GlEnum
@@ -101,6 +104,7 @@ type
     currentDrawParamsHash*: Hash  # optimization used by IMPL_apply
                                   # in drawparams.nim
     defaultFramebufferSamples*: int
+    defaultFramebuffer*: Framebuffer
 
     # state functions
     glActiveTexture: proc (texture: GlEnum) {.cdecl.}
@@ -122,6 +126,7 @@ type
     glCullFace: proc (mode: GlEnum) {.cdecl.}
     glDepthFunc: proc (fn: GlEnum) {.cdecl.}
     glDepthMask: proc (mask: GlBool) {.cdecl.}
+    glDrawBuffers: proc (n: GlSizei, bufs: ptr GlEnum) {.cdecl.}
     glDisable: proc (cap: GlEnum) {.cdecl.}
     glEnable: proc (cap: GlEnum) {.cdecl.}
     glFrontFace: proc (mode: GlEnum) {.cdecl.}
@@ -324,6 +329,8 @@ when not defined(js):
     gl.sTextureUnitBindings.setLen(textureUnitCount)
     gl.defaultFramebufferSamples = defaultFramebufferSamples
 
+    gl.defaultFramebuffer = Framebuffer(id: 0)
+
     # apply some default settings because OpenGL is weird
     gl.glPixelStorei(GL_PACK_ALIGNMENT, 1)
     gl.glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
@@ -468,20 +475,20 @@ proc bindBuffer*(gl: OpenGl, target: BufferTarget, buffer: GlUint) =
       raise newException(ValueError, "buffer " & $buffer & " doesn't exist")
 
 proc bindFramebuffer*(gl: OpenGl, targets: set[FramebufferTarget],
-                      buffer: GlUint) =
+                      buffer: Framebuffer) =
   if targets == {ftRead, ftDraw}:
     updateDiff gl.sFramebuffers, (buffer, buffer):
-      gl.glBindFramebuffer(GL_FRAMEBUFFER, buffer)
+      gl.glBindFramebuffer(GL_FRAMEBUFFER, buffer.id)
   elif targets == {ftRead}:
     updateDiff gl.sFramebuffers.read, buffer:
-      gl.glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer)
+      gl.glBindFramebuffer(GL_READ_FRAMEBUFFER, buffer.id)
   elif targets == {ftDraw}:
     updateDiff gl.sFramebuffers.draw, buffer:
-      gl.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer)
+      gl.glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer.id)
 
   if gl.getError() == GL_INVALID_VALUE:
     raise newException(ValueError,
-                       "framebuffer " & $buffer & " doesn't exist")
+                       "framebuffer " & $buffer.id & " doesn't exist")
 
 proc bindRenderbuffer*(gl: OpenGl, renderbuffer: GlUint) =
   updateDiff gl.sRenderbuffer, renderbuffer:
@@ -548,6 +555,10 @@ proc depthFunc*(gl: OpenGl, function: GlEnum) =
 proc depthMask*(gl: OpenGl, enabled: bool) =
   updateDiff gl.sDepthMask, enabled:
     gl.glDepthMask(enabled)
+
+proc drawBuffers*(gl: OpenGl, buffers: seq[GlEnum]) =
+  updateDiff gl.sFramebuffers.draw.drawBuffers, buffers:
+    gl.glDrawBuffers(buffers.len.GlSizei, buffers[0].unsafeAddr)
 
 proc frontFace*(gl: OpenGl, mode: GlEnum) =
   updateDiff gl.sFrontFace, mode:
@@ -877,8 +888,10 @@ proc deleteSampler*(gl: OpenGl, sampler: GlUint) =
   var sampler = sampler
   gl.glDeleteSamplers(1, addr sampler)
 
-proc createFramebuffer*(gl: OpenGl): GlUint =
-  gl.glGenFramebuffers(1, addr result)
+proc createFramebuffer*(gl: OpenGl): Framebuffer =
+  new(result)
+  gl.glGenFramebuffers(1, addr result.id)
+  result.drawBuffers = @[GL_COLOR_ATTACHMENT0]
 
 proc attachRenderbuffer*(gl: OpenGl, attachment: GlEnum, renderbuffer: GlUint) =
   gl.glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment,
@@ -909,9 +922,8 @@ proc blitFramebuffer*(gl: OpenGl, srcX0, srcY0, srcX1, srcY1: GlInt,
                        destX0, destY0, destX1, destY1,
                        mask, filter)
 
-proc deleteFramebuffer*(gl: OpenGl, framebuffer: GlUint) =
-  var framebuffer = framebuffer
-  gl.glDeleteFramebuffers(1, addr framebuffer)
+proc deleteFramebuffer*(gl: OpenGl, framebuffer: Framebuffer) =
+  gl.glDeleteFramebuffers(1, addr framebuffer.id)
 
 proc createRenderbuffer*(gl: OpenGl): GlUint =
   gl.glGenRenderbuffers(1, addr result)

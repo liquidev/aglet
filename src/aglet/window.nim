@@ -353,7 +353,7 @@ proc render*(window: Window): Frame =
       "cannot render to a frame that's already been finished"
     let window = target.Frame.window
     window.IMPL_makeCurrent()
-    gl.bindFramebuffer({ftRead, ftDraw}, 0)
+    gl.bindFramebuffer({ftRead, ftDraw}, gl.defaultFramebuffer)
     gl.viewport(0, 0, window.width.GlSizei, window.height.GlSizei)
 
 proc finish*(frame: var Frame) =

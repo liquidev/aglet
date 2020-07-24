@@ -846,7 +846,8 @@ proc implSource(texture: Texture2D[ColorPixelType]): FramebufferSource
   result.size = texture.size
   result.samples = texture.samples
 
-  result.attachToFramebuffer = proc (framebuffer: GlUint, attachment: GlEnum) =
+  result.attachToFramebuffer = proc (framebuffer: Framebuffer,
+                                     attachment: GlEnum) =
     texture.gl.attachTexture2D(attachment, texture.target,
                                texture.id, mipLevel = 0)
 

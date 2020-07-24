@@ -33,7 +33,7 @@ type
     ## Base type for framebuffers.
     window: Window
     gl: OpenGl
-    id: GlUint
+    glfb: Framebuffer
     fSize: Vec2i
     fSamples: int
     pixelBuffer: PixelBuffer
@@ -115,7 +115,8 @@ proc implSource(renderbuffer: Renderbuffer): FramebufferSource =
   result.size = renderbuffer.size
   result.samples = renderbuffer.samples
 
-  result.attachToFramebuffer = proc (framebuffer: GlUint, attachment: GlEnum) =
+  result.attachToFramebuffer = proc (framebuffer: Framebuffer,
+                                     attachment: GlEnum) =
     renderbuffer.use()
     renderbuffer.gl.attachRenderbuffer(attachment, renderbuffer.id)
 
@@ -173,8 +174,8 @@ proc blit*(source, dest: BaseFramebuffer, sourceArea, destArea: Recti,
   assert source.window == dest.window,
     "both framebuffers must be owned by the same window"
   source.window.IMPL_makeCurrent()
-  source.gl.bindFramebuffer({ftRead}, source.id)
-  source.gl.bindFramebuffer({ftDraw}, dest.id)
+  source.gl.bindFramebuffer({ftRead}, source.glfb)
+  source.gl.bindFramebuffer({ftDraw}, dest.glfb)
 
   var bitmask = 0
   if bbColor in buffers: bitmask = bitmask or GL_COLOR_BUFFER_BIT.int
@@ -197,7 +198,7 @@ proc blit*(source, dest: BaseFramebuffer, sourceArea, destArea: Recti,
 
 proc use(framebuffer: BaseFramebuffer) =
   framebuffer.window.IMPL_makeCurrent()
-  framebuffer.gl.bindFramebuffer({ftRead, ftDraw}, framebuffer.id)
+  framebuffer.gl.bindFramebuffer({ftRead, ftDraw}, framebuffer.glfb)
 
 proc sizeInBytes[T: ClientPixelType](framebuffer: BaseFramebuffer): int =
   result = framebuffer.width * framebuffer.height * sizeof(T)
@@ -282,10 +283,10 @@ proc downloadSync*[T: ClientPixelType](framebuffer: BaseFramebuffer,
 template framebufferInit(T) =
   new(result) do (fb: T):
     fb.window.IMPL_makeCurrent()
-    fb.gl.deleteFramebuffer(fb.id)
+    fb.gl.deleteFramebuffer(fb.glfb)
   result.window = window
   IMPL_makeCurrent(window)
-  result.id = createFramebuffer(gl)
+  result.glfb = createFramebuffer(gl)
   result.gl = gl
   result.fSamples = -1
 
@@ -300,8 +301,8 @@ proc defaultFramebuffer*(window: Window): DefaultFramebuffer =
   ## Returns a handle to the window's default framebuffer.
   new(result)
   result.window = window
-  result.id = 0
   result.gl = window.IMPL_getGlContext()
+  result.glfb = result.gl.defaultFramebuffer
   result.fSamples = result.gl.defaultFramebufferSamples
 
 
@@ -331,7 +332,7 @@ template singleSource(F, T, field, attachmentEnum) =
   proc attach(fb: F, source: T) =
     let source = source.FramebufferSource
     fb.use()
-    source.attachToFramebuffer(fb.id, attachmentEnum)
+    source.attachToFramebuffer(fb.glfb, attachmentEnum)
     fb.field = source.attachment
     if fb.fSize == vec2i(0):
       fb.fSize = source.size
@@ -481,7 +482,7 @@ proc attach(multifb: MultiFramebuffer, sources: openArray[ColorSource]) =
     let
       source = color.FramebufferSource
       attachmentPoint = GlEnum(int(GL_COLOR_ATTACHMENT0) + index)
-    source.attachToFramebuffer(multifb.id, attachmentPoint)
+    source.attachToFramebuffer(multifb.glfb, attachmentPoint)
     multifb.fColor.add(source.attachment)
     if multifb.size == vec2i(0):
       multifb.fSize = source.size
@@ -493,6 +494,11 @@ proc attach(multifb: MultiFramebuffer, sources: openArray[ColorSource]) =
     else:
       assert source.samples == multifb.samples,
         "all attachments must have the same number of MSAA samples"
+
+  var drawBuffers = newSeq[GlEnum](sources.len)
+  for index in 0..<drawBuffers.len:
+    drawBuffers[index] = GlEnum(int(GL_COLOR_ATTACHMENT0) + index)
+  multifb.gl.drawBuffers(drawBuffers)
 
 proc newFramebuffer*(window: Window,
                      color: openArray[ColorSource],
@@ -591,7 +597,7 @@ proc render*(framebuffer: BaseFramebuffer): FramebufferTarget =
   result.useImpl = proc (target: Target, gl: OpenGl) {.nimcall.} =
     let framebuffer = target.FramebufferTarget.framebuffer
     framebuffer.window.IMPL_makeCurrent()
-    gl.bindFramebuffer({ftRead, ftDraw}, framebuffer.id)
+    gl.bindFramebuffer({ftRead, ftDraw}, framebuffer.glfb)
     gl.viewport(0, 0, framebuffer.width.GlSizei, framebuffer.height.GlSizei)
 
 {.pop.}
