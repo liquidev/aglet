@@ -206,6 +206,18 @@ function main() {
   </ul>
 </li>
 <li>
+  <a class="reference reference-toplevel" href="#10" id="60">Consts</a>
+  <ul class="simple simple-toc-section">
+      <li><a class="reference" href="#utArrays"
+    title="utArrays = {utFloat32Array, utInt32Array, utUint32Array, utVec2fArray, utVec2iArray,
+          utVec2uiArray, utVec3fArray, utVec3iArray, utVec3uiArray, utVec4fArray,
+          utVec4iArray, utVec4uiArray, utMat2fArray, utMat3fArray, utMat4fArray,
+          utMat2x3fArray, utMat3x2fArray, utMat2x4fArray, utMat4x2fArray,
+          utMat3x4fArray, utMat4x3fArray}"><wbr />ut<wbr />Arrays<span class="attachedType"></span></a></li>
+
+  </ul>
+</li>
+<li>
   <a class="reference reference-toplevel" href="#12" id="62">Procs</a>
   <ul class="simple simple-toc-section">
       <li><a class="reference" href="#toUniform%2Cfloat32"
@@ -294,6 +306,8 @@ function main() {
     title="toUniform(val: openArray[Mat4x3f]): Uniform"><wbr />to<wbr />Uniform<span class="attachedType">Uniform</span></a></li>
   <li><a class="reference" href="#toUniform%2CUSampler"
     title="toUniform(val: USampler): Uniform"><wbr />to<wbr />Uniform<span class="attachedType">USampler</span></a></li>
+  <li><a class="reference" href="#%3D%3D%2CUniform%2CUniform"
+    title="`==`(a: Uniform; b: Uniform): bool"><wbr />`==`<span class="attachedType">Uniform</span></a></li>
 
   </ul>
 </li>
@@ -318,7 +332,7 @@ function main() {
 
 Meta-object for samplers. This is meant for internal use by the texture implementation, don't use this.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/uniform.nim#L13"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/uniform.nim#L13"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/uniform.nim#L13" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -336,7 +350,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L633"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L633"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L633" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -435,9 +449,29 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L633"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L633"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L633" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+
+</dl></div>
+<div class="section" id="10">
+<h1><a class="toc-backref" href="#10">Consts</a></h1>
+<dl class="item">
+<a id="utArrays"></a>
+<dt><pre><a href="uniform.html#utArrays"><span class="Identifier">utArrays</span></a> <span class="Other">=</span> <span class="Other">{</span><span class="DecNumber">utFloat32Array</span><span class="Other">,</span> <span class="DecNumber">utInt32Array</span><span class="Other">,</span> <span class="DecNumber">utUint32Array</span><span class="Other">,</span> <span class="DecNumber">utVec2fArray</span><span class="Other">,</span> <span class="DecNumber">utVec2iArray</span><span class="Other">,</span>
+          <span class="DecNumber">utVec2uiArray</span><span class="Other">,</span> <span class="DecNumber">utVec3fArray</span><span class="Other">,</span> <span class="DecNumber">utVec3iArray</span><span class="Other">,</span> <span class="DecNumber">utVec3uiArray</span><span class="Other">,</span> <span class="DecNumber">utVec4fArray</span><span class="Other">,</span>
+          <span class="DecNumber">utVec4iArray</span><span class="Other">,</span> <span class="DecNumber">utVec4uiArray</span><span class="Other">,</span> <span class="DecNumber">utMat2fArray</span><span class="Other">,</span> <span class="DecNumber">utMat3fArray</span><span class="Other">,</span> <span class="DecNumber">utMat4fArray</span><span class="Other">,</span>
+          <span class="DecNumber">utMat2x3fArray</span><span class="Other">,</span> <span class="DecNumber">utMat3x2fArray</span><span class="Other">,</span> <span class="DecNumber">utMat2x4fArray</span><span class="Other">,</span> <span class="DecNumber">utMat4x2fArray</span><span class="Other">,</span>
+          <span class="DecNumber">utMat3x4fArray</span><span class="Other">,</span> <span class="DecNumber">utMat4x3fArray</span><span class="Other">}</span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -451,7 +485,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -462,7 +496,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -473,7 +507,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -484,7 +518,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -495,7 +529,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -506,7 +540,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -517,7 +551,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -528,7 +562,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -539,7 +573,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -550,7 +584,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -561,7 +595,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -572,7 +606,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -583,7 +617,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -594,7 +628,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -605,7 +639,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -616,7 +650,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -627,7 +661,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -638,7 +672,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -649,7 +683,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -660,7 +694,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -671,7 +705,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -682,7 +716,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -693,7 +727,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -704,7 +738,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -715,7 +749,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -726,7 +760,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -737,7 +771,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -748,7 +782,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -759,7 +793,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -770,7 +804,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -781,7 +815,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -792,7 +826,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -803,7 +837,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -814,7 +848,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -825,7 +859,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -836,7 +870,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -847,7 +881,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -858,7 +892,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -869,7 +903,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -880,7 +914,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -891,7 +925,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -902,7 +936,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -913,9 +947,20 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/uniform.nim#L135"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/uniform.nim#L135" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
+
+</dd>
+<a id="==,Uniform,Uniform"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#%3D%3D%2CUniform%2CUniform"><span class="Identifier">`==`</span></a><span class="Other">(</span><span class="Identifier">a</span><span class="Other">:</span> <a href="uniform.html#Uniform"><span class="Identifier">Uniform</span></a><span class="Other">;</span> <span class="Identifier">b</span><span class="Other">:</span> <a href="uniform.html#Uniform"><span class="Identifier">Uniform</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+&nbsp;&nbsp;<a
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000"
+class="link-seesrc" target="_blank">Source</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/../../../.choosenim/toolchains/nim-1.2.4/lib/core/macros.nim#L1000" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -928,7 +973,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-23 15:24:46 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-24 18:04:41 UTC</small>
       </div>
     </div>
   </div>

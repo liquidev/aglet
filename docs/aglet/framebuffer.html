@@ -119,7 +119,7 @@ function main() {
     title="BaseFramebuffer = ref object of RootObj
   window: Window
   gl: OpenGl
-  id: GlUint
+  glfb: Framebuffer
   fSize: Vec2i
   fSamples: int
   pixelBuffer: PixelBuffer"><wbr />Base<wbr />Framebuffer<span class="attachedType"></span></a></li>
@@ -284,7 +284,7 @@ function main() {
 
 Renderbuffers are special buffer types similar to textures, but not suited for sampling. These are commonly used for depth and stencil buffers as they have lower overhead than using a full texture. Data cannot be uploaded to renderbuffers, as their only purpose is to function as depth and stencil attachments.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L18"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L18"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L18" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -295,7 +295,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L30"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L30"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L30" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -304,7 +304,7 @@ class="link-seesrc" target="_blank">Source</a>
 <dt><pre><a href="framebuffer.html#BaseFramebuffer"><span class="Identifier">BaseFramebuffer</span></a> <span class="Other">=</span> <span class="Keyword">ref</span> <span class="Keyword">object</span> <span class="Keyword">of</span> <span class="Identifier">RootObj</span>
   <span class="Identifier">window</span><span class="Other">:</span> <a href="window.html#Window"><span class="Identifier">Window</span></a>
   <span class="Identifier">gl</span><span class="Other">:</span> <a href="gl.html#OpenGl"><span class="Identifier">OpenGl</span></a>
-  <span class="Identifier">id</span><span class="Other">:</span> <a href="gl_types.html#GlUint"><span class="Identifier">GlUint</span></a>
+  <span class="Identifier">glfb</span><span class="Other">:</span> <a href="gl.html#Framebuffer"><span class="Identifier">Framebuffer</span></a>
   <span class="Identifier">fSize</span><span class="Other">:</span> <span class="Identifier">Vec2i</span>
   <span class="Identifier">fSamples</span><span class="Other">:</span> <span class="Identifier">int</span>
   <span class="Identifier">pixelBuffer</span><span class="Other">:</span> <a href="pixelbuffer.html#PixelBuffer"><span class="Identifier">PixelBuffer</span></a>
@@ -313,7 +313,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Base type for framebuffers.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L32"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L32"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L32" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -325,7 +325,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Object representation of the default framebuffer.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L41"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L41"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L41" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -338,7 +338,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Framebuffer with only one color attachment.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L44"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L44"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L44" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -352,7 +352,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Framebuffer with one or more color attachments.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L48"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L48"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L48" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -365,7 +365,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L53"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L53"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L53" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -377,7 +377,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L56"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L56"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L56" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -388,7 +388,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L61"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L61"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L61" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -404,7 +404,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the size of the renderbuffer as a vector.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L65"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L65"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L65" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -415,7 +415,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the width of the renderbuffer.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L69"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L69"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L69" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -426,7 +426,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the height of the renderbuffer.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L73"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L73"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L73" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -437,7 +437,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns whether the renderbuffer is multisampled.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L77"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L77"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L77" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -448,7 +448,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the number of MSAA samples for the renderbuffer, or 0 if the renderbuffer does not have MSAA enabled.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L81"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L81"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L81" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -460,7 +460,7 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a new renderbuffer.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L90"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L90"
 class="link-seesrc" target="_blank">Source</a>
 <a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L90" class="link-seesrc" target="_blank" >Edit</a>
 
@@ -471,9 +471,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the width of the framebuffer.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L148"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L149"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L148" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L149" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="height,BaseFramebuffer"></a>
@@ -482,9 +482,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the height of the framebuffer.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L152"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L153"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L152" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L153" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="multisampled,BaseFramebuffer"></a>
@@ -493,9 +493,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns whether the framebuffer is multisampled.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L156"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L157"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L156" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L157" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="samples,BaseFramebuffer"></a>
@@ -504,9 +504,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the MSAA sample count of the framebuffer.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L160"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L161"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L160" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L161" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="blit,BaseFramebuffer,BaseFramebuffer,Recti,Recti,set[BufferBit],BlitFilter"></a>
@@ -517,9 +517,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Blits an area from one framebuffer to another. <tt class="docutils literal"><span class="pre">sourceArea</span></tt> and <tt class="docutils literal"><span class="pre">destArea</span></tt> specify the area from which to copy, and the area to copy the pixels to. ## <tt class="docutils literal"><span class="pre">buffers</span></tt> specifies which buffers to copy, and <tt class="docutils literal"><span class="pre">filter</span></tt> specifies the filtering mode. Both framebuffers must have the same parent window, attempting to use framebuffers created with different windows is an error.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L164"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L165"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L164" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L165" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="download,BaseFramebuffer,Recti,proc(ptr.UncheckedArray[T],Natural)"></a>
@@ -532,9 +532,9 @@ class="link-seesrc" target="_blank">Source</a>
 <p>This procedure is asynchronous. Don't forget to update the window's async event loop using <tt class="docutils literal"><span class="pre">pollAsyncCallbacks</span></tt>, <tt class="docutils literal"><span class="pre">pollEvents</span></tt>, or <tt class="docutils literal"><span class="pre">waitEvents</span></tt>. Otherwise the results will never arrive.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L213"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L214"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L213" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L214" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="download,BaseFramebuffer,Recti,proc(seq[T])"></a>
@@ -544,9 +544,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Version of <tt class="docutils literal"><span class="pre">download</span></tt> that yields a seq. This seq contains an <em>owned</em> copy of the data stored in the framebuffer, so it's safe to assign it to somewhere else outside of the callback.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L253"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L254"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L253" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L254" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="downloadSync,BaseFramebuffer,Recti"></a>
@@ -558,9 +558,9 @@ class="link-seesrc" target="_blank">Source</a>
 <p>This procedure is <strong>synchronous</strong>, so the results are available immediately. However, it forces a synchronization between the CPU and the GPU. This can negatively impact performance if it is called frequently. Prefer the asynchronous versions whenever possible.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L265"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L266"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L265" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L266" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="defaultFramebuffer,Window"></a>
@@ -569,9 +569,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns a handle to the window's default framebuffer.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L299"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L300"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L299" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L300" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="color,SimpleFramebuffer"></a>
@@ -581,9 +581,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the color attachment of this framebuffer.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L310"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L311"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L310" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L311" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="depth,SimpleFramebuffer"></a>
@@ -593,9 +593,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the depth attachment of this framebuffer, or <tt class="docutils literal"><span class="pre">nil</span></tt> if no depth target was attached.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L314"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L315"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L314" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L315" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stencil,SimpleFramebuffer"></a>
@@ -605,9 +605,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the stencil attachment of this framebuffer, or <tt class="docutils literal"><span class="pre">nil</span></tt> if no stencil target was attached.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L319"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L320"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L319" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L320" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="depthStencil,SimpleFramebuffer"></a>
@@ -617,9 +617,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the combined depth/stencil attachment of this framebuffer, or <tt class="docutils literal"><span class="pre">nil</span></tt> if no combined depth/stencil target was attached.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L324"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L325"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L324" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L325" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newFramebuffer,Window,ColorSource,DepthSource,StencilSource"></a>
@@ -630,9 +630,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a new simple framebuffer with color, depth, and stencil attachments. All attachments must have the same size and sample count, otherwise an assertion is triggered.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L368"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L369"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L368" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L369" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newFramebuffer,Window,ColorSource,DepthSource"></a>
@@ -642,9 +642,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a new simple framebuffer with color and depth attachments. All attachments must have the same size and sample count, otherwise an assertion is triggered.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L386"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L387"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L386" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L387" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newFramebuffer,Window,ColorSource,StencilSource"></a>
@@ -654,9 +654,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a new simple framebuffer with color and stencil attachments. All attachments must have the same size and sample count, otherwise an assertion is triggered.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L401"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L402"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L401" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L402" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newFramebuffer,Window,ColorSource,DepthStencilSource"></a>
@@ -667,9 +667,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a new simple framebuffer with a color attachment and combined depth/stencil attachment. All attachments must have the same size and sample count, otherwise an assertion is triggered.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L416"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L417"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L416" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L417" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newFramebuffer,Window,ColorSource"></a>
@@ -679,9 +679,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a new simple framebuffer with a color attachment only. All attachments must have the same size and sample count, otherwise an assertion is triggered.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L432"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L433"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L432" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L433" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="colorCount,MultiFramebuffer"></a>
@@ -690,9 +690,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the number of color attachments.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L447"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L448"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L447" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L448" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="color,MultiFramebuffer,Natural"></a>
@@ -702,9 +702,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the color attachment <tt class="docutils literal"><span class="pre">index</span></tt> of the framebuffer.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L451"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L452"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L451" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L452" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="depth,MultiFramebuffer"></a>
@@ -714,9 +714,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the depth attachment of this framebuffer, or <tt class="docutils literal"><span class="pre">nil</span></tt> if no depth target was attached.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L456"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L457"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L456" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L457" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="stencil,MultiFramebuffer"></a>
@@ -726,9 +726,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the stencil attachment of this framebuffer, or <tt class="docutils literal"><span class="pre">nil</span></tt> if no stencil  target was attached.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L461"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L462"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L461" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L462" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="depthStencil,MultiFramebuffer"></a>
@@ -738,9 +738,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the combined depth/stencil attachment of this framebuffer, or <tt class="docutils literal"><span class="pre">nil</span></tt> if no combined depth/stencil target was attached.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L466"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L467"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L466" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L467" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newFramebuffer,Window,openArray[ColorSource],DepthSource,StencilSource"></a>
@@ -753,9 +753,9 @@ class="link-seesrc" target="_blank">Source</a>
 <p><strong>Caution:</strong> When using multi framebuffers, you may find that <tt class="docutils literal"><span class="pre">source</span></tt> converters defined by Textures and Renderbuffers don't really work with the <tt class="docutils literal"><span class="pre">color</span></tt> openArray. In this case, you need to call these converters explicitly.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L497"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L503"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L497" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L503" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newFramebuffer,Window,openArray[ColorSource],DepthSource"></a>
@@ -765,9 +765,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a new multi framebuffer with color and depth attachments. All attachments must have the same size and sample count, otherwise an assertion is triggered.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L519"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L525"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L519" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L525" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newFramebuffer,Window,openArray[ColorSource],StencilSource"></a>
@@ -778,9 +778,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a new multi framebuffer with color and stencil attachments. All attachments must have the same size and sample count, otherwise an assertion is triggered.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L534"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L540"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L534" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L540" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newFramebuffer,Window,openArray[ColorSource],DepthStencilSource"></a>
@@ -791,9 +791,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a new multi framebuffer with color and combined depth/stencil attachments. All attachments must have the same size and sample count, otherwise an assertion is triggered.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L549"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L555"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L549" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L555" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="newFramebuffer,Window,openArray[ColorSource]"></a>
@@ -803,9 +803,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates a new multi framebuffer with color attachments only. All attachments must have the same size and sample count, otherwise an assertion is triggered.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L565"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L571"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L565" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L571" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="render,BaseFramebuffer"></a>
@@ -814,9 +814,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Creates and returns a target for rendering onto the framebuffer. This proc is safe to use this in your render loop, as it does not have heavy performance implications. Also, the target returned from this proc does not have to be <tt class="docutils literal"><span class="pre">finish()``ed, unlike a window ``Frame</span></tt>.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L581"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L587"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L581" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L587" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -830,9 +830,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the size of the framebuffer as a vector.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L144"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L145"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L144" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L145" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="size.e,DefaultFramebuffer"></a>
@@ -842,9 +842,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Returns the size of the framebuffer as a vector.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L295"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L296"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L295" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L296" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -858,9 +858,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 <tt class="docutils literal"><span class="pre">ColorSource</span></tt> implementation for color renderbuffers.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L122"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L123"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L122" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L123" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="source.c,Renderbuffer[DepthPixelType]"></a>
@@ -869,9 +869,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 <tt class="docutils literal"><span class="pre">DepthSource</span></tt> implementation for depth renderbuffers.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L126"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L127"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L126" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L127" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="source.c,Renderbuffer[StencilPixelType]"></a>
@@ -880,9 +880,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 <tt class="docutils literal"><span class="pre">StencilSource</span></tt> implementation for stencil renderbuffers.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L130"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L131"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L130" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L131" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="source.c,Renderbuffer[DepthStencilPixelType]"></a>
@@ -892,9 +892,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 <tt class="docutils literal"><span class="pre">DepthStencilSource</span></tt> implementation for combined depth/stencil renderbuffers.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.2/src/aglet/framebuffer.nim#L135"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/framebuffer.nim#L136"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L135" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/framebuffer.nim#L136" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -912,7 +912,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-23 15:24:48 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-24 18:04:42 UTC</small>
       </div>
     </div>
   </div>
