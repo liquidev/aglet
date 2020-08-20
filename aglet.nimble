@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.3.3"
+version       = "0.4.0"
 author        = "liquid600pgm"
 description   = "A safe, high-level, optimized OpenGL wrapper"
 license       = "MIT"
@@ -9,7 +9,7 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "nim >= 1.0.6"
+requires "nim >= 1.2.6"
 requires "glm >= 1.1.1"
 requires "https://github.com/nimgl/glfw >= 3.3.4"
 
