@@ -82,7 +82,6 @@ macro uniforms*(uniforms: untyped): untyped =
     used = false
     uniforms = uniforms
 
-  echo uniforms.treeRepr
   if uniforms.kind == nnkCommand:
     let hints = uniforms[0]
     hints.expectKind(nnkBracket)
