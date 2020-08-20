@@ -209,9 +209,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Yields no uniforms.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/util.nim#L92"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/util.nim#L125"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L92" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getUniforms.i"></a>
@@ -222,9 +222,9 @@ class="link-seesrc" target="_blank">Source</a>
 <p>If a field's name begins with <tt class="docutils literal"><span class="pre">..</span></tt> (which is normally only possible through the use of macros), the field is iterated using <tt class="docutils literal"><span class="pre">getUniforms</span></tt>. This process happens recursively for any field whose name begins with <tt class="docutils literal"><span class="pre">..</span></tt>.</p>
 
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/util.nim#L95"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/util.nim#L128"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L95" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L128" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getUniforms.i,Table[string,Uniform]"></a>
@@ -234,9 +234,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Built-in helper for Tables containing Uniforms.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/util.nim#L120"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/util.nim#L153"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L120" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L153" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 <a id="getUniforms.i,TableRef[string,Uniform]"></a>
@@ -246,9 +246,9 @@ class="link-seesrc" target="_blank">Source</a>
 
 Built-in helper for TableRefs containing Uniforms.
 &nbsp;&nbsp;<a
-href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/util.nim#L125"
+href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/util.nim#L158"
 class="link-seesrc" target="_blank">Source</a>
-<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L125" class="link-seesrc" target="_blank" >Edit</a>
+<a href="https://github.com/liquid600pgm/aglet/edit/devel/src/aglet/util.nim#L158" class="link-seesrc" target="_blank" >Edit</a>
 
 </dd>
 
@@ -261,7 +261,7 @@ class="link-seesrc" target="_blank">Source</a>
 <dd>
 
 <p>Helper macro that transforms a table constructor to a <tt class="docutils literal"><span class="pre">UniformSource</span></tt>-compatible tuple. This macro is mainly useful for readability and rapid prototyping via the features described below.</p>
-<p>This macro supports a special syntax for optional uniforms. Normally, when a uniform is not used in a shader, an error is thrown. This can be suppressed by prefixing the uniform name with a <tt class="docutils literal"><span class="pre">?</span></tt>, eg. <tt class="docutils literal"><span class="pre">?offset</span></tt>. The same trick works with uniform Tables.</p>
+<p>This macro supports a special syntax for optional uniforms. Normally, when a uniform is not used in a shader, an error is thrown. This can be suppressed by prefixing the uniform name with a <tt class="docutils literal"><span class="pre">?</span></tt>, eg. <tt class="docutils literal"><span class="pre">?offset</span></tt>. The same trick works with uniform Tables. Also, all uniforms can be marked with <tt class="docutils literal"><span class="pre">?</span></tt> automatically by using <tt class="docutils literal"><span class="pre">[used]</span></tt> before the block (see examples).</p>
 <p>Additionally, to allow libraries to add their own sets of uniforms, it is possible to use <tt class="docutils literal"><span class="pre">..</span></tt> as a prefix operator in the constructor's body. The operand must be a value that can be iterated with <tt class="docutils literal"><span class="pre">getUniforms</span></tt>. The uniforms returned by this value are simply included in the final uniforms passed to <tt class="docutils literal"><span class="pre">draw</span></tt>, as defined by the <tt class="docutils literal"><span class="pre">getUniforms</span></tt> iterator for records.</p>
 
 <p><strong class="examples_text">Examples:</strong></p>
@@ -277,8 +277,15 @@ class="link-seesrc" target="_blank">Source</a>
   <span class="Other">(</span><span class="Identifier">extra</span><span class="Other">:</span> <span class="DecNumber">42</span><span class="Other">)</span>
 
 <span class="Keyword">let</span>
-  <span class="Identifier">a</span> <span class="Other">=</span> <span class="Identifier">uniforms</span> <span class="Other">{</span><span class="Operator">?</span><span class="Identifier">constant</span><span class="Other">:</span> <span class="FloatNumber">10.0</span><span class="Other">,</span> <span class="Identifier">offsetPerInstance</span><span class="Other">:</span> <span class="Identifier">vec2f</span><span class="Other">(</span><span class="FloatNumber">2.0</span><span class="Other">,</span> <span class="FloatNumber">0.0</span><span class="Other">)</span><span class="Other">,</span> <span class="Operator">..</span><span class="Identifier">myExpansion</span><span class="Other">(</span><span class="Other">)</span><span class="Other">}</span>
-  <span class="Identifier">b</span> <span class="Other">=</span> <span class="Other">(</span><span class="Identifier">offsetPerInstance</span><span class="Other">:</span> <span class="Identifier">vec2f</span><span class="Other">(</span><span class="FloatNumber">2.0</span><span class="Other">,</span> <span class="FloatNumber">0.0</span><span class="Other">)</span><span class="Other">,</span><span class="Other">)</span></pre>
+  <span class="Identifier">a</span> <span class="Other">=</span> <span class="Identifier">uniforms</span> <span class="Other">{</span><span class="Operator">?</span><span class="Identifier">constant</span><span class="Other">:</span> <span class="FloatNumber">10.0'f32</span><span class="Other">,</span> <span class="Identifier">offsetPerInstance</span><span class="Other">:</span> <span class="Identifier">vec2f</span><span class="Other">(</span><span class="FloatNumber">2.0</span><span class="Other">,</span> <span class="FloatNumber">0.0</span><span class="Other">)</span><span class="Other">,</span>
+             <span class="Operator">..</span><span class="Identifier">myExpansion</span><span class="Other">(</span><span class="Other">)</span><span class="Other">}</span>
+  <span class="Identifier">b</span> <span class="Other">=</span> <span class="Other">(</span><span class="Other">`</span><span class="Operator">?</span> <span class="Identifier">constant</span><span class="Other">`</span><span class="Other">:</span> <span class="FloatNumber">10.0'f32</span><span class="Other">,</span> <span class="Identifier">offsetPerInstance</span><span class="Other">:</span> <span class="Identifier">vec2f</span><span class="Other">(</span><span class="FloatNumber">2.0</span><span class="Other">,</span> <span class="FloatNumber">0.0</span><span class="Other">)</span><span class="Other">,</span> <span class="Other">`</span><span class="Operator">..</span> <span class="Identifier">0</span><span class="Other">`</span><span class="Other">:</span> <span class="Identifier">myExpansion</span><span class="Other">(</span><span class="Other">)</span><span class="Other">)</span>
+<span class="Identifier">assert</span> <span class="Identifier">a</span> <span class="Operator">==</span> <span class="Identifier">b</span>
+<span class="Keyword">let</span>
+  <span class="Identifier">c</span> <span class="Other">=</span> <span class="Identifier">uniforms</span> <span class="Other">[</span><span class="Identifier">used</span><span class="Other">]</span> <span class="Other">{</span><span class="Identifier">x</span><span class="Other">:</span> <span class="FloatNumber">1.0'f32</span><span class="Other">,</span> <span class="Identifier">y</span><span class="Other">:</span> <span class="FloatNumber">2.0'f32</span><span class="Other">}</span>
+  <span class="Identifier">d</span> <span class="Other">=</span> <span class="Identifier">uniforms</span> <span class="Other">{</span><span class="Operator">?</span><span class="Identifier">x</span><span class="Other">:</span> <span class="FloatNumber">1.0'f32</span><span class="Other">,</span> <span class="Operator">?</span><span class="Identifier">y</span><span class="Other">:</span> <span class="FloatNumber">2.0'f32</span><span class="Other">}</span>
+  <span class="Identifier">e</span> <span class="Other">=</span> <span class="Other">(</span><span class="Other">`</span><span class="Operator">?</span> <span class="Identifier">x</span><span class="Other">`</span><span class="Other">:</span> <span class="FloatNumber">1.0'f32</span><span class="Other">,</span> <span class="Other">`</span><span class="Operator">?</span> <span class="Identifier">y</span><span class="Other">`</span><span class="Other">:</span> <span class="FloatNumber">2.0'f32</span><span class="Other">)</span>
+<span class="Identifier">assert</span> <span class="Identifier">c</span> <span class="Operator">==</span> <span class="Identifier">d</span> <span class="Keyword">and</span> <span class="Identifier">d</span> <span class="Operator">==</span> <span class="Identifier">e</span></pre>
 &nbsp;&nbsp;<a
 href="https://github.com/liquid600pgm/aglet/tree/0.3.3/src/aglet/util.nim#L24"
 class="link-seesrc" target="_blank">Source</a>
@@ -295,7 +302,7 @@ class="link-seesrc" target="_blank">Source</a>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2020-07-24 18:04:44 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2020-08-20 08:10:07 UTC</small>
       </div>
     </div>
   </div>

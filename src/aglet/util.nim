@@ -30,6 +30,8 @@ macro uniforms*(uniforms: untyped): untyped =
   ## a uniform is not used in a shader, an error is thrown. This can be
   ## suppressed by prefixing the uniform name with a ``?``, eg. ``?offset``.
   ## The same trick works with uniform Tables.
+  ## Also, all uniforms can be marked with ``?`` automatically by using
+  ## ``[used]`` before the block (see examples).
   ##
   ## Additionally, to allow libraries to add their own sets of uniforms, it is
   ## possible to use ``..`` as a prefix operator in the constructor's body.
@@ -49,20 +51,45 @@ macro uniforms*(uniforms: untyped): untyped =
 
     let
       a = uniforms {
-        ?constant: 10.0,
+        ?constant: 10'f32,
         offsetPerInstance: vec2f(2.0, 0.0),
         ..myExpansion(),
       }
       b = (
-        # this does not compile due to a bug in the compiler (Nim/#14911)
-        # `?constant`: 10'f32,
+        `?constant`: 10'f32,
         offsetPerInstance: vec2f(2.0, 0.0),
-        # `..0`: myExpansion(),
+        `..0`: myExpansion(),
       )
+    assert a == b
 
-    # assert a == b
+    let
+      c = uniforms [used] {
+        x: 1'f32,
+        y: 2'f32,
+      }
+      d = uniforms {
+        ?x: 1'f32,
+        ?y: 2'f32,
+      }
+      e = (
+        `?x`: 1'f32,
+        `?y`: 2'f32,
+      )
+    assert c == d and d == e
 
-  var expansionCount: int
+  var
+    expansionCount: int
+    used = false
+    uniforms = uniforms
+
+  echo uniforms.treeRepr
+  if uniforms.kind == nnkCommand:
+    let hints = uniforms[0]
+    hints.expectKind(nnkBracket)
+    for hint in hints:
+      hint.expectIdent("used")
+      used = true
+    uniforms = uniforms[1]
 
   if uniforms.kind notin {nnkCurly, nnkTableConstr}:
     error("table constructor expected", uniforms)
@@ -78,8 +105,14 @@ macro uniforms*(uniforms: untyped): untyped =
           value = decl[1]
         if not key.isValidUniformName:
           error("invalid uniform name: '" & key.repr & "'", key)
-        if key.kind == nnkPrefix:
-          key = ident('?' & key[1].strVal)
+        if key.kind == nnkPrefix or used:
+          let stripped =
+            if key.kind == nnkPrefix:
+              key[0].expectIdent("?")
+              key[1]
+            else: key
+          stripped.expectKind(nnkIdent)
+          key = ident('?' & stripped.strVal)
         result.add(newColonExpr(key, value))
       elif decl.kind == nnkPrefix:
         decl[0].expectIdent("..")
