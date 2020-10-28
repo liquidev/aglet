@@ -289,7 +289,8 @@ proc newWindowGlfw*(agl: Aglet, width, height: int, title: string,
   glfwWindowHint(GLFW_SAMPLES, hints.msaaSamples.cint)
 
   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API)
-  when not defined(windows) and not defined(aglGlfwUseNativeGl):
+  when not defined(windows) and not defined(macosx) and
+       not defined(aglGlfwUseNativeGl):
     # XXX: verify compatibility on older drivers/GPUs on linux
     # I've read that EGL is faster than GLX because it has less indirections,
     # but I'm not sure about the compatibility across different systems
@@ -300,10 +301,17 @@ proc newWindowGlfw*(agl: Aglet, width, height: int, title: string,
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, hints.glVersion.minor.cint)
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE)
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
-  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, hints.debugContext.cint)
+  # glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, hints.debugContext.cint)
 
   # create the actual window
-  result.handle = glfwCreateWindow(width.cint, height.cint, "", nil, nil)
+  # this uses glfwCreateWindowC because in case window creation fails the
+  # NimGL GLFW wrapper will set the window icon first which triggers an
+  # assertion inside of GLFW and doesn't provide a meaningful error message.
+  # why advertise yourself like this? i really don't get the reasoning behind
+  # including the NimGL icon in every program which uses its GLFW wrapper.
+  # @lmariscal, if you're reading this, hit me up on the Nim IRC channel,
+  # my discord is @lqdev#8803
+  result.handle = glfwCreateWindowC(width.cint, height.cint, "", nil, nil)
   checkGlfwError()
 
   setWindowUserPointer(result.handle, cast[pointer](result))
