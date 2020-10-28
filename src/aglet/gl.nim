@@ -661,8 +661,8 @@ proc linkProgram*(gl: OpenGl, program: GlUint): Option[string] =
       errorStr: string
     gl.glGetProgramiv(program, GL_INFO_LOG_LENGTH, addr errorLen)
     errorStr = newString(errorLen.Natural)
-    gl.glGetShaderInfoLog(program, errorLen.GlSizei, addr logErrorLen,
-                          errorStr[0].unsafeAddr)
+    gl.glGetProgramInfoLog(program, errorLen.GlSizei, addr logErrorLen,
+                           errorStr[0].unsafeAddr)
     result = some(errorStr)
 
 proc getUniformLocation*(gl: OpenGl, program: GlUint, name: string): GlInt =
