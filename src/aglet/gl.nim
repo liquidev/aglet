@@ -51,8 +51,8 @@ type
     glfProgramPointSize
 
   VertexArray* = object
-    buffers: array[BufferTarget, GlUint]
     id*: GlUint
+    ebo: GlUint
   Framebuffer* = ref object
     id*: GlUint
     drawBuffers: seq[GlEnum]
@@ -469,8 +469,8 @@ proc clearStencil*(gl: OpenGl, stencil: GlInt) =
 proc bindBuffer*(gl: OpenGl, target: BufferTarget, buffer: GlUint) =
   updateDiff gl.sBuffers[target], buffer:
     gl.glBindBuffer(target.toGlEnum, buffer)
-    if gl.sVertexArray.id != 0:
-      gl.sVertexArray.buffers[target] = buffer
+    if gl.sVertexArray.id != 0 and target == btElementArray:
+      gl.sVertexArray.ebo = buffer
     if gl.getError() == GL_INVALID_VALUE:
       raise newException(ValueError, "buffer " & $buffer & " doesn't exist")
 
@@ -519,11 +519,10 @@ proc bindTexture*(gl: OpenGl, target: TextureTarget, texture: GlUint) =
 
 proc bindVertexArray*(gl: OpenGl, vao: VertexArray) =
   var changed = false
-  for target in BufferTarget:
-    changed = changed or updateDiff(gl.sBuffers[target], vao.buffers[target])
   if changed or gl.sVertexArray.id != vao.id:
     gl.glBindVertexArray(vao.id)
     gl.sVertexArray = vao
+    gl.sBuffers[btElementArray] = vao.ebo
     if gl.getError() == GL_INVALID_VALUE:
       raise newException(ValueError,
                          "vertex array " & $vao.id & " doesn't exist")

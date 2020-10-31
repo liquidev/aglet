@@ -133,6 +133,8 @@ proc useEbo(mesh: Mesh) =
 proc use(mesh: Mesh) =
   mesh.window.IMPL_makeCurrent()
   mesh.gl.bindVertexArray(mesh.vao)
+  mesh.useVbo()
+  mesh.useEbo()
 
 macro vaoAttribsAux(gl: typed, T: typedesc, attrCount: typed): untyped =
   result = newStmtList()
