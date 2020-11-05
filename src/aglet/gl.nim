@@ -729,6 +729,8 @@ proc deleteShader*(gl: OpenGl, shader: GlUint) =
 
 proc deleteProgram*(gl: OpenGl, program: GlUint) =
   gl.glDeleteProgram(program)
+  if gl.sProgram == program:
+    gl.sProgram = 0
 
 proc createBuffer*(gl: OpenGl): GlUint =
   gl.glGenBuffers(1, addr result)
@@ -752,6 +754,9 @@ proc unmapBuffer*(gl: OpenGl, target: BufferTarget) =
 proc deleteBuffer*(gl: OpenGl, buffer: GlUint) =
   var buffer = buffer
   gl.glDeleteBuffers(1, addr buffer)
+  for target in mitems(gl.sBuffers):
+    if target == buffer:
+      target = 0
 
 proc createVertexArray*(gl: OpenGl): VertexArray =
   gl.glGenVertexArrays(1, addr result.id)
@@ -797,6 +802,8 @@ proc disableVertexAttrib*(gl: OpenGl, index: int) =
 proc deleteVertexArray*(gl: OpenGl, array: VertexArray) =
   var array = array
   gl.glDeleteVertexArrays(1, addr array.id)
+  if gl.sVertexArray == array:
+    gl.sVertexArray.reset()
 
 proc createTexture*(gl: OpenGl): GlUint =
   gl.glGenTextures(1, addr result)
@@ -872,6 +879,10 @@ proc textureParam*(gl: OpenGl, target: TextureTarget,
 proc deleteTexture*(gl: OpenGl, texture: GlUint) =
   var texture = texture
   gl.glDeleteTextures(1, addr texture)
+  for unit in mitems(gl.sTextureUnitBindings):
+    for target in mitems(unit):
+      if target == texture:
+        target = 0
 
 proc createSampler*(gl: OpenGl): GlUint =
   gl.glGenSamplers(1, addr result)
@@ -886,6 +897,9 @@ proc samplerParam*(gl: OpenGl, sampler: GlUint, param: GlEnum,
 proc deleteSampler*(gl: OpenGl, sampler: GlUint) =
   var sampler = sampler
   gl.glDeleteSamplers(1, addr sampler)
+  for binding in mitems(gl.sSamplerBindings):
+    if binding == sampler:
+      binding = 0
 
 proc createFramebuffer*(gl: OpenGl): Framebuffer =
   new(result)
@@ -923,6 +937,9 @@ proc blitFramebuffer*(gl: OpenGl, srcX0, srcY0, srcX1, srcY1: GlInt,
 
 proc deleteFramebuffer*(gl: OpenGl, framebuffer: Framebuffer) =
   gl.glDeleteFramebuffers(1, addr framebuffer.id)
+  for fbo in fields(gl.sFramebuffers):
+    if fbo.id == framebuffer.id:
+      fbo.reset()
 
 proc createRenderbuffer*(gl: OpenGl): GlUint =
   gl.glGenRenderbuffers(1, addr result)
@@ -935,6 +952,8 @@ proc renderbufferStorage*(gl: OpenGl, width, height, samples: GlSizei,
 proc deleteRenderbuffer*(gl: OpenGl, renderbuffer: GlUint) =
   var renderbuffer = renderbuffer
   gl.glDeleteRenderbuffers(1, addr renderbuffer)
+  if gl.sRenderbuffer == renderbuffer:
+    gl.sRenderbuffer = 0
 
 proc createFenceSync*(gl: OpenGl, condition: GlEnum): GlSync =
   result = gl.glFenceSync(condition, 0)
