@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.4.3"
+version       = "0.4.4"
 author        = "liquid600pgm"
 description   = "A safe, high-level, optimized OpenGL wrapper"
 license       = "MIT"
