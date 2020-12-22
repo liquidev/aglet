@@ -270,6 +270,24 @@ type
 proc getInt(gl: OpenGl, property: GlEnum, result: ptr GlInt) =
   gl.glGetIntegerv(property, result)
 
+proc toGlEnum(feature: OpenGlFeature): GlEnum {.inline.} =
+  # lol this is actually deprecated but I'm leaving it in anyways as I don't
+  # want "just a placeholder enum value"
+  case feature
+  of glfBlend: GL_BLEND
+  of glfColorLogicOp: GL_COLOR_LOGIC_OP
+  of glfCullFace: GL_CULL_FACE
+  of glfDepthTest: GL_DEPTH_TEST
+  of glfDither: GL_DITHER
+  of glfLineSmooth: GL_LINE_SMOOTH
+  of glfMultisample: GL_MULTISAMPLE
+  of glfPolygonSmooth: GL_POLYGON_SMOOTH
+  of glfPrimitiveRestart: GL_PRIMITIVE_RESTART
+  of glfScissorTest: GL_SCISSOR_TEST
+  of glfStencilTest: GL_STENCIL_TEST
+  of glfTextureCubeMapSeamless: GL_TEXTURE_CUBE_MAP_SEAMLESS
+  of glfProgramPointSize: GL_PROGRAM_POINT_SIZE
+
 when not defined(js):
   # desktop platforms
 
@@ -344,6 +362,7 @@ when not defined(js):
     gl.sColorMask = (on, on, on, on)
     gl.sDepthMask = true
     gl.sEnabledFeatures[glfDither] = true
+    gl.sEnabledFeatures[glfMultisample] = true
     gl.sFrontFace = GL_CCW
     gl.sLogicOp = GL_COPY
     gl.sLineWidth = 1
@@ -384,24 +403,6 @@ proc toGlEnum(target: TextureTarget): GlEnum {.inline.} =
   of ttTextureCubeMapPosX..ttTextureCubeMapNegZ:
     let index = ord(target) - ord(ttTextureCubeMapNegX)
     GlEnum(GL_TEXTURE_CUBEMAP_POSITIVE_X.int + index)
-
-proc toGlEnum(feature: OpenGlFeature): GlEnum {.inline.} =
-  # lol this is actually deprecated but I'm leaving it in anyways as I don't
-  # want "just a placeholder enum value"
-  case feature
-  of glfBlend: GL_BLEND
-  of glfColorLogicOp: GL_COLOR_LOGIC_OP
-  of glfCullFace: GL_CULL_FACE
-  of glfDepthTest: GL_DEPTH_TEST
-  of glfDither: GL_DITHER
-  of glfLineSmooth: GL_LINE_SMOOTH
-  of glfMultisample: GL_MULTISAMPLE
-  of glfPolygonSmooth: GL_POLYGON_SMOOTH
-  of glfPrimitiveRestart: GL_PRIMITIVE_RESTART
-  of glfScissorTest: GL_SCISSOR_TEST
-  of glfStencilTest: GL_STENCIL_TEST
-  of glfTextureCubeMapSeamless: GL_TEXTURE_CUBE_MAP_SEAMLESS
-  of glfProgramPointSize: GL_PROGRAM_POINT_SIZE
 
 proc toGlEnum*(hint: Hint): GlEnum {.inline.} =
   case hint

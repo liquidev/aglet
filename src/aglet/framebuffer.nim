@@ -34,9 +34,9 @@ type
     window: Window
     gl: OpenGl
     glfb: Framebuffer
-    fSize: Vec2i
     fSamples: int
     pixelBuffer: PixelBuffer
+    colorSource: FramebufferSource
 
   DefaultFramebuffer* {.final.} = ref object of BaseFramebuffer
     ## Object representation of the default framebuffer.
@@ -112,13 +112,14 @@ proc implSource(renderbuffer: Renderbuffer): FramebufferSource =
   # framebuffers, we may as well do this
 
   result.attachment = renderbuffer.FramebufferAttachment
-  result.size = renderbuffer.size
   result.samples = renderbuffer.samples
 
   result.attachToFramebuffer = proc (framebuffer: Framebuffer,
                                      attachment: GlEnum) =
     renderbuffer.use()
     renderbuffer.gl.attachRenderbuffer(attachment, renderbuffer.id)
+
+  result.getSize = proc (): Vec2i = renderbuffer.size
 
 converter source*(rb: Renderbuffer[ColorPixelType]): ColorSource {.inline.} =
   ## ``ColorSource`` implementation for color renderbuffers.
@@ -144,7 +145,7 @@ converter source*(rb: Renderbuffer[DepthStencilPixelType]): DepthStencilSource
 
 method size*(framebuffer: BaseFramebuffer): Vec2i {.base.} =
   ## Returns the size of the framebuffer as a vector.
-  framebuffer.fSize
+  framebuffer.colorSource.size
 
 proc width*(framebuffer: BaseFramebuffer): int {.inline.} =
   ## Returns the width of the framebuffer.
@@ -326,18 +327,16 @@ proc depthStencil*(simplefb: SimpleFramebuffer): FramebufferAttachment
                   {.inline.} =
   ## Returns the combined depth/stencil attachment of this framebuffer, or
   ## ``nil`` if no combined depth/stencil target was attached.
-  simplefb.fStencil
+  simplefb.fDepthStencil
 
 template singleSource(F, T, field, attachmentEnum) =
   proc attach(fb: F, source: T) =
     let source = source.FramebufferSource
+    when T is ColorSource:
+      fb.colorSource = source
     fb.use()
     source.attachToFramebuffer(fb.glfb, attachmentEnum)
     fb.field = source.attachment
-    if fb.fSize == vec2i(0):
-      fb.fSize = source.size
-    else:
-      assert source.size == fb.size, "all attachments must have the same size"
     if fb.fSamples == -1:
       fb.fSamples = source.samples
     else:
@@ -484,11 +483,6 @@ proc attach(multifb: MultiFramebuffer, sources: openArray[ColorSource]) =
       attachmentPoint = GlEnum(int(GL_COLOR_ATTACHMENT0) + index)
     source.attachToFramebuffer(multifb.glfb, attachmentPoint)
     multifb.fColor.add(source.attachment)
-    if multifb.size == vec2i(0):
-      multifb.fSize = source.size
-    else:
-      assert source.size == multifb.size,
-        "all attachments must have the same size"
     if multifb.samples == -1:
       multifb.fSamples = source.samples
     else:
@@ -499,6 +493,8 @@ proc attach(multifb: MultiFramebuffer, sources: openArray[ColorSource]) =
   for index in 0..<drawBuffers.len:
     drawBuffers[index] = GlEnum(int(GL_COLOR_ATTACHMENT0) + index)
   multifb.gl.drawBuffers(drawBuffers)
+
+  multifb.colorSource = sources[0].FramebufferSource
 
 proc newFramebuffer*(window: Window,
                      color: openArray[ColorSource],

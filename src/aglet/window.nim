@@ -198,7 +198,7 @@ proc pollEvents*(window: Window, processEvent: InputProc) {.inline.} =
   window.pollEventsImpl(window, window.interceptEvents(processEvent))
 
 proc waitEvents*(window: Window, processEvent: InputProc,
-                 timeout = -1.0) {.inline.} =
+                 timeout = 0.0) {.inline.} =
   ## Wait for incoming events from the given window. ``processEvent`` will be
   ## called for each incoming event. If ``timeout`` is specified, the procedure
   ## will only wait for the specified amount of seconds, and then continue

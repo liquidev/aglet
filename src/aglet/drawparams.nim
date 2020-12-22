@@ -509,7 +509,7 @@ proc defaultDrawParams*(): DrawParams =
     noColorLogicOp
     # quality
     dither on
-    multisample off
+    multisample on
     seamlessCubeMapSampling off
 
 proc toGlEnum(blendEquation: BlendEquation): GlEnum {.inline.} =

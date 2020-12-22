@@ -13,7 +13,7 @@ type
     ## Abstract interface for all the available types of sources.
     attachment*: FramebufferAttachment
     attachToFramebuffer*: proc (framebuffer: Framebuffer, attachment: GlEnum)
-    size*: Vec2i
+    getSize*: proc (): Vec2i
     samples*: int
 
   ColorSource* = distinct FramebufferSource
@@ -24,3 +24,7 @@ type
     ## Abstract interface for stencil sources.
   DepthStencilSource* = distinct FramebufferSource
     ## Abstract interface for combined depth/stencil sources.
+
+proc size*(source: FramebufferSource): Vec2i =
+  ## Returns the size of the source.
+  source.getSize()

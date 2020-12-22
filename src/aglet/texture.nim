@@ -603,9 +603,9 @@ proc newTexture2D*[T: TexturePixelType](window: Window,
   ## that accept ``data``.
 
   result = window.newTexture2D[:T]()
-  result.allocate[:T](size, samples)
   if samples > 0:
     result.target = ttTexture2DMultisample
+  result.allocate[:T](size, samples)
 
 
 # 3D
@@ -843,13 +843,15 @@ proc implSource(texture: Texture2D[ColorPixelType]): FramebufferSource
                {.inline.} =
 
   result.attachment = texture.FramebufferAttachment
-  result.size = texture.size
   result.samples = texture.samples
 
   result.attachToFramebuffer = proc (framebuffer: Framebuffer,
                                      attachment: GlEnum) =
     texture.gl.attachTexture2D(attachment, texture.target,
                                texture.id, mipLevel = 0)
+
+  result.getSize = proc (): Vec2i =
+    texture.size
 
 converter source*(texture: Texture2D[ColorPixelType]): ColorSource {.inline.} =
   ## ``ColorSource`` implementation for 2D textures.
