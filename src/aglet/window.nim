@@ -103,8 +103,7 @@ type
     keyStates: array[low(Key).int..high(Key).int, bool]
     mousePos: Vec2f
 
-    asyncCallbacks: HashSet[AsyncCallback]
-      # ↑ this is a hash set for performance reasons (O(1) deletion)
+    asyncCallbacks: seq[AsyncCallback]
 
     gl: OpenGl
 
@@ -165,7 +164,7 @@ proc startAsync*(window: Window, callback: AsyncCallback) {.inline.} =
   ## next ``pollAsyncCallbacks`` call. If it returns ``false``, it is removed
   ## from the dispatched procedures; otherwise, it will run on the next async
   ## tick.
-  window.asyncCallbacks.incl(callback)
+  window.asyncCallbacks.add(callback)
 
 proc pollAsyncCallbacks*(window: Window) =
   ## Run all active async callbacks registered through ``startAsync``.
@@ -173,10 +172,16 @@ proc pollAsyncCallbacks*(window: Window) =
   ## you don't need to call this.
 
   window.IMPL_makeCurrent()
-  for callback in window.asyncCallbacks:
-    let running = callback()
+  var
+    i = 0
+    count = window.asyncCallbacks.len
+  while i < count:
+    let running = window.asyncCallbacks[i]()
     if not running:
-      window.asyncCallbacks.excl(callback)
+      window.asyncCallbacks.del(i)
+      dec count
+    else:
+      inc i
 
 proc interceptEvents(window: Window, userCallback: InputProc): InputProc =
   ## Wrap the user callback in some special stuff aglet needs to do for key

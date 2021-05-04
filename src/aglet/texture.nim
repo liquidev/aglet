@@ -781,7 +781,7 @@ proc `swizzleMask=`*[T: ColorPixelType](texture: Texture3D[T],
   setSwizzleMaskImpl(texture, mask)
 
 proc sampler*[T: Texture](texture: T,
-                          minFilter: TextureMinFilter = fmNearestMipmapLinear,
+                          minFilter: TextureMinFilter = fmNearest,
                           magFilter: TextureMagFilter = fmLinear,
                           wrapS, wrapT, wrapR = twRepeat,
                           borderColor = rgba(0.0, 0.0, 0.0, 0.0)): Sampler =
