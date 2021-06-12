@@ -4,6 +4,11 @@ A safe, high-level core OpenGL 3.3+ context manager and wrapper for Nim.
 
 [Documentation](https://liquid600pgm.github.io/aglet/)
 
+**Note:** As of June 2021, I'm no longer actively working on aglet.
+Since the project is still quite unfinished, I'm willing to accept contributions
+via PRs. If anyone contributes code frequently enough, I'm willing to give them
+contributor status to make working on the project easier.
+
 ## Features
 
 ### No state machine
