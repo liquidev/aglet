@@ -80,7 +80,7 @@ let dpDefault = defaultDrawParams().derive:
 
 while not win.closeRequested:
   var frame = win.render()
-  frame.clearColor(rgba(0, 0, 0, 0))
+  frame.clear(defaultClearParams().withColor(rgba(0, 0, 0, 0)))
   frame.draw(prog, circle.instanced(InstanceCount), uniforms {
     model: mat4f()
       .translate(win.width / 2, win.height / 2, 0)

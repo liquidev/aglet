@@ -251,8 +251,7 @@ while not win.closeRequested:
     aspect = win.width / win.height
     projection = perspective(Fov.float32, aspect, 0.01, 100.0)
 
-  targetA.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
-  targetA.clearDepth(1.0)
+  targetA.clear(defaultClearParams())
   targetA.draw(volumeProgram, mesh, uniforms {
     model: mat4f(),
     view: lookAt(eye = vec3f(0.0, 0.0, CameraRadius),
@@ -271,7 +270,7 @@ while not win.closeRequested:
   let blurStrength = zoom * 41.0
 
   var targetB = blurBufferB.render()
-  targetB.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
+  targetB.clear(defaultClearParams())
   targetB.draw(blurProgram, fullScreen, uniforms {
     source: blurBufferA.sampler(),
     blurDirection: vec2f(1.0, 0.0),
@@ -280,7 +279,7 @@ while not win.closeRequested:
   }, dpDefault)
 
   var frame = win.render()
-  frame.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
+  frame.clear(defaultClearParams())
   frame.draw(blurProgram, fullScreen, uniforms {
     source: blurBufferB.sampler(),
     blurDirection: vec2f(0.0, 1.0),

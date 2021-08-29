@@ -65,7 +65,7 @@ let startTime = epochTime()
 while not win.closeRequested:
   var frame = win.render()
 
-  frame.clearColor(rgba(0.0, 0.0, 0.0, 1.0))
+  frame.clear(defaultClearParams())
 
   frame.draw(prog, mesh, uniforms {
     time: float32(epochTime() - startTime),
