@@ -769,6 +769,7 @@ proc toGlEnum(T: typedesc): GlEnum =
   elif T is int8: GL_TBYTE
   elif T is int16: GL_TSHORT
   elif T is int32: GL_TINT
+  else: {.error: "unsupported vertex field type: <" & $T & ">".}
 
 proc vertexAttrib*[T](gl: OpenGl, index, stride, offset: int) =
   when T is Vec:
@@ -789,7 +790,7 @@ proc vertexAttrib*[T](gl: OpenGl, index, stride, offset: int) =
     # want to use float32
     {.error: "float64 is unsupported as a vertex field type, use float32".}
   elif TT is SomeInteger and sizeof(TT) <= 4:
-    gl.glVertexAttribIPointer(GlUint(index), N, T.toGlEnum,
+    gl.glVertexAttribIPointer(GlUint(index), N, TT.toGlEnum,
                               GlSizei(stride), cast[pointer](offset))
   else:
     {.error: "unsupported vertex field type: <" & $T & ">".}
