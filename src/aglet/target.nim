@@ -7,6 +7,8 @@ import gl
 import pixeltypes
 import program_base
 import uniform
+import rect
+import std/options
 
 type
   Target* = object of RootObj
@@ -34,19 +36,38 @@ proc height*(target: Target): int {.inline.} =
   ## Returns the height of the target.
   target.size.y
 
-proc clearColor*(target: Target, color: Rgba32f) {.inline.} =
+proc scissor(target: Target, scissor: Option[Recti] = Recti.none) =
+  if scissor.isSome():
+    let scissor = scissor.get
+    target.gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height)
+  else:
+    target.gl.scissor(0, 0, target.size.x, target.size.y)
+
+proc clearColor*(target: Target, color: Rgba32f, scissor: Option[Recti] = Recti.none) {.inline.} =
   ## Clear the target's color with a solid color.
+  ## 
+  ## Optionally pass in a scissor rect to control the cleared region.
+  ## By default the entire target is cleared.
   target.use()
+  target.scissor(scissor)
   target.gl.clearColor(color.r, color.g, color.b, color.a)
 
-proc clearDepth*(target: Target, depth: float32) {.inline.} =
+proc clearDepth*(target: Target, depth: float32, scissor: Option[Recti] = Recti.none) {.inline.} =
   ## Clear the target's depth buffer with a single value.
+  ##
+  ## Optionally pass in a scissor rect to control the cleared region.
+  ## By default the entire target is cleared.
   target.use()
+  target.scissor(scissor)
   target.gl.clearDepth(depth)
 
-proc clearStencil*(target: Target, stencil: int32) {.inline.} =
+proc clearStencil*(target: Target, stencil: int32, scissor: Option[Recti] = Recti.none) {.inline.} =
   ## Clear the target's stencil buffer with a single value.
+  ##
+  ## Optionally pass in a scissor rect to control the cleared region.
+  ## By default the entire target is cleared.
   target.use()
+  target.scissor(scissor)
   target.gl.clearStencil(stencil.GlInt)
 
 proc draw*[D: Drawable, U: UniformSource](target: Target, program: Program,
