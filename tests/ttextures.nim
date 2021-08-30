@@ -72,7 +72,7 @@ let drawParams = defaultDrawParams()
 
 while not win.closeRequested:
   var target = win.render()
-  target.clear(defaultClearParams())
+  target.clear(clearParams().withColor(rgba(0.0, 0.0, 0.0, 1.0)))
   target.draw(prog, rect, uniforms {
     ?noise: noiseTex.sampler(),
     ?bricks: bricksTex.sampler(magFilter = fmNearest),

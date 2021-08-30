@@ -17,7 +17,7 @@ type
     useImpl*: proc (target: Target, gl: OpenGl) {.nimcall.}
     gl*: OpenGl
 
-  ClearParams = object
+  ClearParams* = object
     color*: Option[Rgba32f]
     depth*: Option[float32]
     stencil*: Option[int32]
@@ -49,35 +49,38 @@ proc scissor(target: Target, scissor: Option[Recti]) =
   else:
     target.gl.scissor(0, 0, target.size.x, target.size.y)
 
-proc defaultClearParams*(): ClearParams =
+proc clearParams*(): ClearParams =
+  ## Returns an empty ClearParams. At least one field must be initialized by
+  ## using `withColor`, `withDepth`, or `withStencil`, otherwise an assertion is
+  ## raised in `clear()`.
   ClearParams(
-    color: rgba(0.0, 0.0, 0.0, 1.0).some(),
-    depth: some(1.0.float32),
+    color: Rgba32f.none(),
+    depth: float32.none(),
     stencil: int32.none(),
     scissor: Recti.none()
   )
 
-proc withColor*(clearParams: ClearParams, color: Rgba32f): ClearParams =
-  ## Modifies the `color` field of ClearParams and returns it.
-  var clearParams = clearParams
+proc withColor*(clearParams: sink ClearParams, color: Rgba32f): ClearParams =
+  ## Enables clearing with the given color in the given clear parameters, and
+  ## returns the modified clear parameters.
   clearParams.color = color.some()
   clearParams
 
-proc withDepth*(clearParams: ClearParams, depth: float32): ClearParams =
-  ## Modifies the `depth` field of ClearParams and returns it.
-  var clearParams = clearParams
+proc withDepth*(clearParams: sink ClearParams, depth: float32): ClearParams =
+  ## Enables clearing with the given depth in the given clear parameters, and
+  ## returns the modified clear parameters.
   clearParams.depth = depth.some()
   clearParams
 
-proc withStencil*(clearParams: ClearParams, stencil: int32): ClearParams =
-  ## Modifies the `stencil` field of ClearParams and returns it.
-  var clearParams = clearParams
+proc withStencil*(clearParams: sink ClearParams, stencil: int32): ClearParams =
+  ## Enables clearing with the given stencil in the given clear parameters, and
+  ## returns the modified clear parameters.
   clearParams.stencil = stencil.some()
   clearParams
 
-proc withScissor*(clearParams: ClearParams, scissor: Recti): ClearParams =
-  ## Modifies the `scissor` field of ClearParams and returns it.
-  var clearParams = clearParams
+proc withScissor*(clearParams: sink ClearParams, scissor: Recti): ClearParams =
+  ## Changes the region to be cleared in the given clear parameters, and returns
+  ## the modified clear parameters.
   clearParams.scissor = scissor.some()
   clearParams
 
@@ -85,6 +88,12 @@ proc clear*(target: Target, clearParams: ClearParams) {.inline.} =
   ## Clears the target depending on the values in the provided `ClearParams`.
   target.use()
   target.scissor(clearParams.scissor)
+
+  assert(not (
+    clearParams.color.isNone() and
+    clearParams.depth.isNone() and
+    clearParams.stencil.isNone()
+    ), "At least one of the buffers in ClearParams must be specified")
   
   if clearParams.color.isSome():
     let color = clearParams.color.get()

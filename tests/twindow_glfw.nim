@@ -10,7 +10,7 @@ var win = agl.newWindowGlfw(800, 600, "GLFW window test",
 
 while not win.closeRequested:
   var frame = win.render()
-  frame.clear(defaultClearParams().withColor(rgba(0.0, 0.0, 1.0, 1.0)))
+  frame.clear(clearParams().withColor(rgba(0.0, 0.0, 1.0, 1.0)))
   frame.finish()
 
   win.pollEvents do (ev: InputEvent):
