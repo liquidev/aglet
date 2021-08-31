@@ -6,7 +6,6 @@
 ## the one implemented in aglet is as simple and lightweight as it can get.
 
 import std/options
-import std/sets
 
 import glm/vec
 
